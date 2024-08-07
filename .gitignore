@@ -1,0 +1,7 @@
+.gitignore
+.vscode
+test.py
+output.log
+1.txt
+__pycache__/
+data/
