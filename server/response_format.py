@@ -1,12 +1,13 @@
 from common.models import Category, Site, Page
 
 class ResponseSite(dict):
-    def __init__(self, Site):
+    def __init__(self, site: Site):
         super().__init__()
-        self["id"] = Site.id
-        self["name"] = Site.name
-        self["url"] = Site.url
-        self["category"] = Site.category.name
+        self["id"] = site.id
+        self["name"] = site.name
+        self["url"] = site.url
+        self["cate_id"] = site.cate_id
+        self["category"] = site.category.name
 
 
 class ResponseCategory(dict):

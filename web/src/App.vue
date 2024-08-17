@@ -1,85 +1,63 @@
-<script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+<script lang="ts" setup>
+import { server } from '@/const'
+import { reactive } from 'vue'
+import { RouterView } from 'vue-router'
+
+interface Site {
+  id: number
+  name: string
+  url: string
+  cate_id: number
+  category: string
+}
+
+interface CateSite {
+  cate_id: number
+  cate_name: string
+  sites: Site[]
+}
+
+let sites = reactive<CateSite[]>([])
+
+fetch(`${server}/site`)
+  .then((r) => r.json())
+  .then((data) => {
+    let cateSites: CateSite = { cate_id: 0, cate_name: '', sites: [] }
+    for (let site of data) {
+      if (site.cate_id != cateSites.cate_id) {
+        if (cateSites.cate_id != 0) sites.push(cateSites)
+        cateSites = { cate_id: site.cate_id, cate_name: site.category, sites: [] }
+      }
+      cateSites.sites.push(site)
+    }
+    if (cateSites.cate_id != 0) sites.push(cateSites)
+  })
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+  <div class="common-layout full-height">
+    <el-container>
+      <el-aside width="20em" style="background-color: blue" class="full-height">
+        <el-menu class="el-menu-vertical-demo" :router="true">
+          <el-sub-menu v-for:="cate in sites" :index="cate.cate_name">
+            <template #title>
+              <el-icon>
+              </el-icon>
+              <span>{{ cate.cate_name }}</span>
+            </template>
+            <el-menu-item v-for:="site in cate.sites" :index="`/site/` + site.id">{{ site.name }}</el-menu-item>
+          </el-sub-menu>
+        </el-menu>
+      </el-aside>
+      <el-main class="full-height">
+        <router-view />
+      </el-main>
+    </el-container>
+  </div>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.full-height {
+  height: 100vh;
 }
 </style>

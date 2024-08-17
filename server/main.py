@@ -149,4 +149,8 @@ def add_page(site_id):
 app = Flask(__name__)
 app.register_blueprint(web)
 
+from flask_cors import CORS
+CORS(app)
+
+
 app.run(host="0.0.0.0", port=5000, debug=True)
