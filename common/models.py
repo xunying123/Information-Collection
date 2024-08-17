@@ -28,7 +28,7 @@ class Base(DeclarativeBase):
 metadata = Base.metadata  # used for alembic
 
 intpk = Annotated[int, mapped_column(primary_key=True)]
-url_type = Annotated[str, mapped_column(String(2048), nullable=False)]
+url_type = Annotated[str, mapped_column(String(2048), nullable=False, unique=True)]
 
 
 class UseTimestamps:
@@ -38,14 +38,14 @@ class UseTimestamps:
     )
 
 
-class Catagory(Base):
+class Category(Base):
     id: Mapped[intpk]
     name: Mapped[str]
     sites = relationship("Site", back_populates="category")
 
 
 cata_fk = Annotated[
-    int, mapped_column(ForeignKey(Catagory.id), index=True, nullable=False)
+    int, mapped_column(ForeignKey(Category.id), index=True, nullable=False)
 ]
 
 
@@ -53,8 +53,8 @@ class Site(Base):
     id: Mapped[intpk]
     name: Mapped[str]
     url: Mapped[url_type]
-    cata_id: Mapped[cata_fk]
-    cata = relationship(Catagory, back_populates="sites")
+    cate_id: Mapped[cata_fk]
+    category = relationship(Category, back_populates="sites")
     pages = relationship("Page", back_populates="site")
 
 
@@ -73,5 +73,5 @@ class Page(Base, UseTimestamps):
     site_id: Mapped[site_foreign_key]
     site: Mapped[Site] = relationship(Site, back_populates="pages")
 
-    cata_id: Mapped[cata_fk]
-    cata = relationship(Catagory)
+    cate_id: Mapped[cata_fk]
+    category = relationship(Category)
