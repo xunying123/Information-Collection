@@ -5,7 +5,6 @@ def run():
     for links in websites:
         preception(links)
 
-
 def main():
     run()
     

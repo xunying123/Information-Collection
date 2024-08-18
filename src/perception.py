@@ -71,27 +71,20 @@ def preception(url):
     new_links = list(set(current_links) - set(previous_links))
     current_links = list(set(current_links) | set(previous_links))    
     if new_links:
-        # print(new_links)
         print(f"New \033[92m{len(new_links)}\033[0m articles found.")
         save_content(current_links, filename)
         articles = read_content(article_path)
         for link in new_links:
-            # response = requests.get(url, headers=headers)
-            # date = find_date(response.text)
-            # today = datetime.now().strftime('%Y-%m-%d')
-            # if date != today:
-            #     continue
-            if not is_article(link):
-                continue
-            # 这里的判断有问题
             title, content = crawl(link)
-            summary = Summary.run(content)
+            if not title or not content:
+                continue
+            # summary = Summary.run(content)
             articles.append({
                 "title": title,
-                "content": summary,
+                "content": content,
                 "url": link
             })
-            print(f"\033[92m{title}\033[0m saved.")
+            # print(f"\033[92m{title}\033[0m saved.")
         save_content(articles, article_path)
     else:
         print(f"\033[31mNo\033[0m new articles found.")
