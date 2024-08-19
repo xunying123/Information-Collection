@@ -1,27 +1,25 @@
 <script setup lang="ts">
 import { server } from '@/const';
 import { ref, watch } from 'vue';
-
+import ArticleCard from '@/components/ArticleCard.vue';
+import type { SiteQuery } from '@/interface';
 const props = defineProps({
     site_id: String
 })
 
-interface Page {
-    id: number
-    title: string
-    content: string,
-    source_url: string
 
-    site_id: number
-    site: string
-    cate_id: number
-    category: string
-}
-
-let pages = ref<Page[]>([])
+let site = ref<SiteQuery>({
+    id: 0,
+    name: '',
+    url: '',
+    category: '',
+    cate_id: 0,
+    pages: []
+})
 async function updatePages() {
-    pages.value = [];
-    pages.value = await fetch(`${server}/site/${props.site_id}`)
+    site.value = { id: 0, name: '', url: '', category: '', cate_id: 0, pages: [] }
+    if (!props.site_id) return;
+    site.value = await fetch(`${server}/site/${props.site_id}`)
         .then((r) => r.json())
 }
 watch(props, updatePages)
@@ -30,17 +28,25 @@ updatePages()
 </script>
 
 <template>
-    {{ site_id }}
-    {{ pages }}
-    <el-card v-for:="page in pages">
-        <template v-slot:header>
-            <div class="clearfix">
-                <span>{{ page.title }}</span>
+    <el-container class="full-height">
+        <el-main class="full-height">
+            <h1>{{ site.name }}</h1>
+            <div class="container-grid">
+                <router-link v-for:="page in site.pages" :to="{ name: 'page', params: { page_id: page.id } }">
+                    <ArticleCard :page="page"></ArticleCard>
+                </router-link>
             </div>
-        </template>
-        {{ page.content }}
-        <div>
-            <el-link :href="page.source_url" target="_blank">Source</el-link>
-        </div>
-    </el-card>
+        </el-main>
+        <router-view />
+    </el-container>
 </template>
+
+<style scoped>
+.container-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 20em);
+    gap: 2em;
+    padding: 2em;
+    justify-content: left;
+}
+</style>

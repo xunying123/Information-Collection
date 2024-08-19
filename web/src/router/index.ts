@@ -18,7 +18,20 @@ const router = createRouter({
       path: '/site/:site_id',
       name: 'site',
       props: true,
-      component: () => import('@/views/SitePages.vue')
+      component: () => import('@/views/SitePages.vue'),
+      children: [
+        {
+          path: '',
+          name: 'site-home',
+          component: EmptyView
+        },
+        {
+          path: 'page/:page_id',
+          name: 'page',
+          props: true,
+          component: () => import('@/views/ArticleView.vue')
+        }
+      ]
     }
   ]
 })

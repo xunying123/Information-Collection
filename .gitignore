@@ -6,3 +6,4 @@ output.log
 __pycache__/
 data/
 venv/
+node_modules
