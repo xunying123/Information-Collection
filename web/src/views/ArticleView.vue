@@ -43,7 +43,7 @@ let content = computed(() => {
             <router-link :to="{ name: 'site-home' }" class="close-button">✕</router-link>
         </div>
         <!-- 文章内容区域 -->
-        <div class="article-content">
+        <div class="article-content" v-loading="article.id == 0">
             <h2>{{ article.title }}</h2>
             <div v-html="content"></div>
         </div>
