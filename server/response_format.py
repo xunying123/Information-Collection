@@ -1,6 +1,6 @@
 from common.models import Category, Site, Page
 
-class ResponseSite(dict):
+class ResponseSiteItem(dict):
     def __init__(self, site: Site):
         super().__init__()
         self["id"] = site.id
@@ -29,3 +29,8 @@ class ResponsePage(dict):
         self["site"] = Page.site.name
         self["cate_id"] = Page.category.id
         self["category"] = Page.category.name
+
+class ResponseSite(ResponseSiteItem):
+    def __init__(self, site: Site):
+        super().__init__(site)
+        self["pages"] = []

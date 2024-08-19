@@ -18,7 +18,7 @@ def index():
 
 @web.route("/category")
 def get_categories():
-    result: list[ResponseSite] = []
+    result: list[ResponseSiteItem] = []
     stmt = select(Category).order_by(Category.id)
     with SqlSession() as db:
         for cate in db.scalars(stmt):
@@ -29,11 +29,11 @@ def get_categories():
 
 @web.route("/category/<int:cate_id>/sites")
 def get_category_sites(cate_id):
-    result: list[ResponseSite] = []
+    result: list[ResponseSiteItem] = []
     stmt = select(Site).where(Site.cate_id == cate_id).order_by(Site.id)
     with SqlSession() as db:
         for site in db.scalars(stmt):
-            info = ResponseSite(site)
+            info = ResponseSiteItem(site)
             result.append(info)
     return json.dumps(result, ensure_ascii=False)
 
@@ -65,7 +65,7 @@ def get_sites():
     stmt = select(Site).order_by(Site.cate_id, Site.id)
     with SqlSession() as db:
         for site in db.scalars(stmt):
-            info = ResponseSite(site)
+            info = ResponseSiteItem(site)
             result.append(info)
     return json.dumps(result, ensure_ascii=False)
 
@@ -82,11 +82,17 @@ def get_site_pages(site_id):
         .limit(count)
         .offset(offset)
     )
+    
     with SqlSession() as db:
+        site =  db.scalar(select(Site).where(Site.id == site_id))
+        if site is None:
+            return "Site not found", 404
+        res = ResponseSite(site)
         for page in db.scalars(stmt):
             info = ResponsePage(page)
             result.append(info)
-    return json.dumps(result, ensure_ascii=False)
+        res["pages"] = result
+    return json.dumps(res, ensure_ascii=False)
 
 
 @web.route("/page/<int:page_id>")

@@ -54,7 +54,7 @@ class Site(Base):
     name: Mapped[str]
     url: Mapped[url_type]
     cate_id: Mapped[cata_fk]
-    category = relationship(Category, back_populates="sites")
+    category: Mapped[Category] = relationship(Category, back_populates="sites")
     pages = relationship("Page", back_populates="site")
 
 
