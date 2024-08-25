@@ -16,7 +16,7 @@ function load_bookmarks() {
   return JSON.parse(localStorage.getItem('bookmarks') || '[]')
 }
 
-const bookmarks = reactive<BookmarkItemPage[]>(load_bookmarks())
+const bookmarks = reactive<Page[]>(load_bookmarks())
 
 function save_bookmarks() {
   localStorage.setItem('bookmarks', JSON.stringify(bookmarks))
@@ -26,9 +26,10 @@ watch(bookmarks, save_bookmarks)
 function toggle_bookmark(page: Page) {
   const index = bookmarks.findIndex((b) => b.id === page.id)
   if (index === -1) {
-    const { content, ...rest } = page
-    bookmarks.push(rest)
-    content // use it to suppress the warning
+    // const { content, ...rest } = page
+    // bookmarks.push(rest)
+    // content // use it to suppress the warning
+    bookmarks.push(page)
   } else {
     bookmarks.splice(index, 1)
   }

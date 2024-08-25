@@ -1,26 +1,46 @@
 <script setup lang="ts">
-import { bookmarks } from '@/bookmark';
+import { bookmarks } from '@/bookmark'
+function reset_bookmarks() {
+  bookmarks.splice(0, bookmarks.length)
+}
 </script>
 
 <template>
-    <el-table :data="bookmarks" style="width: 100%">
-        <el-table-column prop="category" label="类别"></el-table-column>
-        <el-table-column prop="site" label="来源">
-            <template #default="scope">
-                <RouterLink :to="`/site/${scope.row.site_id}`">{{ scope.row.site }}</RouterLink>
-            </template>
-        </el-table-column>
-        <el-table-column prop="title" label="标题" show-overflow-tooltip>
-            <template #default="scope">
-                <RouterLink :to="{ name: 'page', params: { site_id: scope.row.site_id, page_id: scope.row.id } }">
-                    {{ scope.row.title }}
-                </RouterLink>
-            </template>
-        </el-table-column>
-        <el-table-column label="发布时间">
-            <!-- <template #default="scope">{{ scope.row.site_id }}</template> -->
-            <template #default>TODO</template>
-        </el-table-column>
-    </el-table>
-    {{ bookmarks }}
+  <el-container class="full-height">
+    <el-main class="full-height TD">
+      <div class="header">
+        <h1 class="site-name">Bookmarks</h1>
+        <el-button @click="reset_bookmarks">重置 Bookmarks</el-button>
+      </div>
+      <el-scrollbar>
+        <div class="container-grid">
+          <ArticleCard v-for:="page in bookmarks" :page="page"></ArticleCard>
+        </div>
+      </el-scrollbar>
+    </el-main>
+    <router-view />
+  </el-container>
 </template>
+
+<style scoped>
+.container-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 20em);
+  gap: 2em;
+  padding: 2em;
+  justify-content: left;
+}
+
+.site-name {
+  margin: 1em;
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+.TD {
+  display: grid;
+  grid-template-rows: min-content 1fr;
+  align-content: start;
+  padding: 0;
+}
+</style>

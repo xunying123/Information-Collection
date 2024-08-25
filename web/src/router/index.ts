@@ -22,13 +22,8 @@ const router = createRouter({
       component: () => import('@/views/SitePages.vue'),
       children: [
         {
-          path: '',
-          name: 'site-home',
-          component: EmptyView
-        },
-        {
           path: 'page/:page_id',
-          name: 'page',
+          name: 'site-page',
           props: true,
           component: () => import('@/views/ArticleView.vue')
         }
@@ -37,7 +32,15 @@ const router = createRouter({
     {
       path: '/bookmarks',
       name: 'bookmarks',
-      component: () => import('@/views/BookmarksView.vue')
+      component: () => import('@/views/BookmarksView.vue'),
+      children: [
+        {
+          path: 'page/:page_id',
+          name: 'bookmarks-page',
+          props: true,
+          component: () => import('@/views/ArticleView.vue')
+        }
+      ]
     }
   ]
 })

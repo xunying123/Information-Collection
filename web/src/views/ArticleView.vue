@@ -3,6 +3,8 @@ import { computed, defineProps, ref, watch } from 'vue'
 import type { Page } from '@/interface'
 import { server } from '@/const'
 import { is_bookmarked, toggle_bookmark } from '@/bookmark';
+import { useClipboard } from '@vueuse/core'
+import { ElNotification } from 'element-plus';
 
 let props = defineProps({ page_id: Number });
 
@@ -36,14 +38,27 @@ let content = computed(() => {
     return article.value.content.split('\n').join('<br>');
 });
 
-import { useClipboard } from '@vueuse/core'
+
 const { copy } = useClipboard({ legacy: !navigator.clipboard });
+
 
 function copyLink() {
     const sourceUrl = article.value.source_url;
-    copy(sourceUrl).then(() => {
-    })
+    copy(sourceUrl)
+        .then(() => {
+            ElNotification({
+                title: '复制成功',
+                message: '成功复制了文章的链接',
+                type: 'success',
+                duration: 0,
+            })
+        })
         .catch(() => {
+            ElNotification({
+                title: '复制失败',
+                message: '复制文章链接失败，请重试',
+                type: 'error',
+            })
         });
 }
 
@@ -54,7 +69,7 @@ function copyLink() {
         <!-- 独立功能区 -->
         <div class="top-bar">
             <div class="button-group">
-                <router-link :to="{ name: 'site-home' }" class="close-button">
+                <router-link :to="{ name: $route.matched[0].name }" class="close-button">
                     <svg width="800px" height="800px" viewBox="0 0 24 24" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd"
@@ -86,8 +101,9 @@ function copyLink() {
                         </svg>
                     </button>
                 </el-tooltip>
-                    <a :href="article.source_url" target="_blank" noopener opreferrer><el-button class="glowing-button"
-                            type="primary">查看原文</el-button></a>                
+                <a :href="article.source_url" target="_blank" noopener opreferrer class="flex-right">
+                    <el-button class="glowing-button" type="primary">查看原文</el-button>
+                </a>
             </div>
         </div>
         <!-- 文章内容区域 -->
@@ -140,6 +156,7 @@ function copyLink() {
 .button-group {
     display: flex;
     align-items: center;
+    width: 100%;
 }
 
 .close-button,
@@ -220,7 +237,7 @@ function copyLink() {
     background-size: 200% 200%;
     animation: glowing 3s ease infinite;
     border: none;
-    color: white;
+    color: black;
     font-weight: bold;
     text-transform: uppercase;
     box-shadow: 0 0 15px rgba(167, 32, 56, 0.4), 0 0 20px rgba(240, 131, 0, 0.4), 0 0 25px rgba(253, 208, 0, 0.4);
@@ -250,5 +267,9 @@ function copyLink() {
 .bookmark-button svg.filled {
     fill: #FFD700;
     /* 选中状态填充黄色 */
+}
+
+.flex-right {
+    margin-left: auto;
 }
 </style>
