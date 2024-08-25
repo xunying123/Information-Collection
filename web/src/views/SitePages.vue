@@ -3,8 +3,6 @@ import { server } from '@/const';
 import { ref, watch } from 'vue';
 import ArticleCard from '@/components/ArticleCard.vue';
 import type { SiteQuery } from '@/interface';
-import { ElLoading } from 'element-plus';
-
 
 const props = defineProps({
     site_id: String
@@ -19,13 +17,7 @@ let site = ref<SiteQuery>({
     cate_id: 0,
     pages: []
 })
-// const loading = ElLoading.service({
-//     lock: true,
-//     text: 'Loading',
-//     background: 'rgba(0, 0, 0, 0.7)',
-// })
-// console.log(loading)
-// console.log(ElLoading.service);
+
 async function updatePages() {
     site.value = { id: 0, name: '', url: '', category: '', cate_id: 0, pages: [] }
     if (!props.site_id) return;
@@ -36,17 +28,23 @@ async function updatePages() {
 watch(props, updatePages)
 updatePages()
 
+function reset_bookmarks() {
+    localStorage.clear()
+}
 </script>
 
 <template>
     <el-container class="full-height">
-        <el-main class="full-height" v-loading="site.id == 0">
-            <h1>{{ site.name }}</h1>
-            <div class="container-grid">
-                <router-link v-for:="page in site.pages" :to="{ name: 'page', params: { page_id: page.id } }">
-                    <ArticleCard :page="page"></ArticleCard>
-                </router-link>
+        <el-main class="full-height TD" v-loading="site.id == 0">
+            <div class="header">
+                <h1 class="site-name">{{ site.name }}</h1>
             </div>
+            <el-scrollbar>
+                <el-button @click="reset_bookmarks">重置 Bookmarks</el-button>
+                <div class="container-grid">
+                    <ArticleCard v-for:="page in site.pages" :page="page"></ArticleCard>
+                </div>
+            </el-scrollbar>
         </el-main>
         <router-view />
     </el-container>
@@ -59,5 +57,18 @@ updatePages()
     gap: 2em;
     padding: 2em;
     justify-content: left;
+}
+
+.site-name {
+    margin: 1em;
+    font-weight: bold;
+    font-size: 1.5em;
+}
+
+.TD {
+    display: grid;
+    grid-template-rows: min-content 1fr;
+    align-content: start;
+    padding: 0;
 }
 </style>
