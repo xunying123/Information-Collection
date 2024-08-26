@@ -1,20 +1,20 @@
 <script lang="ts" setup>
 import { server } from '@/const'
 import { reactive } from 'vue'
-import type { CateSite } from '@/interface'
-import { ElLoading } from 'element-plus'
+import type { SiteItem } from '@/api_interface'
+import { ElScrollbar } from 'element-plus'
+
+interface CateSite {
+  cate_id: number
+  cate_name: string
+  sites: SiteItem[]
+}
 
 let sites = reactive<CateSite[]>([])
 
-// let loading = ElLoading.service({
-//     lock: true,
-//     text: 'Loading',
-//     background: 'rgba(0, 0, 0, 0.7)',
-// })
-
 fetch(`${server}/site`)
   .then((r) => r.json())
-  .then((data) => {
+  .then((data: SiteItem[]) => {
     let cateSites: CateSite = { cate_id: 0, cate_name: '', sites: [] }
     for (let site of data) {
       if (site.cate_id != cateSites.cate_id) {
@@ -24,35 +24,30 @@ fetch(`${server}/site`)
       cateSites.sites.push(site)
     }
     if (cateSites.cate_id != 0) sites.push(cateSites)
-    // loading.close()
   })
 </script>
 
 <template>
   <div class="full">
-    <el-menu class="el-menu-vertical-demo" :router="true">
-      <router-link :to="{ name: 'home' }">
-        <el-menu-item>
+    <el-scrollbar height="100vh">
+      <el-menu class="el-menu-vertical-demo" :router="true">
+        <el-menu-item index="/">
           <el-icon class="el-icon-menu"></el-icon>
           <span class="menu-top">全部</span>
         </el-menu-item>
-      </router-link>
-      <router-link :to="{ name: 'bookmarks' }">
-        <el-menu-item>
+        <el-menu-item index="/bookmarks">
           <el-icon class="el-icon-menu"></el-icon>
           <span class="menu-top">书签列表</span>
         </el-menu-item>
-      </router-link>
-      <el-sub-menu v-for:="cate in sites" :index="cate.cate_name">
-        <template #title>
-          <el-icon> </el-icon>
-          <span>{{ cate.cate_name }}</span>
-        </template>
-        <el-menu-item v-for:="site in cate.sites" :index="`/site/` + site.id">{{
-          site.name
-        }}</el-menu-item>
-      </el-sub-menu>
-    </el-menu>
+        <el-sub-menu v-for:="cate in sites" :index="cate.cate_name">
+          <template #title>
+            <el-icon> </el-icon>
+            <span>{{ cate.cate_name }}</span>
+          </template>
+          <el-menu-item v-for:="site in cate.sites" :index="`/site/` + site.id">{{ site.name }}</el-menu-item>
+        </el-sub-menu>
+      </el-menu>
+    </el-scrollbar>
   </div>
 </template>
 
@@ -62,7 +57,7 @@ fetch(`${server}/site`)
   height: 100%;
   --el-menu-bg-color: rgba(200, 22, 30, 0);
   --el-menu-active-color: #ffffff;
-  background: linear-gradient(180deg, #960018, rgb(167, 32, 56), #632121);
+  background: linear-gradient(180deg, #960018, rgb(167, 32, 56), #953232);
   --el-menu-text-color: #ffffff;
   --el-menu-hover-bg-color: rgba(200, 22, 30, 1);
   --el-menu-item-font-size: 1.1em;
@@ -80,6 +75,7 @@ fetch(`${server}/site`)
   /* font-weight: bold !important; */
   color: #fff;
 }
+
 .menu-top {
   font-size: 1.1em !important;
   font-weight: bold !important;

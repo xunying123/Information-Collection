@@ -1,5 +1,5 @@
 import { reactive, watch } from 'vue'
-import type { Page } from './interface'
+import type { Page } from './api_interface'
 
 interface BookmarkItemPage {
   id: number
@@ -35,8 +35,8 @@ function toggle_bookmark(page: Page) {
   }
 }
 
-function is_bookmarked(page: Page) {
-  return bookmarks.some((b) => b.id === page.id)
+function is_bookmarked(page_id: number) {
+  return bookmarks.some((b) => b.id === page_id)
 }
 
 export { bookmarks, toggle_bookmark, is_bookmarked }

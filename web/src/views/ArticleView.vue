@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed, defineProps, ref, watch } from 'vue'
-import type { Page } from '@/interface'
+import type { Page } from '@/api_interface'
 import { server } from '@/const'
 import { is_bookmarked, toggle_bookmark } from '@/bookmark';
 import { useClipboard } from '@vueuse/core'
 import { ElNotification } from 'element-plus';
+import type BookmarkSvg from '@/components/svg/BookmarkSvg.vue';
+import CloseSVG from '@/components/svg/CloseSVG.vue';
+import CopySVG from '@/components/svg/CopySVG.vue';
+import { NTime } from 'naive-ui';
 
-let props = defineProps({ page_id: Number });
+let props = defineProps({ page_id: String });
 
 const empty_article: Page = {
     id: 0,
@@ -16,7 +20,9 @@ const empty_article: Page = {
     site_id: 0,
     site: '',
     cate_id: 0,
-    category: ''
+    category: '',
+    publish_time: '',
+    site_icon: ''
 };
 
 let article = ref<Page>(empty_article);
@@ -38,7 +44,6 @@ let content = computed(() => {
     return article.value.content.split('\n').join('<br>');
 });
 
-
 const { copy } = useClipboard({ legacy: !navigator.clipboard });
 
 
@@ -50,7 +55,6 @@ function copyLink() {
                 title: '复制成功',
                 message: '成功复制了文章的链接',
                 type: 'success',
-                duration: 0,
             })
         })
         .catch(() => {
@@ -70,35 +74,16 @@ function copyLink() {
         <div class="top-bar">
             <div class="button-group">
                 <router-link :to="{ name: $route.matched[0].name }" class="close-button">
-                    <svg width="800px" height="800px" viewBox="0 0 24 24" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd"
-                            d="M19.207 6.207a1 1 0 0 0-1.414-1.414L12 10.586 6.207 4.793a1 1 0 0 0-1.414 1.414L10.586 12l-5.793 5.793a1 1 0 1 0 1.414 1.414L12 13.414l5.793 5.793a1 1 0 0 0 1.414-1.414L13.414 12l5.793-5.793z"
-                            fill="#000000" />
-                    </svg>
+                    <CloseSVG />
                 </router-link>
                 <el-tooltip content="复制链接" effect="light">
                     <button @click="copyLink" class="copy-button" tag="复制链接">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" shape-rendering="geometricPrecision"
-                            class="h-6 w-6 stroke-[#95959d] dark:stroke-[#959699]">
-                            <path stroke-linecap="round" stroke-linejoin="round" shape-rendering="geometricPrecision"
-                                d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244">
-                            </path>
-                        </svg>
+                        <CopySVG />
                     </button>
                 </el-tooltip>
-                <el-tooltip content="标记书签" effect="light">
+                <el-tooltip :content="is_bookmarked(article.id) ? '移除书签' : '加入书签'" effect="light">
                     <button @click="toggle_bookmark(article)" class="bookmark-button" tag="书签">
-                        <svg v-if="is_bookmarked(article)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                            fill="#FFD700" class="h-6 w-6">
-                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                        </svg>
-                        <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="h-6 w-6">
-                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                        </svg>
+                        <BookmarkSvg :fill="is_bookmarked(article.id) ? '#FFD700' : 'none'" />
                     </button>
                 </el-tooltip>
                 <a :href="article.source_url" target="_blank" noopener opreferrer class="flex-right">
@@ -110,11 +95,10 @@ function copyLink() {
         <el-scrollbar>
             <div class="article-content" v-loading="article.id == 0">
                 <h2 class="article-title">{{ article.title }}</h2>
+                <el-divider content-position="center">
+                    <n-time v-if="article.publish_time" :time="new Date(article.publish_time)" format="yyyy年MM月dd日 hh时mm分" />
+                </el-divider>
                 <div v-html="content"></div>
-                <div class="bottom-functions">
-                    <!-- <el-button @click="redirectToArticle" class="glowing-button redirect-article-button"
-                    block>点击跳转原文</el-button> -->
-                </div>
             </div>
         </el-scrollbar>
     </el-aside>
@@ -129,10 +113,7 @@ function copyLink() {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     overflow: auto;
-    height: calc(100vh - 5em);
-    /* 高度略短于页面 */
-    margin: 1.5em;
-    /* 调整为较小的外边距 */
+    margin: 1.5em 1.5em 1.5em 0;
     display: grid;
     grid-template-rows: min-content 1fr;
 }

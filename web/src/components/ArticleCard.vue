@@ -1,36 +1,39 @@
+<script setup lang="ts">
+import { defineProps } from 'vue'
+import type { PageItem } from '@/api_interface'
+import { is_bookmarked } from '@/bookmark'
+defineProps<{ page: PageItem }>()
+
+import { NTime, zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
+import BookmarkSvg from './svg/BookmarkSvg.vue';
+
+</script>
+
 <template>
   <div class="card-container">
-    <router-link
-      :to="{ name: `${String($route.matched[0].name)}-page`, params: { page_id: page.id } }"
-    >
+    <router-link :to="{ name: `${String($route.matched[0].name)}-page`, params: { page_id: page.id } }">
       <el-card class="small-card" shadow="hover">
         <template #header>
-          <div class="small-card-header">{{ page.site }}</div>
+          <div class="small-card-header">
+            <el-avatar size="small" :src="page.site_icon" v-if="page.site_icon" class="right-gap"/>
+            <span>{{ page.site }}</span>
+            <el-tooltip content="已加入书签" effect="light">
+              <BookmarkSvg v-show="is_bookmarked(page.id)" fill="#FFD700"></BookmarkSvg>
+            </el-tooltip>
+          </div>
         </template>
         <h3 class="small-card-body">{{ page.title }}</h3>
-        <!-- <div class="small-card-body">{{ page.content }}</div> -->
         <template #footer>
           <div class="small-card-footer">
-            <!-- <el-link :href="page.source_url" target="_blank">Source</el-link> -->
-            <!-- <el-button type="success" :plain="!is_bookmarked(page)"
-                        @click="toggle_bookmark(page)">书签</el-button> -->
-
-            <!-- <el-button>Open</el-button> -->
-            <span v-if="is_bookmarked(page)" style="color: rgb(240, 131, 0)">已设为书签</span>
-            <span> (todo: 发布时间)</span>
+            <n-config-provider :locale="zhCN" :date-locale="dateZhCN">
+              <n-time :time="new Date(page.publish_time)" type="relative" />
+            </n-config-provider>
           </div>
         </template>
       </el-card>
     </router-link>
   </div>
 </template>
-
-<script setup lang="ts">
-import { defineProps } from 'vue'
-import type { Page } from '@/interface'
-import { is_bookmarked, toggle_bookmark } from '@/bookmark'
-defineProps<{ page: Page }>()
-</script>
 
 <style scoped>
 .card-container {
@@ -63,7 +66,11 @@ defineProps<{ page: Page }>()
   /* 保持与父容器一致的高度 */
   display: flex;
   align-items: center;
-  /* 垂直居中 */
+  justify-content: left;
+  margin-left: -0.5em;
+}
+.small-card-header > :nth-child(3) {
+  margin-left: auto;
 }
 
 .small-card-body {
@@ -79,5 +86,9 @@ defineProps<{ page: Page }>()
   box-sizing: border-box;
   align-self: end;
   display: flex;
+}
+
+.right-gap {
+  margin-right: 0.3em;
 }
 </style>

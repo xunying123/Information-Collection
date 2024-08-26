@@ -1,6 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import EmptyView from '@/views/EmptyView.vue'
-import WaitChooseSite from '@/views/WaitChooseSite.vue'
+import AllSitePages from '@/views/pages/AllSitePages.vue'
+
+const page_rule = (name: string) => {
+  return {
+    path: 'page/:page_id',
+    name: `${name}-page`,
+    props: true,
+    component: () => import('@/views/ArticleView.vue')
+  }
+}
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,7 +16,8 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: WaitChooseSite
+      component: AllSitePages,
+      children: [page_rule('home')]
     },
     {
       path: '/login',
@@ -19,28 +28,14 @@ const router = createRouter({
       path: '/site/:site_id',
       name: 'site',
       props: true,
-      component: () => import('@/views/SitePages.vue'),
-      children: [
-        {
-          path: 'page/:page_id',
-          name: 'site-page',
-          props: true,
-          component: () => import('@/views/ArticleView.vue')
-        }
-      ]
+      component: () => import('@/views/pages/SitePages.vue'),
+      children: [page_rule('site')]
     },
     {
       path: '/bookmarks',
       name: 'bookmarks',
-      component: () => import('@/views/BookmarksView.vue'),
-      children: [
-        {
-          path: 'page/:page_id',
-          name: 'bookmarks-page',
-          props: true,
-          component: () => import('@/views/ArticleView.vue')
-        }
-      ]
+      component: () => import('@/views/pages/BookmarksPages.vue'),
+      children: [page_rule('bookmarks')]
     }
   ]
 })
