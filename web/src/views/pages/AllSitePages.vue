@@ -1,5 +1,5 @@
 <template>
-    <ShowCards :pages="pages" title="全部文章" :v-loading="loading"></ShowCards>
+    <ShowCards :pages="pages" title="全部文章" :loading="loading"></ShowCards>
 </template>
 
 <script setup lang="ts">

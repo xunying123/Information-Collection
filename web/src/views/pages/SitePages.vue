@@ -1,5 +1,5 @@
 <template>
-  <ShowCards :title="site.name" :pages="site.pages" :v-loading="site.id == 0"></ShowCards>
+  <ShowCards :title="site.name" :pages="site.pages" :loading="site.id == 0"></ShowCards>
 </template>
 
 <script setup lang="ts">

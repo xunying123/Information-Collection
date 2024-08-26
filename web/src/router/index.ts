@@ -3,7 +3,7 @@ import AllSitePages from '@/views/pages/AllSitePages.vue'
 
 const page_rule = (name: string) => {
   return {
-    path: 'page/:page_id',
+    path: 'page/:page_id(\\d+)',
     name: `${name}-page`,
     props: true,
     component: () => import('@/views/ArticleView.vue')
@@ -20,12 +20,17 @@ const router = createRouter({
       children: [page_rule('home')]
     },
     {
+      path: '/404',
+      name: '404',
+      component: () => import('@/views/404Error.vue')
+    },
+    {
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginView.vue')
     },
     {
-      path: '/site/:site_id',
+      path: '/site/:site_id(\\d+)',
       name: 'site',
       props: true,
       component: () => import('@/views/pages/SitePages.vue'),

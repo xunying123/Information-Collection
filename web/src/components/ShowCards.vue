@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { defineProps } from 'vue';
 import type { PageItem } from '@/api_interface';
-defineProps<{ pages: PageItem[], title: string }>();
+defineProps<{ pages: PageItem[], title: string, loading: Boolean }>();
 </script>
 
 <template>
@@ -11,7 +11,7 @@ defineProps<{ pages: PageItem[], title: string }>();
                 <h1>{{ title }}</h1>
                 <slot></slot>
             </div>
-            <el-scrollbar v-if="pages && pages.length">
+            <el-scrollbar v-if="pages && pages.length" v-loading="loading">
                 <div class="container-grid">
                     <ArticleCard v-for:="page in pages" :page="page"></ArticleCard>
                 </div>

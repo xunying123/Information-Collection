@@ -1,5 +1,5 @@
 <template>
-  <ShowCards :pages="bookmarks" title="书签">
+  <ShowCards :pages="bookmarks" title="书签" :loading="true">
     <el-button type="primary" @click="exportWord">导出 Word</el-button>
     <el-button type="danger" @click="reset_bookmarks">清空书签</el-button>
   </ShowCards>
