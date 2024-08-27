@@ -136,9 +136,8 @@ def add_page(site_id):
     content = data.get("content")
     source_url = data.get("source_url")
     publish_time = data.get("publish_time")
-
     if not all([title, content, source_url, publish_time]):
-        return "Missing fields", 400
+        return jsonify({"msg": "missing field", "need": ["title", "content", "source_url", "publish_time"]}), 400
 
     with SqlSession() as db:
         # check if site exists
@@ -162,7 +161,7 @@ def add_page(site_id):
             content=content,
             source_url=source_url,
             cate_id=cate_id,
-            publish_time=publish_time # TODO: this line may cause error
+            publish_time=publish_time  # TODO: this line may cause error
         )
         db.add(page)
         db.flush()

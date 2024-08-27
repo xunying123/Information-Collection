@@ -74,11 +74,11 @@ import BookmarkSvg from './svg/BookmarkSvg.vue';
 }
 
 .small-card-body {
-  overflow: ellipsis;
-  font-weight: bold;
   display: -webkit-box;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-  white-space: normal;
+  overflow: hidden;
+  font-weight: bold;
 }
 
 .small-card-footer {
