@@ -5,17 +5,18 @@ import { is_bookmarked } from '@/bookmark'
 defineProps<{ page: PageItem }>()
 
 import { NTime, zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
-import BookmarkSvg from './svg/BookmarkSvg.vue';
-
+import BookmarkSvg from './svg/BookmarkSvg.vue'
 </script>
 
 <template>
   <div class="card-container">
-    <router-link :to="{ name: `${String($route.matched[0].name)}-page`, params: { page_id: page.id } }">
+    <router-link
+      :to="{ name: `${String($route.matched[0].name)}-page`, params: { page_id: page.id } }"
+    >
       <el-card class="small-card" shadow="hover">
         <template #header>
           <div class="small-card-header">
-            <el-avatar size="small" :src="page.site_icon" v-if="page.site_icon" class="right-gap"/>
+            <el-avatar size="small" :src="page.site_icon" v-if="page.site_icon" class="right-gap" />
             <span>{{ page.site }}</span>
             <el-tooltip content="已加入书签" effect="light">
               <BookmarkSvg v-show="is_bookmarked(page.id)" fill="#FFD700"></BookmarkSvg>
