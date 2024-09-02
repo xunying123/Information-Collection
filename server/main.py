@@ -11,16 +11,18 @@ import json
 
 
 def jsonify(obj):
-    return Response(json.dumps(obj, ensure_ascii=False), content_type='application/json; charset=utf-8')
+    return Response(
+        json.dumps(obj, ensure_ascii=False),
+        content_type="application/json; charset=utf-8",
+    )
 
 
-web = Blueprint("web", __name__, static_folder="static",
-                template_folder="templates")
+web = Blueprint("web", __name__, static_folder="static", template_folder="templates")
 
 
 @web.route("/")
 def index():
-    return 'Hello, World!'
+    return "Hello, World!"
 
 
 @web.route("/category")
@@ -82,11 +84,7 @@ def get_site_pages(site_id):
     count = request.args.get("count", -1, type=int)
     offset = request.args.get("offset", 0, type=int)
     result: list[ResponsePageItem] = []
-    stmt = (
-        select(Page)
-        .where(Page.site_id == site_id)
-        .order_by(Page.created_at.desc())
-    )
+    stmt = select(Page).where(Page.site_id == site_id).order_by(Page.created_at.desc())
     if count > 0 and offset >= 0:
         stmt = stmt.limit(count).offset(offset)
 
@@ -102,7 +100,7 @@ def get_site_pages(site_id):
     return jsonify(res)
 
 
-@web.route('/page')
+@web.route("/page")
 def get_pages():
     count = request.args.get("count", -1, type=int)
     offset = request.args.get("offset", 0, type=int)
@@ -137,7 +135,15 @@ def add_page(site_id):
     source_url = data.get("source_url")
     publish_time = data.get("publish_time")
     if not all([title, content, source_url, publish_time]):
-        return jsonify({"msg": "missing field", "need": ["title", "content", "source_url", "publish_time"]}), 400
+        return (
+            jsonify(
+                {
+                    "msg": "missing field",
+                    "need": ["title", "content", "source_url", "publish_time"],
+                }
+            ),
+            400,
+        )
 
     with SqlSession() as db:
         # check if site exists
@@ -145,15 +151,15 @@ def add_page(site_id):
         if cate_id is None:
             return "Site not found", 404
         # check if page already exists
-        existed_id = db.scalar(select(Page.id).where(
-            Page.source_url == source_url))
+        existed_id = db.scalar(select(Page.id).where(Page.source_url == source_url))
         if existed_id is not None:
             return jsonify(
                 {
                     "status": "duplicated",
                     "page_id": existed_id,
                     "error": "this url has been added.",
-                })
+                }
+            )
 
         page = Page(
             site_id=site_id,
@@ -161,7 +167,7 @@ def add_page(site_id):
             content=content,
             source_url=source_url,
             cate_id=cate_id,
-            publish_time=publish_time  # TODO: this line may cause error
+            publish_time=publish_time,  # TODO: this line may cause error
         )
         db.add(page)
         db.flush()
@@ -175,9 +181,10 @@ def add_page(site_id):
 
 
 app = Flask(__name__)
-app.register_blueprint(web)
+app.register_blueprint(web, url_prefix="/api")
 
 CORS(app)
 
 
-app.run(host="0.0.0.0", port=5000, debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
