@@ -1,76 +1,137 @@
-from goose3 import Goose
-from goose3.text import StopWordsChinese
-from lxml.etree import ParserError
+from playwright.sync_api import sync_playwright
 from datetime import datetime
-import json
-import os
 from newspaper import Article
 import requests
 from bs4 import BeautifulSoup
+from utils import read_content, save_content, check_page_content
 
-url = 'https://www.gov.cn/zhengce/content/202408/content_6968086.htm'
-
-def save_content(content, filename):
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(content, f, ensure_ascii=False, indent=4)
-
-def read_content(filename):
-    if os.path.exists(filename):
-        with open(filename, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    return []
+url = 'https://github.com/xunying123/Notes/blob/main/minecraft/.%5Cimage%5C1720187645649.png'
 
 def Newspaper(url):
     try:
         article = Article(url, language='zh')
         article.download()
         article.parse()
-        if article.text and len(article.text) > 50:
-            return article.title, article.text
+        if article.text:
+            return article
     except Exception as e:
-        return None, None
-    return None, None
+        return None
+    return None
 
-def Goose(url):
+def Play_Wright_new(url):
     try:
-        g = Goose({'stopwords_class': StopWordsChinese})
-        article = g.extract(url=url)
-        if article.cleaned_text and len(article.cleaned_text) > 50:
-            return article.title, article.cleaned_text
+        with sync_playwright() as p:
+
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context()
+
+            page = context.new_page()
+            page.goto(url)
+
+
+            page.wait_for_load_state("networkidle")
+
+        # 获取完整的页面内容
+            page_content = page.content()
+
+        # 关闭浏览器
+            browser.close()
+            # print(page_content)
+        # 使用 newspaper3k 解析页面内容
+            article = Article(url)
+            article.set_html(page_content)
+            article.parse()
+
+            if article:
+                if article.title and article.text:
+                    return article.title, article.text
     except Exception as e:
         return None, None
     return None, None
-
-def BeautifulSoup(url):
+        
+def Beautiful_Soup(url):
     try:
         response = requests.get(url)
-        soup = BeautifulSoup(response.content, 'html.parser')
-        title = soup.find('title').text
-        content = soup.find('div', class_='pages_content').text
-        if content and len(content) > 50:
-            return title, content
+
+        response.encoding = 'utf-8'
+
+        soup = BeautifulSoup(response.text, 'lxml')
+
+        title = soup.find('title').get_text()
+        content = soup.find_all('p')
+
+        article_text = "\n".join([p.get_text() for p in content])
+        if article_text :
+            return title, article_text
+    except Exception as e:
+        return None, None
+    return None, None
+
+def Play_Wright_bs(url):
+    try:
+        with sync_playwright() as p:
+
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context()
+
+            page = context.new_page()
+            page.goto(url)
+
+
+            page.wait_for_load_state("networkidle")
+
+        # 获取完整的页面内容
+            page_content = page.content()
+
+        # 关闭浏览器
+            browser.close()
+            # print(page_content)
+        # 使用 newspaper3k 解析页面内容
+            soup = BeautifulSoup(page_content, 'lxml')
+
+            title = soup.find('title').get_text()
+            content = soup.find_all('p')
+
+            article_text = "\n".join([p.get_text() for p in content])
+            if article_text :
+                return title, article_text
     except Exception as e:
         return None, None
     return None, None
 
 def crawl(url):
-    print(f"Fetching {url}")
+    #print(f"Fetching {url}")
     today_date = datetime.today().strftime('%Y-%m-%d')
     wrong_path = "data/wrong/" + today_date + '.json'
 
-    title, content = Newspaper(url)
-    if title and content:
-        print(1)
-        return title, content
-    
-    title, content = Goose(url)
-    if title and content:
+    article = Newspaper(url)
+
+    if article :
+        if article.title and article.text and len(article.text) > 10 and check_page_content(article.title):
+            print(1)
+            # print(article.title)
+            # print(article.text)
+            return article.title, article.text
+        
+    title, content = Beautiful_Soup(url)
+    if title and content and len(content) > 10 and check_page_content(title):
         print(2)
+        # print(title)
+        # print(content)
         return title, content
     
-    title, content = BeautifulSoup(url)
-    if title and content:
+    title, content = Play_Wright_new(url)
+    if title and content and len(content) > 10 and check_page_content(title):
         print(3)
+        # print(title)
+        # print(content)
+        return title, content
+    
+    title, content = Play_Wright_bs(url)
+    if title and content and len(content) > 10 and check_page_content(title):
+        print(4)
+        # print(title)
+        # print(content)
         return title, content
     
     wrong = read_content(wrong_path)
