@@ -81,7 +81,7 @@ def get_sites():
 
 @web.route("/site/add", methods=["POST"])
 def add_site():
-    data = request.json()
+    data = request.json
     name = data.get("name")
     cate_id = int(data.get("cate_id"))
     url = data.get("url")
@@ -100,7 +100,7 @@ def add_site():
 
 @web.route("/site/remove", methods=["POST"])
 def remove_site():
-    data = request.json()
+    data = request.json
     id = data.get("id")
     is_force = data.get("force")
     with SqlSession() as db:
