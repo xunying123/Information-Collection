@@ -105,6 +105,19 @@ function copyLink() {
 </template>
 
 <style scoped>
+@media (max-width: 768px) {
+  .details-area {
+    width: 100% !important;  /* Adjust as needed */
+  }
+  .article-content {
+    overflow-x: auto;  /* Add this line */
+  }
+
+  .article-content img {
+    max-width: 100%;  /* Add this line */
+  }
+}
+
 .details-area {
     width: 50em;
     background-color: #ffffff;

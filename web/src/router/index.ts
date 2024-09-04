@@ -20,6 +20,12 @@ const router = createRouter({
       children: [page_rule('home')]
     },
     {
+      path: '/daliyupdate',
+      name: 'daliyupdate',
+      component: () => import('@/views/pages/DailyUpdatePages.vue'),
+      children: [page_rule('daliyupdate')]
+    },
+    {
       path: '/404',
       name: '404',
       component: () => import('@/views/404Error.vue')

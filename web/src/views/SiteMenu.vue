@@ -30,10 +30,15 @@ fetch(`${server}/site`)
 <template>
   <div class="full">
     <el-scrollbar height="100vh">
+      <img src="https://www.sjtu.edu.cn/resource/assets/img/LogoWhite.png" class="logo" />
       <el-menu class="el-menu-vertical-demo" :router="true">
         <el-menu-item index="/">
           <el-icon class="el-icon-menu"></el-icon>
           <span class="menu-top">全部</span>
+        </el-menu-item>
+        <el-menu-item index="/daliyupdate">
+          <el-icon class="el-icon-menu"></el-icon>
+          <span class="menu-top">今日更新</span>
         </el-menu-item>
         <el-menu-item index="/bookmarks">
           <el-icon class="el-icon-menu"></el-icon>
@@ -52,20 +57,27 @@ fetch(`${server}/site`)
 </template>
 
 <style scoped>
+
 .full {
   width: 100%;
   height: 100%;
   --el-menu-bg-color: rgba(200, 22, 30, 0);
   --el-menu-active-color: #ffffff;
-  background: linear-gradient(180deg, #960018, rgb(167, 32, 56), #953232);
+  background: linear-gradient(180deg, rgba(0, 0, 102, 0.7), rgb(0, 64, 152), rgb(0, 104, 179));
   --el-menu-text-color: #ffffff;
-  --el-menu-hover-bg-color: rgba(200, 22, 30, 1);
+  --el-menu-hover-bg-color: rgba(0, 134, 209, 1);
   --el-menu-item-font-size: 1.1em;
 }
 
 .el-menu-item:hover {
-  background-color: rgb(200, 22, 30);
+  background-color: rgb(0, 134, 209);
   color: #fff;
+}
+
+.logo {
+  width: 75%;  /* Adjust as needed */
+  height: auto; /* Adjust as needed */
+  margin: 20px; /* Adjust as needed */
 }
 </style>
 
