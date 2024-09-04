@@ -44,6 +44,10 @@ fetch(`${server}/site`)
           <el-icon class="el-icon-menu"></el-icon>
           <span class="menu-top">书签列表</span>
         </el-menu-item>
+        <el-menu-item index="/managesites">
+          <el-icon class="el-icon-menu"></el-icon>
+          <span class="menu-top">增删网站</span>
+        </el-menu-item>
         <el-sub-menu v-for:="cate in sites" :index="cate.cate_name">
           <template #title>
             <el-icon> </el-icon>
