@@ -49,7 +49,9 @@ fetch(`${server}/site`)
             <el-icon> </el-icon>
             <span>{{ cate.cate_name }}</span>
           </template>
-          <el-menu-item v-for:="site in cate.sites" :index="`/site/` + site.id">{{ site.name }}</el-menu-item>
+          <el-menu-item v-for:="site in cate.sites" :index="`/site/` + site.id">{{
+            site.name
+          }}</el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-scrollbar>

@@ -17,7 +17,7 @@ const EmptySite: Site = { id: 0, name: '', url: '', category: '', cate_id: 0, pa
 let site = ref<Site>(EmptySite)
 
 async function updatePages() {
-  site.value = EmptySite;
+  site.value = EmptySite
   if (!props.site_id) return
   site.value = await fetch(`${server}/site/${props.site_id}`).then((r) => r.json())
 }

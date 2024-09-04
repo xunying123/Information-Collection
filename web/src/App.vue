@@ -2,11 +2,10 @@
 import SiteMenu from '@/views/SiteMenu.vue'
 import { useRoute } from 'vue-router'
 
-let route = useRoute();
+let route = useRoute()
 route.query
 
 import { NLayout, NLayoutSider, NLayoutContent } from 'naive-ui'
-
 </script>
 <template>
   <n-layout has-sider class="full-height">
