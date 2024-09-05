@@ -131,6 +131,7 @@ function copyLink() {
   margin: 1.5em 1.5em 1.5em 0;
   display: grid;
   grid-template-rows: min-content 1fr;
+  background-color: rgba(255, 255, 255, 0.7); /* 设置背景颜色为半透明的白色 */
 }
 
 .top-bar {

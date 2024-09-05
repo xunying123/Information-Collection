@@ -59,10 +59,28 @@ fetch(`${server}/site`)
         </el-sub-menu>
       </el-menu>
     </el-scrollbar>
+    <div class="overlay">
+        <img src="/static/image_21_1-1.png" class="overlay-image" />
+      </div>
   </div>
 </template>
 
 <style scoped>
+.overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  pointer-events: none; /* 添加这一行 */
+}
+
+.overlay-image {
+  width: 100%;
+  height: auto;
+  opacity: 0.1;
+  /* 设置透明度，你可以根据需要调整这个值 */
+}
 
 .full {
   width: 100%;
@@ -81,9 +99,12 @@ fetch(`${server}/site`)
 }
 
 .logo {
-  width: 75%;  /* Adjust as needed */
-  height: auto; /* Adjust as needed */
-  margin: 20px; /* Adjust as needed */
+  width: 75%;
+  /* Adjust as needed */
+  height: auto;
+  /* Adjust as needed */
+  margin: 20px;
+  /* Adjust as needed */
 }
 </style>
 
