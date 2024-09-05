@@ -16,7 +16,7 @@ defineProps<{ pages: PageItem[]; title: string; loading: Boolean }>()
           <ArticleCard v-for:="page in pages" :page="page"></ArticleCard>
         </div>
       </el-scrollbar>
-      <el-empty v-else image-size="20em" />
+      <el-empty v-else :image-size="200" />
     </el-main>
     <RouterView />
   </el-container>

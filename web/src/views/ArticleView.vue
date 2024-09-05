@@ -5,7 +5,7 @@ import { server } from '@/const'
 import { is_bookmarked, toggle_bookmark } from '@/bookmark'
 import { useClipboard } from '@vueuse/core'
 import { ElNotification } from 'element-plus'
-import type BookmarkSvg from '@/components/svg/BookmarkSvg.vue'
+import BookmarkSvg from '@/components/svg/BookmarkSvg.vue'
 import CloseSVG from '@/components/svg/CloseSVG.vue'
 import CopySVG from '@/components/svg/CopySVG.vue'
 import { NTime } from 'naive-ui'
@@ -109,14 +109,14 @@ function copyLink() {
 <style scoped>
 @media (max-width: 768px) {
   .details-area {
-    width: 100% !important;  /* Adjust as needed */
+    width: 100% !important; /* Adjust as needed */
   }
   .article-content {
-    overflow-x: auto;  /* Add this line */
+    overflow-x: auto; /* Add this line */
   }
 
   .article-content img {
-    max-width: 100%;  /* Add this line */
+    max-width: 100%; /* Add this line */
   }
 }
 

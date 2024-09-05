@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import { server } from '@/const'
 import { reactive } from 'vue'
+import { server } from '@/const'
 import type { SiteItem } from '@/api_interface'
 import { ElScrollbar } from 'element-plus'
+import UserCard from '@/components/UserCard.vue'
 
 interface CateSite {
   cate_id: number
@@ -29,8 +30,9 @@ fetch(`${server}/site`)
 
 <template>
   <div class="full">
-    <el-scrollbar height="100vh">
+    <el-scrollbar>
       <img src="https://www.sjtu.edu.cn/resource/assets/img/LogoWhite.png" class="logo" />
+      <UserCard />
       <el-menu class="el-menu-vertical-demo" :router="true">
         <el-menu-item index="/">
           <el-icon class="el-icon-menu"></el-icon>
@@ -60,8 +62,8 @@ fetch(`${server}/site`)
       </el-menu>
     </el-scrollbar>
     <div class="overlay">
-        <img src="/static/image_21_1-1.png" class="overlay-image" />
-      </div>
+      <img src="/static/image_21_1-1.png" class="overlay-image" />
+    </div>
   </div>
 </template>
 
@@ -118,6 +120,10 @@ fetch(`${server}/site`)
 .menu-top {
   font-size: 1.1em !important;
   font-weight: bold !important;
+  color: #fff;
+}
+
+div.full {
   color: #fff;
 }
 </style>

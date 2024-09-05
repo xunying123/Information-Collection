@@ -11,7 +11,7 @@ import BookmarkSvg from './svg/BookmarkSvg.vue'
 <template>
   <div class="card-container">
     <router-link
-      :to="{ name: `${String($route.matched[0].name)}-page`, params: { page_id: page.id } }"
+      :to="{ name: `${String($route.matched[1].name)}-page`, params: { page_id: page.id } }"
     >
       <el-card class="small-card" shadow="hover">
         <template #header>
