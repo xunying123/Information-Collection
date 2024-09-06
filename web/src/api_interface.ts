@@ -12,6 +12,7 @@ interface PageItem {
 
 interface Page extends PageItem {
   content: string
+  full_content: string
 }
 
 interface SiteItem {

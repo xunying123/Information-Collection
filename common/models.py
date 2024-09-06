@@ -71,6 +71,7 @@ class Page(Base, UseTimestamps):
 
     title = mapped_column(String(128), nullable=False)
     content = mapped_column(Text, nullable=False)
+    full_content = mapped_column(Text, nullable=True)
     publish_time: Mapped[datetime] = mapped_column(server_default=func.now())
 
     site_id: Mapped[site_foreign_key]
@@ -90,6 +91,6 @@ class User(Base):
     name: Mapped[str]
     organization: Mapped[str]
     # privilege related fields
-    is_admin: Mapped[bool] = mapped_column(Boolean, server_default='0')
+    is_admin: Mapped[bool] = mapped_column(Boolean, server_default="0")
     # style related fields
     avatars: Mapped[str] = mapped_column(nullable=True)

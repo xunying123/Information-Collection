@@ -44,3 +44,4 @@ class ResponsePage(ResponsePageItem):
     def __init__(self, page: Page):
         super().__init__(page)
         self["content"] = page.content
+        self["full_content"] = page.full_content

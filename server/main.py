@@ -183,14 +183,15 @@ def add_page(site_id):
 
     title = data.get("title")
     content = data.get("content")
+    full_content = data.get("full_content")
     source_url = data.get("source_url")
     publish_time = data.get("publish_time")
-    if not all([title, content, source_url, publish_time]):
+    if not all([title, content, source_url, publish_time, full_content]):
         return (
             jsonify(
                 {
                     "msg": "missing field",
-                    "need": ["title", "content", "source_url", "publish_time"],
+                    "need": ["title", "content", "source_url", "publish_time", "full_content"],
                 }
             ),
             400,
@@ -216,6 +217,7 @@ def add_page(site_id):
             site_id=site_id,
             title=title,
             content=content,
+            full_content=full_content,
             source_url=source_url,
             cate_id=cate_id,
             publish_time=publish_time,  # TODO: this line may cause error
