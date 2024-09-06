@@ -338,8 +338,7 @@ def get_me():
 app = Flask(__name__)
 app.config["SECRET_KEY"] = AppConfig.secret_key
 
-app.register_blueprint(web, name="official-use", url_prefix="/api")
-app.register_blueprint(web, name="test use", url_prefix="/")
+app.register_blueprint(web, name="web", url_prefix="/api")
 
 CORS(app)
 login_manager.init_app(app)
