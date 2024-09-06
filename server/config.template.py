@@ -10,3 +10,4 @@ class JAccountAuth:
 
 class AppConfig:
     secret_key = "secret_key"
+    default_paging_size = 50
