@@ -1,21 +1,22 @@
 from flask_cors import CORS
-from flask import Flask, request, Response
+from flask import Flask, request, url_for, redirect
 from flask import Blueprint
 
 from server.db import SqlSession
 from sqlalchemy import select, delete
 
-from common.models import Category, Site, Page
+from common.models import Category, Site, Page, User
 from server.response_format import *
-import json
 
+import requests
+from requests.auth import HTTPBasicAuth
+from server.config import JAccountAuth, AppConfig
 
-def jsonify(obj):
-    return Response(
-        json.dumps(obj, ensure_ascii=False),
-        content_type="application/json; charset=utf-8",
-    )
+from flask_login import login_user, login_required, logout_user, current_user
+from server.login import login_manager, User4login, admin_required
+from server.utils import jsonify
 
+current_user: User4login
 
 web = Blueprint("web", __name__, static_folder="static", template_folder="templates")
 
@@ -26,6 +27,7 @@ def index():
 
 
 @web.route("/category")
+@login_required
 def get_categories():
     result: list[ResponseCategory] = []
     stmt = select(Category).order_by(Category.id)
@@ -37,6 +39,7 @@ def get_categories():
 
 
 @web.route("/category/<int:cate_id>/sites")
+@login_required
 def get_category_sites(cate_id):
     result: list[ResponseSiteItem] = []
     stmt = select(Site).where(Site.cate_id == cate_id).order_by(Site.id)
@@ -48,6 +51,7 @@ def get_category_sites(cate_id):
 
 
 @web.route("/category/<int:cate_id>/pages")
+@login_required
 def get_category_pages(cate_id):
     count = request.args.get("count", 20, type=int)
     offset = request.args.get("offset", 0, type=int)
@@ -69,6 +73,7 @@ def get_category_pages(cate_id):
 
 
 @web.route("/site")
+@login_required
 def get_sites():
     result = []
     stmt = select(Site).order_by(Site.cate_id, Site.id)
@@ -80,6 +85,8 @@ def get_sites():
 
 
 @web.route("/site/add", methods=["POST"])
+@login_required
+@admin_required
 def add_site():
     data = request.json
     name = data.get("name")
@@ -99,6 +106,8 @@ def add_site():
 
 
 @web.route("/site/remove", methods=["POST"])
+@login_required
+@admin_required
 def remove_site():
     data = request.json
     id = data.get("id")
@@ -117,6 +126,7 @@ def remove_site():
 
 
 @web.route("/site/<int:site_id>")
+@login_required
 def get_site_pages(site_id):
     count = request.args.get("count", -1, type=int)
     offset = request.args.get("offset", 0, type=int)
@@ -138,6 +148,7 @@ def get_site_pages(site_id):
 
 
 @web.route("/page")
+@login_required
 def get_pages():
     count = request.args.get("count", -1, type=int)
     offset = request.args.get("offset", 0, type=int)
@@ -153,6 +164,7 @@ def get_pages():
 
 
 @web.route("/page/<int:page_id>")
+@login_required
 def get_page(page_id):
     stmt = select(Page).where(Page.id == page_id)
     with SqlSession() as db:
@@ -164,6 +176,8 @@ def get_page(page_id):
 
 
 @web.route("/site/<int:site_id>/page", methods=["POST"])
+@login_required
+@admin_required
 def add_page(site_id):
     data = request.json
 
@@ -217,11 +231,84 @@ def add_page(site_id):
     return jsonify(response)
 
 
+@web.route("/auth")
+def do_auth_callback():
+    try:
+        code = request.args.get("code")
+        state = request.args.get("state")
+        data = {
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": url_for("web.do_auth_callback", _external=True),
+            "client_id": JAccountAuth.client_id,
+            "client_secret": JAccountAuth.secretkey,
+        }
+        response = requests.post(
+            "https://jaccount.sjtu.edu.cn/oauth2/token",
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            data=data,
+            auth=HTTPBasicAuth("czZCaGRSa3F0MzpnWDFmQmF0M2JW", ""),
+        )
+        print(f"{response.json()=}")
+        access_token: str = response.json().get("access_token")
+        print(f"{access_token=}")
+        profile = requests.get(
+            "https://api.sjtu.edu.cn/v1/me/profile",
+            headers={"Authorization": f"Bearer {access_token}"},
+        ).json()
+        entity = profile.get("entities")[0]
+
+        print("get entity success")
+        print(entity)
+        code = entity.get("code")
+        print(f"{code=}")
+        with SqlSession() as db:
+            user = db.scalar(select(User).where(User.jaccount_code == code))
+            if user is None:
+                print("user not found, creating new user")
+                user = User(
+                    jaccount_code=code,
+                    username=entity.get("account"),
+                    userType=entity.get("userType"),
+                    name=entity.get("name"),
+                    organization=entity.get("organize").get("name"),
+                    is_admin=False,
+                    avatars=entity.get("accountPhotoUrl"),
+                )
+                db.add(user)
+                db.flush()
+                db.commit()
+            else:
+                print("user found")
+            print(user.__dict__)
+            login_user(User4login(user))
+        return redirect(state, code=302)
+    except Exception as e:
+        print(f"exception: {e=}")
+        return "Auth failed", 400
+
+
+@web.route("/logout", methods=["POST"])
+def do_logout():
+    logout_user()
+    return jsonify({"code": 0})
+
+
+@web.route("/user/me")
+def get_me():
+    if current_user.is_authenticated:
+        return jsonify({"code": 0, "user": current_user.__dict__})
+    else:
+        return jsonify({"code": 1, "msg": "not logged in"})
+
+
 app = Flask(__name__)
+app.config["SECRET_KEY"] = AppConfig.secret_key
+
 app.register_blueprint(web, url_prefix="/api")
 
 CORS(app)
-
+login_manager.init_app(app)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

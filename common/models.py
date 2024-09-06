@@ -1,4 +1,4 @@
-from sqlalchemy import Text, String
+from sqlalchemy import Text, String, Boolean
 from sqlalchemy import ForeignKey, Text, func
 
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
@@ -78,3 +78,18 @@ class Page(Base, UseTimestamps):
 
     cate_id: Mapped[cata_fk]
     category = relationship(Category)
+
+
+class User(Base):
+    id: Mapped[intpk]
+    # jaccount_code is used for login
+    jaccount_code: Mapped[str] = mapped_column(unique=True, nullable=False)
+    # user data
+    username: Mapped[str]
+    userType: Mapped[str]
+    name: Mapped[str]
+    organization: Mapped[str]
+    # privilege related fields
+    is_admin: Mapped[bool] = mapped_column(Boolean, server_default='0')
+    # style related fields
+    avatars: Mapped[str] = mapped_column(nullable=True)

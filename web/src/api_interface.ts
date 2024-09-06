@@ -27,4 +27,15 @@ interface Site extends SiteItem {
   pages: PageItem[]
 }
 
-export type { PageItem, Page, SiteItem, Site }
+interface User {
+  id: number
+  jaccount_code: string
+  name: string
+  username: string
+  avatars: string
+  organization: string
+  userType: string
+  is_admin: boolean
+}
+
+export type { PageItem, Page, SiteItem, Site, User }
