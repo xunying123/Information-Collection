@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { reactive } from 'vue'
+import { inject, reactive } from 'vue'
 import { server } from '@/const'
 import type { SiteItem } from '@/api_interface'
 import { ElScrollbar } from 'element-plus'
@@ -8,6 +8,7 @@ import UpdateSVG from '@/components/svg/UpdateSVG.vue'
 import BookmarkSvg from '@/components/svg/BookmarkSvg.vue'
 import FolderPlusSVG from '@/components/svg/FolderPlusSVG.vue'
 import LayersSVG from '@/components/svg/LayersSVG.vue'
+import { user_key } from '@/key'
 
 interface CateSite {
   cate_id: number
@@ -30,6 +31,8 @@ fetch(`${server}/site`)
     }
     if (cateSites.cate_id != 0) sites.push(cateSites)
   })
+
+const user = inject(user_key)!;
 </script>
 
 <template>
@@ -50,7 +53,7 @@ fetch(`${server}/site`)
           <BookmarkSvg fill="none" class="menu-icon" />
           <span class="menu-top">书签列表</span>
         </el-menu-item>
-        <el-menu-item index="/managesites">
+        <el-menu-item index="/managesites" v-if="user?.is_admin">
           <FolderPlusSVG class="menu-icon" />
           <span class="menu-top">增删网站</span>
         </el-menu-item>
