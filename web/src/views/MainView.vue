@@ -17,7 +17,7 @@ import { NLayout, NLayoutSider, NLayoutContent } from 'naive-ui'
       show-trigger="bar"
       bordered
     >
-      <SiteMenu />
+      <SiteMenu class="site-menu"/>
     </n-layout-sider>
     <n-layout-content class="content overlay">
       <RouterView />
@@ -30,7 +30,7 @@ import { NLayout, NLayoutSider, NLayoutContent } from 'naive-ui'
   .sidebar {
     width: 9em !important;
   }
-  .sidebar .full-height {
+  .site-menu {
     padding-left: 10em;
   }
   .content {

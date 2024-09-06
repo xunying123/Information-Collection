@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { jaccount_client_id, jaccount_oauth, server } from '@/const'
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 let route = useRoute()
+let router = useRouter()
+
 const next = computed(() => {
   return typeof route.query.next === 'string' ? route.query.next : '/err'
 })
@@ -18,15 +20,8 @@ let auth_redirect_url = computed(() => {
   return url.toString()
 })
 console.log(route)
-</script>
 
-<template>
-  {{ next }}
-  <hr />
-  {{ auth_redirect_url }}
-  <div
-    style="width: 10em; height: 7em; display: flex; align-items: center; justify-content: center"
-  >
-    <a :href="auth_redirect_url" target="_self"><button>使用 JAccount 登陆</button></a>
-  </div>
-</template>
+onMounted(() => {
+  window.location.href = auth_redirect_url.value
+})
+</script>

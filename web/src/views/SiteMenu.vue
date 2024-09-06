@@ -4,6 +4,10 @@ import { server } from '@/const'
 import type { SiteItem } from '@/api_interface'
 import { ElScrollbar } from 'element-plus'
 import UserCard from '@/components/UserCard.vue'
+import UpdateSVG from '@/components/svg/UpdateSVG.vue'
+import BookmarkSvg from '@/components/svg/BookmarkSvg.vue'
+import FolderPlusSVG from '@/components/svg/FolderPlusSVG.vue'
+import LayersSVG from '@/components/svg/LayersSVG.vue'
 
 interface CateSite {
   cate_id: number
@@ -35,19 +39,19 @@ fetch(`${server}/site`)
       <UserCard />
       <el-menu class="el-menu-vertical-demo" :router="true">
         <el-menu-item index="/">
-          <el-icon class="el-icon-menu"></el-icon>
+          <LayersSVG class="menu-icon" />
           <span class="menu-top">全部</span>
         </el-menu-item>
         <el-menu-item index="/daliyupdate">
-          <el-icon class="el-icon-menu"></el-icon>
+          <UpdateSVG class="menu-icon" />
           <span class="menu-top">今日更新</span>
         </el-menu-item>
         <el-menu-item index="/bookmarks">
-          <el-icon class="el-icon-menu"></el-icon>
+          <BookmarkSvg fill="none" class="menu-icon" />
           <span class="menu-top">书签列表</span>
         </el-menu-item>
         <el-menu-item index="/managesites">
-          <el-icon class="el-icon-menu"></el-icon>
+          <FolderPlusSVG class="menu-icon" />
           <span class="menu-top">增删网站</span>
         </el-menu-item>
         <el-sub-menu v-for:="cate in sites" :index="cate.cate_name">
@@ -93,6 +97,10 @@ fetch(`${server}/site`)
   --el-menu-text-color: #ffffff;
   --el-menu-hover-bg-color: rgba(0, 134, 209, 1);
   --el-menu-item-font-size: 1.1em;
+}
+
+.menu-icon {
+  margin-right: 4px; /* 或者你需要的间隔大小 */
 }
 
 .el-menu-item:hover {

@@ -27,3 +27,18 @@ a,
 .no-padding {
   padding: 0 !important;
 }
+
+
+@keyframes round {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* img.logo {
+  animation: round 3s ease-in-out infinite;
+  overflow: hidden;
+} */

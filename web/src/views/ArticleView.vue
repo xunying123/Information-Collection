@@ -71,7 +71,7 @@ function copyLink() {
     <!-- 独立功能区 -->
     <div class="top-bar">
       <div class="button-group">
-        <router-link :to="{ name: $route.matched[0].name }" class="close-button">
+        <router-link :to="{ name: $route.matched[$route.matched.length - 2].name }" class="close-button">
           <CloseSVG />
         </router-link>
         <el-tooltip content="复制链接" effect="light">

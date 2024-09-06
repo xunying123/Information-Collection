@@ -28,7 +28,7 @@ defineProps<{ pages: PageItem[]; title: string; loading: Boolean }>()
   grid-template-columns: repeat(auto-fill, 20em);
   gap: 2em;
   padding: 2em;
-  justify-content: left;
+  justify-content: center;
 }
 
 h1 {
