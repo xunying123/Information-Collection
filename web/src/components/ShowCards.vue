@@ -1,8 +1,36 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
+import { ref, defineProps, watch, onMounted } from 'vue'
 import type { PageItem } from '@/api_interface'
 import SearchInput from '@/components/SearchInput.vue'
-defineProps<{ pages: PageItem[]; title: string; loading: Boolean }>()
+import { server } from '@/const'
+
+const props = defineProps<{ pages: PageItem[]; title: string; loading: Boolean }>()
+let searchKeyword = ref('')
+let filteredPages = ref<PageItem[]>(props.pages)
+
+
+// watch(searchKeyword, async (newKeyword) => {
+//   if (newKeyword) {
+//     const response = await fetch(`${server}/page/search?key=${newKeyword}&count=50&offset=150`)
+//     const data = await response.json()
+//     pages.value = data
+//   } else {
+//     pages.value = []
+//   }
+//   console.log(newKeyword)
+//   console.log(pages.value)
+// })
+watch(() => props.pages, (newPages) => {
+  filteredPages.value = newPages
+})
+
+watch(searchKeyword, (newKeyword) => {
+  if (newKeyword) {
+    filteredPages.value = props.pages.filter(page => page.title.includes(newKeyword))
+  } else {
+    filteredPages.value = props.pages
+  }
+})
 </script>
 
 <template>
@@ -10,12 +38,13 @@ defineProps<{ pages: PageItem[]; title: string; loading: Boolean }>()
     <el-main class="full-height top-down">
       <div class="header">
         <h1>{{ title }}</h1>
-        <SearchInput></SearchInput>
+        <SearchInput @update:searchQuery="searchKeyword = $event"></SearchInput>
+        <!-- <SearchInput v-model="searchKeyword"></SearchInput> -->
         <slot></slot>
       </div>
       <el-scrollbar v-if="pages && pages.length" v-loading="loading">
         <div class="container-grid">
-          <ArticleCard v-for:="page in pages" :page="page"></ArticleCard>
+          <ArticleCard v-for:="page in filteredPages" :page="page"></ArticleCard>
         </div>
       </el-scrollbar>
       <el-empty v-else :image-size="200" />
