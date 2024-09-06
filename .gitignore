@@ -7,3 +7,5 @@ __pycache__/
 data/
 venv/
 node_modules
+server/config.py
+web/src/const.ts
