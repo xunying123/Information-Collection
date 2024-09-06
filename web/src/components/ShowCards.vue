@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { defineProps } from 'vue'
 import type { PageItem } from '@/api_interface'
+import SearchInput from '@/components/SearchInput.vue'
 defineProps<{ pages: PageItem[]; title: string; loading: Boolean }>()
 </script>
 
@@ -9,6 +10,7 @@ defineProps<{ pages: PageItem[]; title: string; loading: Boolean }>()
     <el-main class="full-height top-down">
       <div class="header">
         <h1>{{ title }}</h1>
+        <SearchInput></SearchInput>
         <slot></slot>
       </div>
       <el-scrollbar v-if="pages && pages.length" v-loading="loading">

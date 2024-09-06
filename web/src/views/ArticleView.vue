@@ -94,13 +94,21 @@ function copyLink() {
       <div class="article-content" v-loading="article.id == 0">
         <h2 class="article-title">{{ article.title }}</h2>
         <el-divider content-position="center">
-          <n-time
-            v-if="article.publish_time"
-            :time="new Date(article.publish_time)"
-            format="yyyy年MM月dd日 hh时mm分"
-          />
+          <n-time v-if="article.publish_time" :time="new Date(article.publish_time)" format="yyyy年MM月dd日 hh时mm分" />
         </el-divider>
-        <div v-html="content"></div>
+        <!-- <div v-html="content"></div> -->
+        <!-- <div v-html="article.full_content"></div> -->
+        <div class="article-view">
+          <div class="section">
+            <h3 class="section-title">【摘要】</h3>
+            <div v-html="content" class="section-content"></div>
+          </div>
+          <hr class="divider" />
+          <div class="section">
+            <h3 class="section-title">【正文】</h3>
+            <div v-html="article.full_content" class="section-content"></div>
+          </div>
+        </div>
       </div>
     </el-scrollbar>
   </el-aside>
@@ -109,14 +117,18 @@ function copyLink() {
 <style scoped>
 @media (max-width: 768px) {
   .details-area {
-    width: 100% !important; /* Adjust as needed */
+    width: 100% !important;
+    /* Adjust as needed */
   }
+
   .article-content {
-    overflow-x: auto; /* Add this line */
+    overflow-x: auto;
+    /* Add this line */
   }
 
   .article-content img {
-    max-width: 100%; /* Add this line */
+    max-width: 100%;
+    /* Add this line */
   }
 }
 
@@ -131,7 +143,8 @@ function copyLink() {
   margin: 1.5em 1.5em 1.5em 0;
   display: grid;
   grid-template-rows: min-content 1fr;
-  background-color: rgba(255, 255, 255, 0.7); /* 设置背景颜色为半透明的白色 */
+  background-color: rgba(255, 255, 255, 0.7);
+  /* 设置背景颜色为半透明的白色 */
 }
 
 .top-bar {
@@ -177,6 +190,11 @@ function copyLink() {
 
 .close-button:hover {
   fill: #f00;
+}
+
+.section-title {
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 
 .article-content {

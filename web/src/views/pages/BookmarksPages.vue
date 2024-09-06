@@ -1,7 +1,9 @@
 <template>
   <ShowCards :pages="bookmarks" title="书签" :loading="false">
-    <el-button type="primary" @click="exportWord">导出 Word</el-button>
-    <el-button type="danger" @click="reset_bookmarks">清空书签</el-button>
+    <div style="margin-left: 10px;">
+      <el-button type="primary" @click="exportWord">导出 Word</el-button>
+      <el-button type="danger" @click="reset_bookmarks">清空书签</el-button>
+    </div>
   </ShowCards>
 </template>
 

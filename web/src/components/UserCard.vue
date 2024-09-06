@@ -6,6 +6,7 @@ import { server } from '@/const'
 import { ElMessageBox } from 'element-plus'
 import { ClickOutside as vClickOutside } from 'element-plus'
 import { jaccount_client_id } from '@/const'
+import LogoutSVG from '@/components/svg/LogoutSVG.vue'
 
 let user = inject(user_key)!
 let buttonRef = ref(null)
@@ -57,19 +58,36 @@ const onClickOutside = () => {
 <template>
   <div v-if="user" class="horizon-grid">
     <div ref="buttonRef" class="user-card" v-click-outside="onClickOutside">
-      <el-avatar size="" :src="user.avatars" />
+      <el-avatar :src="user.avatars" class="avatar"/>
       <div class="user-info">
         <h2>{{ user.name }}</h2>
         <p>{{ user.organization }}</p>
       </div>
     </div>
-    <el-popover ref="popoverRef" :virtual-ref="buttonRef" trigger="click" virtual-triggering>
-      <el-button size="large" @click="logout">退出登录</el-button>
+    <el-popover ref="popoverRef" :virtual-ref="buttonRef" trigger="click" virtual-triggering :width="80">
+      <el-button size="large" @click="logout" text>
+        <LogoutSVG class="logout-icon"/>
+        退出
+      </el-button>
     </el-popover>
   </div>
 </template>
 
 <style lang="css" scoped>
+@media (max-width: 768px) {
+  .avatar {
+    width: 30px !important;
+    height: 30px !important;
+  }
+}
+
+.avatar {
+  width: 50px; /* 调整为你需要的大小 */
+  height: 50px; 
+  object-fit: cover;
+  border-radius: 50%;
+}
+
 .horizon-grid {
   /* display: grid; */
   grid-template-columns: min-content 1fr;
@@ -82,22 +100,22 @@ const onClickOutside = () => {
 .user-card {
   /* width: 20em; */
   width: 100%;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr; /* 调整为你需要的比例 */
   align-items: center;
   cursor: pointer;
-
 }
-
-.avatar {
-  display: flex;
-  margin-left: 1em;
-}
-
 
 .user-info {
   display: flex;
   flex-direction: column;
   justify-content: center;
   margin-left: 2em;
+}
+
+.logout-icon {
+  height: 24px;
+  width: 24px;
+  margin-right: 4px; /* 或者你需要的间隔大小 */
 }
 </style>
