@@ -53,7 +53,7 @@ def get_category_sites(cate_id):
 @web.route("/category/<int:cate_id>/pages")
 @login_required
 def get_category_pages(cate_id):
-    count = request.args.get("count", 20, type=int)
+    count = request.args.get("count", AppConfig.default_paging_size, type=int)
     offset = request.args.get("offset", 0, type=int)
     stmt = (
         select(Page)
@@ -128,7 +128,7 @@ def remove_site():
 @web.route("/site/<int:site_id>")
 @login_required
 def get_site_pages(site_id):
-    count = request.args.get("count", -1, type=int)
+    count = request.args.get("count", AppConfig.default_paging_size, type=int)
     offset = request.args.get("offset", 0, type=int)
     result: list[ResponsePageItem] = []
     stmt = select(Page).where(Page.site_id == site_id).order_by(Page.created_at.desc())
@@ -150,7 +150,7 @@ def get_site_pages(site_id):
 @web.route("/page")
 @login_required
 def get_pages():
-    count = request.args.get("count", -1, type=int)
+    count = request.args.get("count", AppConfig.default_paging_size, type=int)
     offset = request.args.get("offset", 0, type=int)
     stmt = select(Page).order_by(Page.created_at.desc())
     if count > 0 and offset >= 0:
@@ -175,6 +175,29 @@ def get_page(page_id):
     return jsonify(res)
 
 
+@web.route("/page/search")
+@login_required
+def search_page():
+    key = request.args.get("key", type=str)
+    count = request.args.get("count", AppConfig.default_paging_size, type=int)
+    offset = request.args.get("offset", 0, type=int)
+    if not key:
+        return jsonify({"code": 1, "msg": "missing key"})
+    stmt = (
+        select(Page)
+        .where(Page.title.like(f"%{key}%"))
+        .order_by(Page.created_at.desc())
+        .limit(count)
+        .offset(offset)
+    )
+    result: list[ResponsePageItem] = []
+    with SqlSession() as db:
+        for page in db.scalars(stmt):
+            info = ResponsePageItem(page)
+            result.append(info)
+    return jsonify(result)
+
+
 @web.route("/site/<int:site_id>/page", methods=["POST"])
 @login_required
 @admin_required
@@ -191,7 +214,13 @@ def add_page(site_id):
             jsonify(
                 {
                     "msg": "missing field",
-                    "need": ["title", "content", "source_url", "publish_time", "full_content"],
+                    "need": [
+                        "title",
+                        "content",
+                        "source_url",
+                        "publish_time",
+                        "full_content",
+                    ],
                 }
             ),
             400,
@@ -309,7 +338,8 @@ def get_me():
 app = Flask(__name__)
 app.config["SECRET_KEY"] = AppConfig.secret_key
 
-app.register_blueprint(web, url_prefix="/api")
+app.register_blueprint(web, name="official-use", url_prefix="/api")
+app.register_blueprint(web, name="test use", url_prefix="/")
 
 CORS(app)
 login_manager.init_app(app)
