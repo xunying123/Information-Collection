@@ -265,7 +265,6 @@ def do_auth_callback():
         with SqlSession() as db:
             user = db.scalar(select(User).where(User.jaccount_code == code))
             if user is None:
-                print("user not found, creating new user")
                 user = User(
                     jaccount_code=code,
                     username=entity.get("account"),
@@ -276,11 +275,14 @@ def do_auth_callback():
                     avatars=entity.get("accountPhotoUrl"),
                 )
                 db.add(user)
-                db.flush()
-                db.commit()
             else:
-                print("user found")
-            print(user.__dict__)
+                user.username = entity.get("account")
+                user.userType = entity.get("userType")
+                user.name = entity.get("name")
+                user.organization = entity.get("organize").get("name")
+                user.avatars = entity.get("accountPhotoUrl")
+            db.flush()
+            db.commit()
             login_user(User4login(user))
         return redirect(state, code=302)
     except Exception as e:
