@@ -10,7 +10,7 @@ import ShowCards from '@/components/ShowCards.vue'
 
 let pages = ref<PageItem[]>([])
 let loading = ref(true)
-fetch(`${server}/page`)
+fetch(`${server}/page?count=1000`)
   .then((res) => res.json())
   .then((data) => {
     pages.value = data

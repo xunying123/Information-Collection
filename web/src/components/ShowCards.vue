@@ -26,7 +26,9 @@ watch(() => props.pages, (newPages) => {
 
 watch(searchKeyword, (newKeyword) => {
   if (newKeyword) {
-    filteredPages.value = props.pages.filter(page => page.title.includes(newKeyword))
+    // filteredPages.value = props.pages.filter(page => page.title.includes(newKeyword))
+    let regex = new RegExp([...newKeyword].join('.*'), 'g')
+    filteredPages.value = props.pages.filter(page => regex.test(page.title))
   } else {
     filteredPages.value = props.pages
   }

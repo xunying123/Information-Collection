@@ -1,26 +1,97 @@
 <template>
-  <ShowCards :pages="bookmarks" title="书签" :loading="false">
+  <ShowCards :pages="displayedBookmarks" title="书签" :loading="false">
     <div style="margin-left: 10px;">
-      <el-button type="primary" @click="exportWord">导出 Word</el-button>
+      <el-button type="primary" @click="openDialog">导出 Word</el-button>
       <el-button type="danger" @click="reset_bookmarks">清空书签</el-button>
     </div>
+    <el-pagination @current-change="handleCurrentChange" :current-page="currentDay + 1" layout="prev, pager, next"
+      style="margin-left: 10px;" :page-count="groupedBookmarks.length" />
+
+    <el-dialog title="选择要导出的书签" v-model="dialogVisible" width="900">
+      <el-form ref="form" :model="form" label-width="120px">
+        <el-form-item label="当前期数">
+          <el-input v-model="formIssue"></el-input>
+        </el-form-item>
+        <el-form-item label="选择日期">
+          <el-date-picker v-model="formDate" type="date" placeholder="选择日期"></el-date-picker>
+        </el-form-item>
+      </el-form>
+      <el-checkbox-group v-model="selectedBookmarks">
+        <el-checkbox size="large" v-for="bookmark in bookmarks" :value="bookmark" :label="bookmark.title"
+          :style="{ display: 'block' }">
+          {{ bookmark.title }} - {{ bookmark.publish_time.slice(0, 10) }}
+        </el-checkbox>
+      </el-checkbox-group>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmExport">确认导出</el-button>
+      </span>
+    </el-dialog>
   </ShowCards>
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watchEffect, onMounted, watch } from 'vue'
+import { groupBy } from 'lodash'
 import { bookmarks } from '@/bookmark'
 import PizZip from 'pizzip'
 import Docxtemplater from 'docxtemplater'
 import { saveAs } from 'file-saver'
-import type { Blob } from 'buffer'
-import { ar } from 'element-plus/es/locales.mjs'
+import type { Page } from '../../api_interface'
 import ShowCards from '@/components/ShowCards.vue'
+
+let currentDay = ref(0)
+let dialogVisible = ref(false) // 控制弹窗的可见性
+let selectedBookmarks = ref<Page[]>([]) // 用户选择的书签
+
+let groupedBookmarks = ref<Page[][]>([])
+let displayedBookmarks = computed(() => {
+  return groupedBookmarks.value[currentDay.value] || []
+})
+
+onMounted(() => {
+  bookmarks.sort((a, b) => b.publish_time.localeCompare(a.publish_time))
+})
+
+// 已知的日期和期数
+const knownDate = new Date(2024, 6, 17) // 注意，JavaScript中的月份是从0开始的，所以7月是6
+const knownIssue = 4282
+
+// 计算今天的日期和已知日期之间的天数差
+const today = new Date()
+const diffDays = Math.ceil((today.getTime() - knownDate.getTime()) / (1000 * 60 * 60 * 24))
+
+// 计算今天的期数
+let formIssue = ref(knownIssue + diffDays)
+let formDate = ref(new Date().toISOString().slice(0, 10))
+
+
+watchEffect(() => {
+  let groups = groupBy(bookmarks, (bookmark: Page) => bookmark.publish_time.slice(0, 10))
+  groupedBookmarks.value = Object.values(groups)
+})
+
+let handleCurrentChange = (newDay: number) => {
+  currentDay.value = newDay - 1
+}
+
+// 打开弹窗并默认选中今日书签
+function openDialog() {
+  selectedBookmarks.value = displayedBookmarks.value
+  dialogVisible.value = true
+}
+
+// 确认导出
+async function confirmExport() {
+  dialogVisible.value = false
+  await exportWord(selectedBookmarks.value)
+}
 
 function reset_bookmarks() {
   bookmarks.splice(0, bookmarks.length)
 }
 
-async function exportWord() {
+async function exportWord(selectedBookmarks: Page[]) {
   const response = await fetch('/static/template.docx')
   const templateArrayBuffer = await response.arrayBuffer()
 
@@ -32,7 +103,7 @@ async function exportWord() {
   })
 
   // 当前日期
-  const currentDate = new Date()
+  const currentDate = new Date(formDate.value)
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth() + 1
   const date = currentDate.getDate()
@@ -42,7 +113,7 @@ async function exportWord() {
   const categories = ['科教要闻', '院校动态', '国际视野']
 
   const data = {
-    sum: bookmarks.length, // 使用书签数量作为期数
+    sum: formIssue.value, // 使用书签数量作为期数
     year,
     month,
     date,
@@ -55,7 +126,7 @@ async function exportWord() {
 
   const articles = categories
     .map((category) => {
-      const categoryBookmarks = bookmarks
+      const categoryBookmarks = selectedBookmarks
         .filter((bookmark) => bookmark.category === category)
         .map((bookmark) => ({
           title: bookmark.title,
