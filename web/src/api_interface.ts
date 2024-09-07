@@ -15,6 +15,10 @@ interface Page extends PageItem {
   full_content: string
 }
 
+interface BookmarkItemPage extends Page {
+  mark_time: string
+}
+
 interface SiteItem {
   id: number
   name: string
@@ -39,4 +43,4 @@ interface User {
   is_admin: boolean
 }
 
-export type { PageItem, Page, SiteItem, Site, User }
+export type { PageItem, Page, SiteItem, Site, User, BookmarkItemPage }

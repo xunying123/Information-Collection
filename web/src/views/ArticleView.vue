@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, defineProps, ref, watch } from 'vue'
-import type { Page } from '@/api_interface'
+import type { Page, BookmarkItemPage } from '@/api_interface'
 import { server } from '@/const'
 import { is_bookmarked, toggle_bookmark } from '@/bookmark'
 import { useClipboard } from '@vueuse/core'
@@ -16,6 +16,7 @@ const empty_article: Page = {
   id: 0,
   title: '',
   content: '',
+  full_content: '',
   source_url: '',
   site_id: 0,
   site: '',

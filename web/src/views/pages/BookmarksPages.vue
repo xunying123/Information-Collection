@@ -8,7 +8,7 @@
       style="margin-left: 10px;" :page-count="groupedBookmarks.length" />
 
     <el-dialog title="选择要导出的书签" v-model="dialogVisible" width="900">
-      <el-form ref="form" :model="form" label-width="120px">
+      <el-form ref="form" label-width="120px">
         <el-form-item label="当前期数">
           <el-input v-model="formIssue"></el-input>
         </el-form-item>
@@ -16,12 +16,15 @@
           <el-date-picker v-model="formDate" type="date" placeholder="选择日期"></el-date-picker>
         </el-form-item>
       </el-form>
-      <el-checkbox-group v-model="selectedBookmarks">
-        <el-checkbox size="large" v-for="bookmark in bookmarks" :value="bookmark" :label="bookmark.title"
-          :style="{ display: 'block' }">
-          {{ bookmark.title }} - {{ bookmark.publish_time.slice(0, 10) }}
-        </el-checkbox>
-      </el-checkbox-group>
+      <el-scrollbar style="height: 300px;">
+        <el-checkbox-group v-model="selectedBookmarks"
+          style="margin-left: 56px;">
+          <el-checkbox size="large" v-for="bookmark in bookmarks" :value="bookmark" :label="bookmark.title"
+            :style="{ display: 'block' }">
+            {{ bookmark.title }} - {{ bookmark.publish_time.slice(0, 10) }}
+          </el-checkbox>
+        </el-checkbox-group>
+      </el-scrollbar>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" @click="confirmExport">确认导出</el-button>
@@ -37,20 +40,20 @@ import { bookmarks } from '@/bookmark'
 import PizZip from 'pizzip'
 import Docxtemplater from 'docxtemplater'
 import { saveAs } from 'file-saver'
-import type { Page } from '../../api_interface'
+import type { BookmarkItemPage } from '../../api_interface'
 import ShowCards from '@/components/ShowCards.vue'
 
 let currentDay = ref(0)
 let dialogVisible = ref(false) // 控制弹窗的可见性
-let selectedBookmarks = ref<Page[]>([]) // 用户选择的书签
+let selectedBookmarks = ref<BookmarkItemPage[]>([]) // 用户选择的书签
 
-let groupedBookmarks = ref<Page[][]>([])
+let groupedBookmarks = ref<BookmarkItemPage[][]>([])
 let displayedBookmarks = computed(() => {
   return groupedBookmarks.value[currentDay.value] || []
 })
 
 onMounted(() => {
-  bookmarks.sort((a, b) => b.publish_time.localeCompare(a.publish_time))
+  bookmarks.sort((a, b) => b.mark_time.localeCompare(a.mark_time))
 })
 
 // 已知的日期和期数
@@ -67,7 +70,7 @@ let formDate = ref(new Date().toISOString().slice(0, 10))
 
 
 watchEffect(() => {
-  let groups = groupBy(bookmarks, (bookmark: Page) => bookmark.publish_time.slice(0, 10))
+  let groups = groupBy(bookmarks, (bookmark: BookmarkItemPage) => bookmark.mark_time.slice(0, 10))
   groupedBookmarks.value = Object.values(groups)
 })
 
@@ -91,7 +94,7 @@ function reset_bookmarks() {
   bookmarks.splice(0, bookmarks.length)
 }
 
-async function exportWord(selectedBookmarks: Page[]) {
+async function exportWord(selectedBookmarks: BookmarkItemPage[]) {
   const response = await fetch('/static/template.docx')
   const templateArrayBuffer = await response.arrayBuffer()
 

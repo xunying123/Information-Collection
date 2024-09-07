@@ -1,22 +1,15 @@
 import { reactive, watch } from 'vue'
-import type { Page } from './api_interface'
-
-interface BookmarkItemPage {
-  id: number
-  title: string
-  // content: string // except content
-  source_url: string
-  site_id: number
-  site: string
-  cate_id: number
-  category: string
-}
+import type { BookmarkItemPage, Page } from './api_interface'
+import { extend } from 'lodash'
 
 function load_bookmarks() {
+  console.log('load_bookmarks')
+  // localStorage.removeItem('bookmarks');
+  console.log(localStorage.getItem('bookmarks') || '[]')
   return JSON.parse(localStorage.getItem('bookmarks') || '[]')
 }
 
-const bookmarks = reactive<Page[]>(load_bookmarks())
+const bookmarks = reactive<BookmarkItemPage[]>(load_bookmarks())
 
 function save_bookmarks() {
   localStorage.setItem('bookmarks', JSON.stringify(bookmarks))
@@ -29,7 +22,12 @@ function toggle_bookmark(page: Page) {
     // const { content, ...rest } = page
     // bookmarks.push(rest)
     // content // use it to suppress the warning
-    bookmarks.push(page)
+    
+    // let yesterday = new Date();
+    // yesterday.setDate(yesterday.getDate() - 1);
+    const today = new Date().toISOString().slice(0, 10);
+    const bookmarkItemPage: BookmarkItemPage = { ...page, mark_time: today };
+    bookmarks.push(bookmarkItemPage);
   } else {
     bookmarks.splice(index, 1)
   }
