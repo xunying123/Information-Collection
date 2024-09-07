@@ -7,20 +7,21 @@
     <el-pagination @current-change="handleCurrentChange" :current-page="currentDay + 1" layout="prev, pager, next"
       style="margin-left: 10px;" :page-count="groupedBookmarks.length" />
 
-    <el-dialog title="选择要导出的书签" v-model="dialogVisible" width="900">
-      <el-form ref="form" label-width="120px">
+    <el-dialog title="选择要导出的书签" v-model="dialogVisible" :width="dialogWidth" class="responsive-dialog">
+      <el-form ref="form" label-width="120px" size="large">
         <el-form-item label="当前期数">
-          <el-input v-model="formIssue"></el-input>
+          <el-input v-model="formIssue" class="issue-input"></el-input>
         </el-form-item>
         <el-form-item label="选择日期">
           <el-date-picker v-model="formDate" type="date" placeholder="选择日期"></el-date-picker>
         </el-form-item>
       </el-form>
-      <el-scrollbar style="height: 300px;">
+      <el-scrollbar style="height: 300px;" :width="dialogWidth">
         <el-checkbox-group v-model="selectedBookmarks"
-          style="margin-left: 56px;">
+          style="margin-left: 56px; width: 90%;">
           <el-checkbox size="large" v-for="bookmark in bookmarks" :value="bookmark" :label="bookmark.title"
-            :style="{ display: 'block' }">
+          class="checkbox"
+          >
             {{ bookmark.title }} - {{ bookmark.publish_time.slice(0, 10) }}
           </el-checkbox>
         </el-checkbox-group>
@@ -34,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watchEffect, onMounted, watch } from 'vue'
+import { ref, computed, watchEffect, onMounted, onBeforeUnmount } from 'vue'
 import { groupBy } from 'lodash'
 import { bookmarks } from '@/bookmark'
 import PizZip from 'pizzip'
@@ -42,6 +43,8 @@ import Docxtemplater from 'docxtemplater'
 import { saveAs } from 'file-saver'
 import type { BookmarkItemPage } from '../../api_interface'
 import ShowCards from '@/components/ShowCards.vue'
+
+let dialogWidth = ref('900px');
 
 let currentDay = ref(0)
 let dialogVisible = ref(false) // 控制弹窗的可见性
@@ -54,7 +57,21 @@ let displayedBookmarks = computed(() => {
 
 onMounted(() => {
   bookmarks.sort((a, b) => b.mark_time.localeCompare(a.mark_time))
+  updateDialogWidth();
+  window.addEventListener('resize', updateDialogWidth);
 })
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateDialogWidth);
+});
+
+let updateDialogWidth = () => {
+  if (window.innerWidth <= 768) {
+    dialogWidth.value = '90%';
+  } else {
+    dialogWidth.value = '900px';
+  }
+};
 
 // 已知的日期和期数
 const knownDate = new Date(2024, 6, 17) // 注意，JavaScript中的月份是从0开始的，所以7月是6
@@ -156,3 +173,22 @@ async function exportWord(selectedBookmarks: BookmarkItemPage[]) {
   saveAs(output, `每日情况通报_${year}_${month}_${date}.docx`)
 }
 </script>
+
+<style scoped>
+@media (max-width: 768px) {
+  .issue-input {
+    width: 70px !important;
+  }
+}
+
+.issue-input {
+  width: 10%;
+}
+
+.checkbox {
+  width: 100%;
+  white-space: normal;
+  overflow-wrap: break-word; 
+}
+
+</style>
