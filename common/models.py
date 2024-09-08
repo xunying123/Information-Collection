@@ -94,3 +94,6 @@ class User(Base):
     is_admin: Mapped[bool] = mapped_column(Boolean, server_default="0")
     # style related fields
     avatars: Mapped[str] = mapped_column(nullable=True)
+    # password
+    ## format: f"${salt}-${sha256(salt + password)}"
+    password: Mapped[str] = mapped_column(nullable=True)

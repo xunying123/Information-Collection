@@ -15,6 +15,7 @@ from server.config import JAccountAuth, AppConfig
 from flask_login import login_user, login_required, logout_user, current_user
 from server.login import login_manager, User4login, admin_required
 from server.utils import jsonify
+from hashlib import sha256
 
 current_user: User4login
 
@@ -314,11 +315,31 @@ def do_auth_callback():
                 user.avatars = entity.get("accountPhotoUrl")
             db.flush()
             db.commit()
-            login_user(User4login(user))
+            login_user(User4login(user), remember=True)
         return redirect(state, code=302)
     except Exception as e:
         print(f"exception: {e=}")
         return "Auth failed", 400
+
+@web.route("login", methods=["POST"])
+def do_login_with_password():
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+    if not all([username, password]):
+        return jsonify({"code": -1, "msg": "something missing"})
+    with SqlSession() as db:
+        user = db.scalar(select(User).where(User.username == username))
+        if user is None:
+            return jsonify({"code": -4, "msg": "用户不存在"})
+        if user.password is None:
+            return jsonify({"code": -2, "msg": "尚未设置密码"})
+        [salt, hash_str] = user.password.split("-", 1)
+        check_hash = sha256((salt + password).encode('utf-8')).hexdigest()
+        if check_hash != hash_str:
+            return jsonify({"code": -3, "msg": "密码错误"})
+        login_user(User4login(user), remember=True)
+    return jsonify({"code": 0, "msg": "登录成功"})
 
 
 @web.route("/logout", methods=["POST"])
