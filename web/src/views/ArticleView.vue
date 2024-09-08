@@ -104,7 +104,7 @@ function copyLink() {
             <h3 class="section-title">【摘要】</h3>
             <div v-html="content" class="section-content"></div>
           </div>
-          <hr class="divider" />
+          <hr class="divider" style="margin-bottom: 20px; margin-top: 20px;"/>
           <div class="section">
             <h3 class="section-title">【正文】</h3>
             <div v-html="article.full_content" class="section-content"></div>
