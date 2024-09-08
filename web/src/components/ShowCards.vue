@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineProps, watch, onMounted } from 'vue'
+import { ref, defineProps, watch } from 'vue'
 import type { PageItem } from '@/api_interface'
 import SearchInput from '@/components/SearchInput.vue'
 import { server } from '@/const'
@@ -8,18 +8,6 @@ const props = defineProps<{ pages: PageItem[]; title: string; loading: Boolean }
 let searchKeyword = ref('')
 let filteredPages = ref<PageItem[]>(props.pages)
 
-
-// watch(searchKeyword, async (newKeyword) => {
-//   if (newKeyword) {
-//     const response = await fetch(`${server}/page/search?key=${newKeyword}&count=50&offset=150`)
-//     const data = await response.json()
-//     pages.value = data
-//   } else {
-//     pages.value = []
-//   }
-//   console.log(newKeyword)
-//   console.log(pages.value)
-// })
 watch(() => props.pages, (newPages) => {
   filteredPages.value = newPages
 })
@@ -33,6 +21,7 @@ watch(searchKeyword, (newKeyword) => {
     filteredPages.value = props.pages
   }
 })
+
 </script>
 
 <template>
@@ -44,7 +33,7 @@ watch(searchKeyword, (newKeyword) => {
         <!-- <SearchInput v-model="searchKeyword"></SearchInput> -->
         <slot></slot>
       </div>
-      <el-scrollbar v-if="pages && pages.length" v-loading="loading">
+      <el-scrollbar v-if="pages && pages.length" v-loading="loading" @scroll="$emit('scroll', $event)">
         <div class="container-grid">
           <ArticleCard v-for:="page in filteredPages" :page="page"></ArticleCard>
         </div>
