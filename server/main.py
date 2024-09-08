@@ -177,20 +177,38 @@ def get_page(page_id):
 
 
 @web.route("/page/search")
-@login_required
+# @login_required
 def search_page():
-    key = request.args.get("key", type=str)
     count = request.args.get("count", AppConfig.default_paging_size, type=int)
     offset = request.args.get("offset", 0, type=int)
-    if not key:
-        return jsonify({"code": 1, "msg": "missing key"})
+    key = request.args.get("key", type=str)
+    site = request.args.get("site", 0, type=int)
+    cate = request.args.get("cate", 0, type=int)
+    time_start = request.args.get("time_start", type=str)
+    time_end = request.args.get("time_end", type=str)
+    if not any([key, site, cate, time_start, time_end]):
+        return jsonify(
+            {
+                "code": 1,
+                "msg": "at least one of key, site, cate, time_start, time_end is required.",
+            }
+        )
     stmt = (
         select(Page)
-        .where(Page.title.like(f"%{key}%"))
         .order_by(Page.created_at.desc())
         .limit(count)
         .offset(offset)
     )
+    if key:
+        stmt = stmt.where(Page.title.like(f"%{key}%"))
+    if site:
+        stmt = stmt.where(Page.site_id == site)
+    if cate:
+        stmt = stmt.where(Page.cate_id == cate)
+    if time_start:
+        stmt = stmt.where(Page.publish_time >= time_start)
+    if time_end:
+        stmt = stmt.where(Page.publish_time <= time_end)
     result: list[ResponsePageItem] = []
     with SqlSession() as db:
         for page in db.scalars(stmt):
@@ -321,6 +339,7 @@ def do_auth_callback():
         print(f"exception: {e=}")
         return "Auth failed", 400
 
+
 @web.route("login", methods=["POST"])
 def do_login_with_password():
     data = request.json
@@ -335,7 +354,7 @@ def do_login_with_password():
         if user.password is None:
             return jsonify({"code": -2, "msg": "尚未设置密码"})
         [salt, hash_str] = user.password.split("-", 1)
-        check_hash = sha256((salt + password).encode('utf-8')).hexdigest()
+        check_hash = sha256((salt + password).encode("utf-8")).hexdigest()
         if check_hash != hash_str:
             return jsonify({"code": -3, "msg": "密码错误"})
         login_user(User4login(user), remember=True)
