@@ -97,3 +97,12 @@ class User(Base):
     # password
     ## format: f"${salt}-${sha256(salt + password)}"
     password: Mapped[str] = mapped_column(nullable=True)
+    # relationship
+    bookmarks = relationship("Bookmark", back_populates="user")
+
+class Bookmark(Base, UseTimestamps):
+    id: Mapped[intpk]
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+    page_id: Mapped[int] = mapped_column(ForeignKey('page.id'), nullable=False)
+    user = relationship(User, back_populates="bookmarks")
+    page = relationship(Page)
