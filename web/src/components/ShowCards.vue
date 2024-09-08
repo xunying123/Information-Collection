@@ -8,20 +8,22 @@ const props = defineProps<{ pages: PageItem[]; title: string; loading: Boolean }
 let searchKeyword = ref('')
 let filteredPages = ref<PageItem[]>(props.pages)
 
-watch(() => props.pages, (newPages) => {
-  filteredPages.value = newPages
-})
+watch(
+  () => props.pages,
+  (newPages) => {
+    filteredPages.value = newPages
+  }
+)
 
 watch(searchKeyword, (newKeyword) => {
   if (newKeyword) {
     // filteredPages.value = props.pages.filter(page => page.title.includes(newKeyword))
     let regex = new RegExp([...newKeyword].join('.*'), 'g')
-    filteredPages.value = props.pages.filter(page => regex.test(page.title))
+    filteredPages.value = props.pages.filter((page) => regex.test(page.title))
   } else {
     filteredPages.value = props.pages
   }
 })
-
 </script>
 
 <template>
@@ -33,7 +35,11 @@ watch(searchKeyword, (newKeyword) => {
         <!-- <SearchInput v-model="searchKeyword"></SearchInput> -->
         <slot></slot>
       </div>
-      <el-scrollbar v-if="pages && pages.length" v-loading="loading" @scroll="$emit('scroll', $event)">
+      <el-scrollbar
+        v-if="pages && pages.length"
+        v-loading="loading"
+        @scroll="$emit('scroll', $event)"
+      >
         <div class="container-grid">
           <ArticleCard v-for:="page in filteredPages" :page="page"></ArticleCard>
         </div>

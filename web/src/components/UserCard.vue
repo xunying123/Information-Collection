@@ -9,8 +9,8 @@ import { jaccount_client_id } from '@/const'
 import LogoutSVG from '@/components/svg/LogoutSVG.vue'
 
 let user = inject(user_key)!
-let buttonRef = ref(null)
-let popoverRef = ref(null)
+let buttonRef = ref()
+let popoverRef = ref()
 
 const logout = async () => {
   if (!user)
@@ -58,15 +58,21 @@ const onClickOutside = () => {
 <template>
   <div v-if="user" class="horizon-grid">
     <div ref="buttonRef" class="user-card" v-click-outside="onClickOutside">
-      <el-avatar :src="user.avatars" class="avatar"/>
+      <el-avatar :src="user.avatars" class="avatar" />
       <div class="user-info">
         <h2>{{ user.name }}</h2>
         <p>{{ user.organization }}</p>
       </div>
     </div>
-    <el-popover ref="popoverRef" :virtual-ref="buttonRef" trigger="click" virtual-triggering :width="80">
+    <el-popover
+      ref="popoverRef"
+      :virtual-ref="buttonRef"
+      trigger="click"
+      virtual-triggering
+      :width="80"
+    >
       <el-button size="large" @click="logout" text>
-        <LogoutSVG class="logout-icon"/>
+        <LogoutSVG class="logout-icon" />
         退出
       </el-button>
     </el-popover>
@@ -83,7 +89,7 @@ const onClickOutside = () => {
 
 .avatar {
   width: 50px; /* 调整为你需要的大小 */
-  height: 50px; 
+  height: 50px;
   object-fit: cover;
   border-radius: 50%;
 }

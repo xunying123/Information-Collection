@@ -1,5 +1,11 @@
 <template>
-    <ShowCards :pages="pages" title="全部文章" :loading="loading" @scroll="handleScroll" @wheel="handleWheel"></ShowCards>
+  <ShowCards
+    :pages="pages"
+    title="全部文章"
+    :loading="loading"
+    @scroll="handleScroll"
+    @wheel="handleWheel"
+  ></ShowCards>
 </template>
 
 <script setup lang="ts">
@@ -26,5 +32,4 @@ onMounted(() => {
   fetchPages(50)
 })
 const { handleScroll, handleWheel } = useScrollFetch(fetchPages)
-
 </script>

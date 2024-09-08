@@ -1,6 +1,9 @@
 // useScrollFetch.ts
 
-export default function useScrollFetch(fetchPages: (count: number) => void, initialCount: number = 50) {
+export default function useScrollFetch(
+  fetchPages: (count: number) => void,
+  initialCount: number = 50
+) {
   let count = initialCount
   let scrollEventTriggered = false
   let wheelTimeout: ReturnType<typeof setTimeout> | null = null
@@ -26,7 +29,7 @@ export default function useScrollFetch(fetchPages: (count: number) => void, init
         scrollEventTriggered = false
       })
       wheelTimeout = null
-    }, 300)  // 节流的时间间隔可以根据需要调整
+    }, 300) // 节流的时间间隔可以根据需要调整
   }
 
   return { handleScroll, handleWheel }

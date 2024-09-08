@@ -1,5 +1,11 @@
 <template>
-  <ShowCards :title="site.name" :pages="site.pages" :loading="site.id == 0" @scroll="handleScroll" @wheel="handleWheel"></ShowCards>
+  <ShowCards
+    :title="site.name"
+    :pages="site.pages"
+    :loading="site.id == 0"
+    @scroll="handleScroll"
+    @wheel="handleWheel"
+  ></ShowCards>
 </template>
 
 <script setup lang="ts">

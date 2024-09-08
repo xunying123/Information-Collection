@@ -3,14 +3,14 @@ import type { BookmarkItemPage, Page } from './api_interface'
 import { extend } from 'lodash'
 
 function load_bookmarks() {
-  let bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+  let bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]')
   // 检查数据是否符合新的格式
   if (bookmarks.length > 0 && typeof bookmarks[0].mark_time === 'undefined') {
     // 如果数据不符合新的格式，清空数据
-    localStorage.removeItem('bookmarks');
-    bookmarks = [];
+    localStorage.removeItem('bookmarks')
+    bookmarks = []
   }
-  return bookmarks;
+  return bookmarks
 }
 
 const bookmarks = reactive<BookmarkItemPage[]>(load_bookmarks())
@@ -29,9 +29,9 @@ function toggle_bookmark(page: Page) {
 
     // let yesterday = new Date();
     // yesterday.setDate(yesterday.getDate() - 1);
-    const today = new Date().toISOString().slice(0, 10);
-    const bookmarkItemPage: BookmarkItemPage = { ...page, mark_time: today };
-    bookmarks.push(bookmarkItemPage);
+    const today = new Date().toISOString().slice(0, 10)
+    const bookmarkItemPage: BookmarkItemPage = { ...page, mark_time: today }
+    bookmarks.push(bookmarkItemPage)
   } else {
     bookmarks.splice(index, 1)
   }

@@ -32,7 +32,7 @@ fetch(`${server}/site`)
     if (cateSites.cate_id != 0) sites.push(cateSites)
   })
 
-const user = inject(user_key)!;
+const user = inject(user_key)!
 </script>
 
 <template>

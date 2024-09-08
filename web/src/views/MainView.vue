@@ -17,7 +17,7 @@ import { NLayout, NLayoutSider, NLayoutContent } from 'naive-ui'
       show-trigger="bar"
       bordered
     >
-      <SiteMenu class="site-menu"/>
+      <SiteMenu class="site-menu" />
     </n-layout-sider>
     <n-layout-content class="content overlay">
       <RouterView />

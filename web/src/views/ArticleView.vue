@@ -72,7 +72,10 @@ function copyLink() {
     <!-- 独立功能区 -->
     <div class="top-bar">
       <div class="button-group">
-        <router-link :to="{ name: $route.matched[$route.matched.length - 2].name }" class="close-button">
+        <router-link
+          :to="{ name: $route.matched[$route.matched.length - 2].name }"
+          class="close-button"
+        >
           <CloseSVG />
         </router-link>
         <el-tooltip content="复制链接" effect="light">
@@ -95,7 +98,11 @@ function copyLink() {
       <div class="article-content" v-loading="article.id == 0">
         <h2 class="article-title">{{ article.title }}</h2>
         <el-divider content-position="center">
-          <n-time v-if="article.publish_time" :time="new Date(article.publish_time)" format="yyyy年MM月dd日 hh时mm分" />
+          <n-time
+            v-if="article.publish_time"
+            :time="new Date(article.publish_time)"
+            format="yyyy年MM月dd日 hh时mm分"
+          />
         </el-divider>
         <!-- <div v-html="content"></div> -->
         <!-- <div v-html="article.full_content"></div> -->
@@ -104,7 +111,7 @@ function copyLink() {
             <h3 class="section-title">【摘要】</h3>
             <div v-html="content" class="section-content"></div>
           </div>
-          <hr class="divider" style="margin-bottom: 20px; margin-top: 20px;"/>
+          <hr class="divider" style="margin-bottom: 20px; margin-top: 20px" />
           <div class="section">
             <h3 class="section-title">【正文】</h3>
             <div v-html="article.full_content" class="section-content"></div>
