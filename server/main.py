@@ -5,7 +5,7 @@ from flask import Blueprint
 from server.db import SqlSession
 from sqlalchemy import select, delete
 
-from common.models import Category, Site, Page, User
+from common.models import *
 from server.response_format import *
 
 import requests
@@ -193,12 +193,7 @@ def search_page():
                 "msg": "at least one of key, site, cate, time_start, time_end is required.",
             }
         )
-    stmt = (
-        select(Page)
-        .order_by(Page.created_at.desc())
-        .limit(count)
-        .offset(offset)
-    )
+    stmt = select(Page).order_by(Page.created_at.desc()).limit(count).offset(offset)
     if key:
         stmt = stmt.where(Page.title.like(f"%{key}%"))
     if site:
@@ -373,6 +368,66 @@ def get_me():
         return jsonify({"code": 0, "user": current_user.__dict__})
     else:
         return jsonify({"code": 1, "msg": "not logged in"})
+
+
+@web.route("/bookmark/add", methods=["POST"])
+@login_required
+def add_bookmark():
+    data = request.json
+    page_id = data.get("page_id")
+    with SqlSession() as db:
+        user = db.scalar(select(User).where(User.id == current_user.id))
+        if user is None:
+            return jsonify({"code": 1, "msg": "user not found"})
+        page = db.scalar(select(Page).where(Page.id == page_id))
+        if page is None:
+            return jsonify({"code": 2, "msg": "page not found"})
+        user.bookmarks.append(page)
+        db.commit()
+    return jsonify({"code": 0, "msg": "ok"})
+
+
+@web.route("/bookmark/remove", methods=["POST"])
+@login_required
+def remove_bookmark():
+    data = request.json
+    page_id = data.get("page_id")
+    if page_id is None:
+        return jsonify({"code": 1, "msg": "missing page_id"})
+    with SqlSession() as db:
+        db.execute(
+            delete(Bookmark).where(
+                Bookmark.user_id == current_user.id and Bookmark.page_id == page_id
+            )
+        )
+    return jsonify({"code": 0, "msg": "ok"})
+
+
+@web.route("/bookmark")
+@login_required
+def get_bookmarks():
+    count = request.args.get("count", AppConfig.default_paging_size, type=int)
+    offset = request.args.get("offset", 0, type=int)
+    time_start = request.args.get("time_start", type=str)
+    time_end = request.args.get("time_end", type=str)
+    stmt = (
+        select(Bookmark)
+        .where(Bookmark.user_id == current_user.id)
+        .order_by(Bookmark.created_at)
+        .limit(count)
+        .offset(offset)
+    )
+    if time_start:
+        stmt = stmt.where(Bookmark.created_at >= time_start)
+    if time_end:
+        stmt = stmt.where(Bookmark.created_at <= time_end)
+    with SqlSession() as db:
+        result = []
+        bookmarks = db.scalars(stmt)
+        for bm in bookmarks:
+            info = ResponsePageItem(bm.page)
+            result.append(info)
+    return jsonify(result)
 
 
 app = Flask(__name__)
