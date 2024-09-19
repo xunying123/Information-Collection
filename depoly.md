@@ -59,3 +59,18 @@ pnpm build
 ```shell
 sudo cp nginx-dic.conf /etc/nginx/site-enabled/
 ```
+
+## 爬虫
+
+每次运行`main.py`就可以进行一次内容更新的检测爬取与上传
+
+运行环境按需安装，但`playwright`库所需二进制浏览器需要额外执行指令安装
+```shell
+playwright install
+```
+
+程序运行需要对应后端的账密与ip，llm模型的key与地址
+
+需要注意所有本地文件为了便于检查均采用了绝对路径，请按需修改，如有需要请手动创建
+
+运行`main.py`会自动从后端获得最新的网站列表，但对于新加入的网址并不会立即爬取，而是会经历一次初始化，在下次运行时才会开始爬取
