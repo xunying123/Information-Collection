@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 from utils import read_content, save_content, check_page_content
 
-url = 'https://github.com/xunying123/Notes/blob/main/minecraft/.%5Cimage%5C1720187645649.png'
+url = 'https://sample.com'
 
 def Newspaper(url):
     try:
@@ -28,16 +28,12 @@ def Play_Wright_new(url):
             page = context.new_page()
             page.goto(url)
 
-
             page.wait_for_load_state("networkidle")
 
-        # 获取完整的页面内容
             page_content = page.content()
 
-        # 关闭浏览器
             browser.close()
-            # print(page_content)
-        # 使用 newspaper3k 解析页面内容
+
             article = Article(url)
             article.set_html(page_content)
             article.parse()
@@ -80,13 +76,9 @@ def Play_Wright_bs(url):
 
             page.wait_for_load_state("networkidle")
 
-        # 获取完整的页面内容
             page_content = page.content()
 
-        # 关闭浏览器
             browser.close()
-            # print(page_content)
-        # 使用 newspaper3k 解析页面内容
             soup = BeautifulSoup(page_content, 'lxml')
 
             title = soup.find('title').get_text()
@@ -99,48 +91,42 @@ def Play_Wright_bs(url):
         return None, None
     return None, None
 
-def crawl(url):
+def crawl(url, source_url):
     #print(f"Fetching {url}")
     today_date = datetime.today().strftime('%Y-%m-%d')
-    wrong_path = "data/wrong/" + today_date + '.json'
+    wrong_path = "/home/dic/Information-Collection/src/data/wrong/" + today_date + '.json'
 
     article = Newspaper(url)
 
     if article :
         if article.title and article.text and len(article.text) > 10 and check_page_content(article.title):
-            print(1)
-            # print(article.title)
-            # print(article.text)
+            print(1, flush=True)
             return article.title, article.text
         
     title, content = Beautiful_Soup(url)
     if title and content and len(content) > 10 and check_page_content(title):
-        print(2)
+        print(2, flush=True)
         # print(title)
         # print(content)
         return title, content
     
     title, content = Play_Wright_new(url)
     if title and content and len(content) > 10 and check_page_content(title):
-        print(3)
-        # print(title)
-        # print(content)
+        print(3, flush=True)
         return title, content
     
     title, content = Play_Wright_bs(url)
     if title and content and len(content) > 10 and check_page_content(title):
-        print(4)
-        # print(title)
-        # print(content)
+        print(4, flush=True)
         return title, content
     
     wrong = read_content(wrong_path)
-    wrong.append(url)
+    wrong.append({"url": url, "source_url": source_url})
     save_content(wrong, wrong_path)
     return None, None
 
 def main():
-    crawl(url)
+    crawl(url, "http://www.sample.com/")
     
 if __name__ == '__main__':
     main()
