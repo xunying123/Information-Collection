@@ -58,6 +58,8 @@ class Site(Base):
     pages = relationship("Page", back_populates="site")
     # style related fields
     icon: Mapped[url_type] = mapped_column(nullable=True)
+    # the users who want to watch this site
+    users = relationship("User", secondary="user_site_relation", back_populates="sites")
 
 
 site_foreign_key = Annotated[
@@ -101,11 +103,17 @@ class User(Base):
     # password
     ## format: f"${salt}-${sha256(salt + password)}"
     password: Mapped[str] = mapped_column(nullable=True)
-    # relationship
+
+    #### relationship ####
+
+    # the bookmarks the user saved
     bookmarks = relationship("Bookmark", back_populates="user")
+    # the keywords the user concern
     keywords = relationship(
         "Keyword", secondary="user_keyword_relation", back_populates="users"
     )
+    # the sites the user want to watch
+    sites = relationship("Site", secondary="user_site_relation", back_populates="users")
 
 
 class Bookmark(Base, UseTimestamps):
@@ -142,4 +150,13 @@ class PageKeywordRelation(Base):
     )
     keyword_id: Mapped[int] = mapped_column(
         ForeignKey("keyword.id"), nullable=False, primary_key=True
+    )
+
+
+class UserSiteRelation(Base):
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("user.id"), nullable=False, primary_key=True
+    )
+    site_id: Mapped[int] = mapped_column(
+        ForeignKey("site.id"), nullable=False, primary_key=True
     )
