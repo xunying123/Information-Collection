@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     ArticleCard: typeof import('./src/components/ArticleCard.vue')['default']
+    ArticleList: typeof import('./src/components/ArticleList.vue')['default']
     BookmarkSvg: typeof import('./src/components/svg/BookmarkSvg.vue')['default']
     CloseSVG: typeof import('./src/components/svg/CloseSVG.vue')['default']
     CopySVG: typeof import('./src/components/svg/CopySVG.vue')['default']
@@ -18,6 +19,8 @@ declare module 'vue' {
     ElCard: typeof import('element-plus/es')['ElCard']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
     ElCheckboxGroup: typeof import('element-plus/es')['ElCheckboxGroup']
+    ElCollapse: typeof import('element-plus/es')['ElCollapse']
+    ElCollapseItem: typeof import('element-plus/es')['ElCollapseItem']
     ElContainer: typeof import('element-plus/es')['ElContainer']
     ElDatePicker: typeof import('element-plus/es')['ElDatePicker']
     ElDialog: typeof import('element-plus/es')['ElDialog']
@@ -27,6 +30,8 @@ declare module 'vue' {
     ElFormItem: typeof import('element-plus/es')['ElFormItem']
     ElIcon: typeof import('element-plus/es')['ElIcon']
     ElInput: typeof import('element-plus/es')['ElInput']
+    ElList: typeof import('element-plus/es')['ElList']
+    ElListItem: typeof import('element-plus/es')['ElListItem']
     ElMain: typeof import('element-plus/es')['ElMain']
     ElMenu: typeof import('element-plus/es')['ElMenu']
     ElMenuItem: typeof import('element-plus/es')['ElMenuItem']
@@ -34,9 +39,13 @@ declare module 'vue' {
     ElPopconfirm: typeof import('element-plus/es')['ElPopconfirm']
     ElPopover: typeof import('element-plus/es')['ElPopover']
     ElScrollbar: typeof import('element-plus/es')['ElScrollbar']
+    ElSegmented: typeof import('element-plus/es')['ElSegmented']
     ElSubMenu: typeof import('element-plus/es')['ElSubMenu']
+    ElTable: typeof import('element-plus/es')['ElTable']
+    ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTabPane: typeof import('element-plus/es')['ElTabPane']
     ElTabs: typeof import('element-plus/es')['ElTabs']
+    ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
     FolderPlusSVG: typeof import('./src/components/svg/FolderPlusSVG.vue')['default']
     LayersSVG: typeof import('./src/components/svg/LayersSVG.vue')['default']
@@ -49,6 +58,7 @@ declare module 'vue' {
     UserCard: typeof import('./src/components/UserCard.vue')['default']
   }
   export interface ComponentCustomProperties {
+    vInfiniteScroll: typeof import('element-plus/es')['ElInfiniteScroll']
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }
 }

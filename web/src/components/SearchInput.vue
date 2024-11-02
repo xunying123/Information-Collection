@@ -24,7 +24,7 @@ import { watch, defineEmits } from 'vue'
 
 let emit = defineEmits(['update:searchQuery'])
 let searchQuery = ref('')
-const isSearchVisible = ref(false)
+const isSearchVisible = ref(true) // 将初始值设置为 true
 
 const toggleSearch = () => {
   isSearchVisible.value = !isSearchVisible.value

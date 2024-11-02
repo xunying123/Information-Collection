@@ -48,6 +48,11 @@ const router = createRouter({
           children: [page_rule('bookmarks')]
         },
         {
+          path: 'user',
+          name: 'UserPage',
+          component: () => import('@/views/pages/UserPage.vue')
+        },
+        {
           path: 'managesites',
           name: 'managesites',
           component: () => import('@/views/pages/ManageSitesPages.vue'),

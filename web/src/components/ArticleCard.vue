@@ -1,11 +1,27 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
+import { defineProps, computed } from 'vue'
 import type { PageItem } from '@/api_interface'
 import { is_bookmarked } from '@/bookmark'
-defineProps<{ page: PageItem }>()
+// defineProps<{ page: PageItem }>()
 
 import { NTime, zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
 import BookmarkSvg from './svg/BookmarkSvg.vue'
+
+const props = defineProps<{ page: PageItem }>()
+
+const timeType = (date: string) => {
+  const now = new Date()
+  const diff = now.getTime() - new Date(date).getTime()
+  const diffHours = diff / 1000 / 60 / 60
+  if (diffHours < 24) {
+    return 'relative'
+  } else {
+    return 'date'
+  }
+}
+
+const computedTimeType = computed(() => timeType(props.page.publish_time))
+
 </script>
 
 <template>
@@ -27,7 +43,7 @@ import BookmarkSvg from './svg/BookmarkSvg.vue'
         <template #footer>
           <div class="small-card-footer">
             <n-config-provider :locale="zhCN" :date-locale="dateZhCN">
-              <n-time :time="new Date(page.publish_time)" type="relative" />
+              <n-time :time="new Date(page.publish_time)" :type="computedTimeType" />
             </n-config-provider>
           </div>
         </template>

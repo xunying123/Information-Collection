@@ -39,7 +39,9 @@ const user = inject(user_key)!
   <div class="full">
     <el-scrollbar>
       <img src="https://www.sjtu.edu.cn/resource/assets/img/LogoWhite.png" class="logo" />
-      <UserCard />
+      <router-link to="/user">
+        <UserCard />
+      </router-link>
       <el-menu class="el-menu-vertical-demo" :router="true">
         <el-menu-item index="/">
           <LayersSVG class="menu-icon" />
