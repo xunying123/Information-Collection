@@ -3,7 +3,7 @@ from flask import Flask, request, url_for, redirect
 from flask import Blueprint
 
 from server.db import SqlSession
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, exists, func
 
 from common.models import *
 from server.response_format import *
@@ -16,6 +16,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 from server.login import login_manager, User4login, admin_required
 from server.utils import jsonify
 from hashlib import sha256
+import pytz
 
 current_user: User4login
 
@@ -39,45 +40,14 @@ def get_categories():
     return jsonify(result)
 
 
-@web.route("/category/<int:cate_id>/sites")
-@login_required
-def get_category_sites(cate_id):
-    result: list[ResponseSiteItem] = []
-    stmt = select(Site).where(Site.cate_id == cate_id).order_by(Site.id)
-    with SqlSession() as db:
-        for site in db.scalars(stmt):
-            info = ResponseSiteItem(site)
-            result.append(info)
-    return jsonify(result)
-
-
-@web.route("/category/<int:cate_id>/pages")
-@login_required
-def get_category_pages(cate_id):
-    count = request.args.get("count", AppConfig.default_paging_size, type=int)
-    offset = request.args.get("offset", 0, type=int)
-    stmt = (
-        select(Page)
-        .where(Page.cate_id == cate_id)
-        .order_by(Page.created_at.desc())
-        .limit(count)
-        .offset(offset)
-    )
-    result: list[ResponsePageItem] = []
-    with SqlSession() as db:
-        if db.scalar(select(Category.id).where(Category.id == cate_id)) is None:
-            return "Category not found", 404
-        for page in db.scalars(stmt):
-            info = ResponsePageItem(page)
-            result.append(info)
-    return jsonify(result)
-
-
 @web.route("/site")
 @login_required
 def get_sites():
+    category = request.args.get("category", None, type=int)
     result = []
     stmt = select(Site).order_by(Site.cate_id, Site.id)
+    if category is not None:
+        stmt = stmt.where(Site.cate_id == category)
     with SqlSession() as db:
         for site in db.scalars(stmt):
             info = ResponseSiteItem(site)
@@ -126,36 +96,52 @@ def remove_site():
     return jsonify({"code": 0, "msg": "deleted"})
 
 
-@web.route("/site/<int:site_id>")
-@login_required
-def get_site_pages(site_id):
-    count = request.args.get("count", AppConfig.default_paging_size, type=int)
-    offset = request.args.get("offset", 0, type=int)
-    result: list[ResponsePageItem] = []
-    stmt = select(Page).where(Page.site_id == site_id).order_by(Page.created_at.desc())
-    if count > 0 and offset >= 0:
-        stmt = stmt.limit(count).offset(offset)
-
-    with SqlSession() as db:
-        site = db.scalar(select(Site).where(Site.id == site_id))
-        if site is None:
-            return "Site not found", 404
-        res = ResponseSite(site)
-        for page in db.scalars(stmt):
-            info = ResponsePageItem(page)
-            result.append(info)
-        res["pages"] = result
-    return jsonify(res)
-
-
 @web.route("/page")
 @login_required
 def get_pages():
     count = request.args.get("count", AppConfig.default_paging_size, type=int)
-    offset = request.args.get("offset", 0, type=int)
+    cursor_id = request.args.get("cursor_id", None, type=int)
+    category = request.args.get("category", None, type=int)
+    site = request.args.get("site", None, type=int)
+    only_today = request.args.get("today", False, type=bool)
+    bookmarked = request.args.get("bookmarked", False, type=bool)
+    filterd_by_keyword = request.args.get("keyword", False, type=bool)
+    filterd_by_subscribe = request.args.get("subscribe", False, type=bool)
+
     stmt = select(Page).order_by(Page.created_at.desc())
-    if count > 0 and offset >= 0:
-        stmt = stmt.limit(count).offset(offset)
+
+    if category is not None:
+        stmt = stmt.where(Page.cate_id == category)
+    if site is not None:
+        stmt = stmt.where(Page.site_id == site)
+    if only_today:
+        shanghai_tz = pytz.timezone("Asia/Shanghai")
+        today = datetime.now(shanghai_tz).date()
+        stmt = stmt.where(func.date(Page.publish_time) == today)
+    if bookmarked:
+        stmt = stmt.join(Bookmark).where(Bookmark.user_id == current_user.id)
+    if filterd_by_keyword:
+        stmt = stmt.where(
+            exists().where(
+                (UserKeywordRelation.user_id == current_user.id)
+                & (UserKeywordRelation.keyword_id == Keyword.id)
+                & (Keyword.id == PageKeywordRelation.keyword_id)
+                & (PageKeywordRelation.page_id == Page.id)
+            )
+        )
+    if filterd_by_subscribe:
+        stmt = stmt.where(
+            exists().where(
+                (UserSiteRelation.user_id == current_user.id)
+                & (UserSiteRelation.site_id == Site.id)
+                & (Site.id == Page.site_id)
+            )
+        )
+    if cursor_id is not None:
+        stmt = stmt.where(Page.id < cursor_id)
+    if count > 0:
+        stmt = stmt.limit(count)
+
     result: list[ResponsePageItem] = []
     with SqlSession() as db:
         for page in db.scalars(stmt):
@@ -177,7 +163,7 @@ def get_page(page_id):
 
 
 @web.route("/page/search")
-# @login_required
+@login_required
 def search_page():
     count = request.args.get("count", AppConfig.default_paging_size, type=int)
     offset = request.args.get("offset", 0, type=int)
@@ -428,6 +414,71 @@ def get_bookmarks():
             info = ResponsePageItem(bm.page)
             result.append(info)
     return jsonify(result)
+
+
+@web.route("/keyword")
+@login_required
+def get_keywords():
+    personal = request.args.get("personal", False, type=bool)
+    stmt = select(Keyword)
+    if personal:
+        stmt = stmt.where(
+            exists().where(
+                (UserKeywordRelation.user_id == current_user.id)
+                & (UserKeywordRelation.keyword_id == Keyword.id)
+            )
+        )
+    result = []
+    with SqlSession() as db:
+        for kw in db.scalars(stmt):
+            info = ResponseKeywordItem(kw)
+            result.append(info)
+    return jsonify(result)
+
+
+@web.route("/keyword", methods=["POST"])
+@login_required
+def add_keyword():
+    data = request.json()
+    word = data["word"]
+    add_for_user = data["add_for_user"]
+    if type(word) is not str:
+        return jsonify({"code": 1, "msg": "invalid request"})
+    if add_for_user is not None and type(add_for_user) is not bool:
+        return jsonify({"code": 1, "msg": "invalid request"})
+    if word is None:
+        return jsonify({"code": 1, "msg": "missing word"})
+    with SqlSession() as db:
+        kw = db.scalar(select(Keyword).where(Keyword.word == word))
+        if kw is None:
+            kw = Keyword(word=word)
+            db.add(kw)
+            db.flush()
+            kw_id = kw.id
+        else:
+            kw_id = kw.id
+        if add_for_user:
+            db.add(UserKeywordRelation(user_id=current_user.id, keyword_id=kw_id))
+        db.commit()
+    return jsonify({"code": 0, "msg": "ok", "keyword_id": kw_id})
+
+
+@web.route("/keyword", methods=["DELETE"])
+@login_required
+def remove_keyword():
+    data = request.json()
+    keyword_id = data["keyword_id"]
+    if type(keyword_id) is not int:
+        return jsonify({"code": 1, "msg": "invalid request"})
+    with SqlSession() as db:
+        db.execute(
+            delete(UserKeywordRelation).where(
+                UserKeywordRelation.user_id == current_user.id
+                and UserKeywordRelation.keyword_id == keyword_id
+            )
+        )
+        db.commit()
+    return jsonify({"code": 0, "msg": "ok"})
 
 
 app = Flask(__name__)
