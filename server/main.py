@@ -3,7 +3,7 @@ from flask import Flask, request, url_for, redirect
 from flask import Blueprint
 
 from server.db import SqlSession
-from sqlalchemy import select, delete, exists, func
+from sqlalchemy import select, delete, exists, func, not_
 
 from common.models import *
 from server.response_format import *
@@ -460,7 +460,8 @@ def get_keywords():
 def add_keyword():
     data = request.json
     words = data["words"]
-    add_for_user = data["add_for_user"]
+    add_for_user = data.get("add_for_user", True)
+    keep_user_existed = data.get("keep_user_existed", True)
     if type(words) is not list:
         return jsonify({"code": 1, "msg": "invalid request: words is not an array"})
     for word in words:
@@ -470,6 +471,12 @@ def add_keyword():
         return jsonify({"code": 1, "msg": "invalid request"})
     kw_ids = []
     with SqlSession() as db:
+        if not keep_user_existed and add_for_user:
+            db.execute(
+                delete(UserKeywordRelation).where(
+                    UserKeywordRelation.user_id == current_user.id
+                )
+            )
         for word in words:
             kw = db.scalar(select(Keyword).where(Keyword.word == word))
             if kw is None:
@@ -531,6 +538,7 @@ def get_subscribes():
 def add_subscribe():
     data = request.json
     sites_id = data.get("sites_id")
+    keep_user_existed = data.get("keep_user_existed", True)
     if type(sites_id) is not list:
         return jsonify({"code": 1, "msg": "invalid request: sites_id is not an array"})
     for site_id in sites_id:
@@ -539,6 +547,13 @@ def add_subscribe():
                 {"code": 1, "msg": "invalid request: site_id is not a number"}
             )
     with SqlSession() as db:
+        if not keep_user_existed:
+            db.execute(
+                delete(UserSiteRelation).where(
+                    (UserSiteRelation.user_id == current_user.id)
+                    & (UserSiteRelation.site_id.not_in(sites_id))
+                )
+            )
         for site_id in sites_id:
             site = db.scalar(select(Site).where(Site.id == site_id))
             if site is None:
