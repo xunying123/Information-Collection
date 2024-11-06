@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineProps, watch } from 'vue'
+import { ref, defineProps, watch, onMounted } from 'vue'
 import type { PageItem } from '@/api_interface'
 import SearchInput from '@/components/SearchInput.vue'
 import { server } from '@/const'
@@ -24,6 +24,25 @@ watch(searchKeyword, (newKeyword) => {
     filteredPages.value = props.pages
   }
 })
+
+const view = ref('card')
+
+const options = [
+  { label: '卡片', value: 'card' },
+  { label: '标题列表', value: 'list' },
+  { label: '摘要列表', value: 'excerpt' },
+]
+
+watch(view, (newView) => {
+  localStorage.setItem('viewMode', newView)
+})
+
+onMounted(() => {
+  const savedView = localStorage.getItem('viewMode')
+  if (savedView) {
+    view.value = savedView
+  }
+})
 </script>
 
 <template>
@@ -32,6 +51,7 @@ watch(searchKeyword, (newKeyword) => {
       <div class="header">
         <h1>{{ title }}</h1>
         <SearchInput @update:searchQuery="searchKeyword = $event"></SearchInput>
+        <el-segmented v-model="view" :options="options" block class="spaced-segmented" />
         <!-- <SearchInput v-model="searchKeyword"></SearchInput> -->
         <slot></slot>
       </div>
@@ -40,8 +60,14 @@ watch(searchKeyword, (newKeyword) => {
         v-loading="loading"
         @scroll="$emit('scroll', $event)"
       >
-        <div class="container-grid">
-          <ArticleCard v-for:="page in filteredPages" :page="page"></ArticleCard>
+      <div v-if="view === 'card'" class="container-grid">
+          <ArticleCard v-for="page in filteredPages" :key="page.id" :page="page" />
+        </div>
+        <div v-else-if="view === 'list'">
+          <ArticleList :pages="filteredPages" :showExcerpt="false"/>
+        </div>
+        <div v-else-if="view === 'excerpt'">
+          <ArticleList :pages="filteredPages" :showExcerpt="true" />          
         </div>
       </el-scrollbar>
       <el-empty v-else :image-size="200" />
@@ -80,5 +106,10 @@ h1 {
   flex-direction: row;
   justify-content: left;
   align-items: center;
+}
+
+.spaced-segmented {
+  margin-left: 18px;
+  width: 20%;
 }
 </style>

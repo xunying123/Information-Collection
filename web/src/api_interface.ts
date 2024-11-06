@@ -8,10 +8,11 @@ interface PageItem {
   cate_id: number
   category: string
   publish_time: string // iso8601
+  content: string
 }
 
 interface Page extends PageItem {
-  content: string
+  // content: string
   full_content: string
 }
 
