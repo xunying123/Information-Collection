@@ -20,7 +20,8 @@ import pytz
 
 current_user: User4login
 
-web = Blueprint("web", __name__, static_folder="static", template_folder="templates")
+web = Blueprint("web", __name__, static_folder="static",
+                template_folder="templates")
 
 
 @web.route("/")
@@ -102,7 +103,8 @@ def get_site_pages(site_id):
     count = request.args.get("count", AppConfig.default_paging_size, type=int)
     offset = request.args.get("offset", 0, type=int)
     result: list[ResponsePageItem] = []
-    stmt = select(Page).where(Page.site_id == site_id).order_by(Page.created_at.desc())
+    stmt = select(Page).where(Page.site_id == site_id).order_by(
+        Page.created_at.desc())
     if count > 0 and offset >= 0:
         stmt = stmt.limit(count).offset(offset)
 
@@ -121,10 +123,10 @@ def get_pages():
     cursor_id = request.args.get("cursor_id", None, type=int)
     category = request.args.get("category", None, type=int)
     site = request.args.get("site", None, type=int)
-    only_today = request.args.get("today", False, type=bool)
-    bookmarked = request.args.get("bookmarked", False, type=bool)
-    filterd_by_keyword = request.args.get("keyword", False, type=bool)
-    filterd_by_subscribe = request.args.get("subscribe", False, type=bool)
+    only_today = request.args.get("today", "false").lower() == "true"
+    bookmarked = request.args.get("bookmarked", "false").lower() == "true"
+    filterd_by_keyword = request.args.get("keyword", "false").lower() == "true"
+    filterd_by_subscribe = request.args.get("subscribe", "false").lower() == "true"
 
     stmt = select(Page).order_by(Page.created_at.desc())
 
@@ -198,7 +200,8 @@ def search_page():
                 "msg": "at least one of key, site, cate, time_start, time_end is required.",
             }
         )
-    stmt = select(Page).order_by(Page.created_at.desc()).limit(count).offset(offset)
+    stmt = select(Page).order_by(
+        Page.created_at.desc()).limit(count).offset(offset)
     if key:
         stmt = stmt.where(Page.title.like(f"%{key}%"))
     if site:
@@ -251,7 +254,8 @@ def add_page(site_id):
         if cate_id is None:
             return "Site not found", 404
         # check if page already exists
-        existed_id = db.scalar(select(Page.id).where(Page.source_url == source_url))
+        existed_id = db.scalar(select(Page.id).where(
+            Page.source_url == source_url))
         if existed_id is not None:
             return jsonify(
                 {
@@ -402,7 +406,8 @@ def remove_bookmark():
     with SqlSession() as db:
         db.execute(
             delete(Bookmark).where(
-                (Bookmark.user_id == current_user.id) & (Bookmark.page_id == page_id)
+                (Bookmark.user_id == current_user.id) & (
+                    Bookmark.page_id == page_id)
             )
         )
     return jsonify({"code": 0, "msg": "ok"})
@@ -438,9 +443,9 @@ def get_bookmarks():
 @web.route("/keyword")
 @login_required
 def get_keywords():
-    personal = request.args.get("personal", False, type=bool)
+    personal = request.args.get("personal", "false", type=str)
     stmt = select(Keyword)
-    if personal:
+    if personal == "true":
         stmt = stmt.where(
             exists().where(
                 (UserKeywordRelation.user_id == current_user.id)
@@ -497,7 +502,8 @@ def add_keyword():
                     is not None
                 ):
                     continue
-                db.add(UserKeywordRelation(user_id=current_user.id, keyword_id=kw_id))
+                db.add(UserKeywordRelation(
+                    user_id=current_user.id, keyword_id=kw_id))
             kw_ids.append(kw_id)
         db.commit()
     return jsonify({"code": 0, "msg": "ok", "keywords_id": kw_ids})
@@ -524,11 +530,11 @@ def remove_keyword():
 @web.route("/subscribe", methods=["GET"])
 @login_required
 def get_subscribes():
-    stmt = select(UserSiteRelation).where(UserSiteRelation.user_id == current_user.id)
     result = []
     with SqlSession() as db:
-        for us in db.scalars(stmt):
-            info = ResponseSiteItem(us.site)
+        user = db.scalar(select(User).where(User.id == current_user.id))
+        for site in user.sites:
+            info = ResponseSiteItem(site)
             result.append(info)
     return jsonify({"sites": result})
 
