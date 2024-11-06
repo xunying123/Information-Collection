@@ -119,11 +119,10 @@ def get_site_pages(site_id):
     if count > 0 and offset >= 0:
         stmt = stmt.limit(count).offset(offset)
 
-    with SqlSession() as db:
-        site = db.scalar(select(Site).where(Site.id == site_id))
-        if site is None:
-            return "Site not found", 404
-        res = ResponseSite(site)
+    site = db.scalar(select(Site).where(Site.id == site_id))
+    if site is None:
+        return "Site not found", 404
+    res = ResponseSite(site)
     return jsonify(res)
 
 
