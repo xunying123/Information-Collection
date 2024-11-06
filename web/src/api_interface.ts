@@ -44,4 +44,9 @@ interface User {
   is_admin: boolean
 }
 
-export type { PageItem, Page, SiteItem, Site, User, BookmarkItemPage }
+interface Keyword {
+  id: number
+  name: string
+}
+
+export type { PageItem, Page, SiteItem, Site, User, BookmarkItemPage, Keyword }
