@@ -47,6 +47,7 @@ declare module 'vue' {
     ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
+    ElUpload: typeof import('element-plus/es')['ElUpload']
     FolderPlusSVG: typeof import('./src/components/svg/FolderPlusSVG.vue')['default']
     LayersSVG: typeof import('./src/components/svg/LayersSVG.vue')['default']
     LogoutSVG: typeof import('./src/components/svg/LogoutSVG.vue')['default']
