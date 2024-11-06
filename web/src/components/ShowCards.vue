@@ -104,12 +104,18 @@ h1 {
   z-index: 1;
   display: flex;
   flex-direction: row;
-  justify-content: left;
+  justify-content: space-between;
   align-items: center;
+  padding-right: 2em;
+}
+
+.header > :first-child {
+  margin-right: auto;
 }
 
 .spaced-segmented {
-  margin-left: 18px;
-  width: 20%;
+  margin-left: 1em;
+  width: 20em;
 }
+
 </style>

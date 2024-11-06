@@ -3,17 +3,17 @@
         <h1>用户订阅</h1>
         <div class="section">
             <div class="source-header">
-                <h2 style="display: inline-block; margin-right: 10px;">网站源列表</h2>
+                <h2 style="display: inline-block; margin-right: 10px;">网站源列表</h2>                
                 <div style="display: inline-block;">
-                    <el-button type="info" @click="exportSources" size="small"
-                        round>导出网站源</el-button>
-                    <el-upload action="" :before-upload="importSources"
-                        :show-file-list="false" style="display: inline-block; margin-left: 10px;">
+                    <el-button type="info" @click="exportSources" size="small" round>导出网站源</el-button>
+                    <el-upload action="" :before-upload="importSources" :show-file-list="false"
+                        style="display: inline-block; margin-left: 10px;">
                         <el-button type="success" size="small" round>导入网站源</el-button>
                     </el-upload>
                 </div>
             </div>
-            <el-scrollbar class="source-scrollbar" height="200px">
+            <el-switch v-model="filter_subscribe" class="mb-2" active-text="仅显示订阅的网站" inactive-text="显示全部网站" @change="saveFilter"/>
+            <el-scrollbar class="source-scrollbar" height="180px" :always="true">
                 <p v-for="source in sources" :key="source.id" class="scrollbar-item">
                     <strong>{{ source.category }}</strong> - {{ source.name }} - <a :href="source.url"
                         target="_blank">{{ source.url }}</a>
@@ -69,6 +69,7 @@
                     <el-button type="danger" @click="clearKeywords" size="small" round>清空关键词</el-button>
                 </div>
             </div>
+            <el-switch v-model="filter_keyword" class="mb-2" active-text="仅显示订阅关键词相关的文章" inactive-text="显示全部文章" @change="saveFilter"/>
             <div class="keyword-tags">
                 <el-tag v-for="keyword in keywords" :key="keyword.id" round :type="getRandomTagType()" size="large">
                     {{ keyword.name }}
@@ -127,9 +128,12 @@
 <script setup lang="ts">
 import { ref, reactive, inject, onMounted, type Ref } from 'vue'
 import { ElPopconfirm, ElNotification } from 'element-plus'
-import { user_key } from '@/key'
+import { filter_subscribe_key, filter_keyword_key, user_key } from '@/key'
 import { server, jaccount_client_id } from '@/const'
 import type { Keyword, SiteItem } from '@/api_interface'
+
+let filter_subscribe = inject(filter_subscribe_key)!;
+let filter_keyword = inject(filter_keyword_key)!;
 
 const user = inject(user_key)!
 
@@ -179,19 +183,19 @@ const loadAllKeywords = () => {
             .then((r) => r.json())
             .then((data) => {
                 allKeywords.value = data.map((item: any) => ({ id: item.id, name: item.word }))
-            })        
+            })
     } catch (error) {
         console.error('Error fetching keywords:', error)
     }
 }
 
 const loadKeywords = () => {
-    try {        
+    try {
         fetch(`${server}/keyword?personal=true`)
             .then((r) => r.json())
             .then((data) => {
                 keywords.value = data.map((item: any) => ({ id: item.id, name: item.word }))
-            })        
+            })
     } catch (error) {
         console.error('Error fetching keywords:', error)
     }
@@ -204,12 +208,16 @@ onMounted(() => {
     loadKeywords()
 })
 
+function saveFilter() {
+    localStorage.setItem("filter_subscribe", filter_subscribe.value.toString())
+    localStorage.setItem("filter_keyword", filter_keyword.value.toString())
+}
+
 function getRandomTagType() {
     const randomIndex = Math.floor(Math.random() * tagTypes.length)
     return tagTypes[randomIndex]
 }
 
-// Add and delete source functions
 function addSource() {
     const sitesId = [newSource.value.id];
     const keepUserExisted = true;
@@ -236,29 +244,29 @@ function addSource() {
             keep_user_existed: keepUserExisted
         })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.code === 0) {
-            console.log("Subscription added successfully");
-            loadSubscribedSources();
-            newSource.value = { id: 0, cate_id: 0, category: '', name: '', url: '', icon: '' };
+        .then(response => response.json())
+        .then(data => {
+            if (data.code === 0) {
+                console.log("Subscription added successfully");
+                loadSubscribedSources();
+                newSource.value = { id: 0, cate_id: 0, category: '', name: '', url: '', icon: '' };
+                ElNotification({
+                    title: '成功',
+                    message: '网站源添加成功',
+                    type: 'success',
+                });
+            } else {
+                console.error(`Error: ${data.msg}`);
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
             ElNotification({
-                title: '成功',
-                message: '网站源添加成功',
-                type: 'success',
+                title: '错误',
+                message: '添加网站源失败: ' + error,
+                type: 'error',
             });
-        } else {
-            console.error(`Error: ${data.msg}`);
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        ElNotification({
-            title: '错误',
-            message: '添加网站源失败: ' + error,
-            type: 'error',
         });
-    });
 }
 
 function deleteSource() {

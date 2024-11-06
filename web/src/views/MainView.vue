@@ -1,11 +1,16 @@
 <script lang="ts" setup>
+import { filter_subscribe_key, filter_keyword_key } from '@/key';
 import SiteMenu from '@/views/SiteMenu.vue'
-import { useRoute } from 'vue-router'
-
-let route = useRoute()
-route.query
-
 import { NLayout, NLayoutSider, NLayoutContent } from 'naive-ui'
+import { provide, ref } from 'vue';
+
+
+let filter_subscribe = ref(localStorage.getItem('filter_subscribe') === 'true');
+provide(filter_subscribe_key, filter_subscribe);
+
+let filter_keyword = ref(localStorage.getItem('filter_keyword') === 'true');
+provide(filter_keyword_key, filter_keyword);
+
 </script>
 <template>
   <n-layout has-sider class="full-height">

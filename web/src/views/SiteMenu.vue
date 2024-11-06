@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { inject, reactive } from 'vue'
+import { inject, onMounted, reactive, watch } from 'vue'
+import { useRouter } from 'vue-router';
 import { server } from '@/const'
 import type { SiteItem } from '@/api_interface'
 import { ElScrollbar } from 'element-plus'
@@ -8,7 +9,7 @@ import UpdateSVG from '@/components/svg/UpdateSVG.vue'
 import BookmarkSvg from '@/components/svg/BookmarkSvg.vue'
 import FolderPlusSVG from '@/components/svg/FolderPlusSVG.vue'
 import LayersSVG from '@/components/svg/LayersSVG.vue'
-import { user_key } from '@/key'
+import { filter_subscribe_key, user_key } from '@/key'
 
 interface CateSite {
   cate_id: number
@@ -16,23 +17,42 @@ interface CateSite {
   sites: SiteItem[]
 }
 
+let filter_subscribe = inject(filter_subscribe_key)!;
+const user = inject(user_key)!
+const router = useRouter();
+
 let sites = reactive<CateSite[]>([])
 
-fetch(`${server}/site`)
-  .then((r) => r.json())
-  .then((data: SiteItem[]) => {
-    let cateSites: CateSite = { cate_id: 0, cate_name: '', sites: [] }
-    for (let site of data) {
-      if (site.cate_id != cateSites.cate_id) {
-        if (cateSites.cate_id != 0) sites.push(cateSites)
-        cateSites = { cate_id: site.cate_id, cate_name: site.category, sites: [] }
+function loadSites() {
+  fetch(`${server}/site?subscribe=${filter_subscribe.value ? "true" : "false"}`)
+    .then((r) => r.json())
+    .then((data: SiteItem[]) => {      
+      let tmp_sites: CateSite[] = []
+      let cateSites: CateSite = { cate_id: 0, cate_name: '', sites: [] }
+      for (let site of data) {
+        if (site.cate_id != cateSites.cate_id) {
+          if (cateSites.cate_id != 0) tmp_sites.push(cateSites)
+          cateSites = { cate_id: site.cate_id, cate_name: site.category, sites: [] }
+        }
+        cateSites.sites.push(site)
       }
-      cateSites.sites.push(site)
-    }
-    if (cateSites.cate_id != 0) sites.push(cateSites)
-  })
+      if (cateSites.cate_id != 0) tmp_sites.push(cateSites)
+      sites.splice(0, sites.length)      
+      sites.push(...tmp_sites)      
+    })
+}
 
-const user = inject(user_key)!
+function handleSubMenuClick(cate_id: number) {
+  console.log(cate_id)
+  // router.push(`/category/${cate_id}`);
+}
+
+watch(filter_subscribe, () => {
+  loadSites()
+})
+onMounted(() => {
+  loadSites()
+})
 </script>
 
 <template>
@@ -59,7 +79,7 @@ const user = inject(user_key)!
           <FolderPlusSVG class="menu-icon" />
           <span class="menu-top">增删网站</span>
         </el-menu-item>
-        <el-sub-menu v-for:="cate in sites" :index="cate.cate_name">
+        <el-sub-menu v-for:="cate in sites" @click="handleSubMenuClick(cate.cate_id)" :index="cate.cate_name">
           <template #title>
             <el-icon> </el-icon>
             <span>{{ cate.cate_name }}</span>
@@ -83,7 +103,8 @@ const user = inject(user_key)!
   left: 0;
   width: 100%;
   height: auto;
-  pointer-events: none; /* 添加这一行 */
+  pointer-events: none;
+  /* 添加这一行 */
 }
 
 .overlay-image {
@@ -105,7 +126,8 @@ const user = inject(user_key)!
 }
 
 .menu-icon {
-  margin-right: 4px; /* 或者你需要的间隔大小 */
+  margin-right: 4px;
+  /* 或者你需要的间隔大小 */
 }
 
 .el-menu-item:hover {

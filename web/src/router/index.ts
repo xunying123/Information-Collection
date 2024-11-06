@@ -35,6 +35,13 @@ const router = createRouter({
           children: [page_rule('daliyupdate')]
         },
         {
+          path: 'category/:category_id(\\d+)',
+          name: 'category',
+          props: true,
+          component: () => import('@/views/pages/CategoryPages.vue'),
+          children: [page_rule('site')]
+        },
+        {
           path: 'site/:site_id(\\d+)',
           name: 'site',
           props: true,
