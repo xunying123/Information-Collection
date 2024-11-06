@@ -37,7 +37,7 @@ class ResponsePageItem(dict):
 class ResponseSite(ResponseSiteItem):
     def __init__(self, site: Site):
         super().__init__(site)
-        self["pages"] = []
+        # self["pages"] = []
 
 
 class ResponsePage(ResponsePageItem):

@@ -95,6 +95,22 @@ def remove_site():
         db.commit()
     return jsonify({"code": 0, "msg": "deleted"})
 
+@web.route("/site/<int:site_id>")
+@login_required
+def get_site_pages(site_id):
+    count = request.args.get("count", AppConfig.default_paging_size, type=int)
+    offset = request.args.get("offset", 0, type=int)
+    result: list[ResponsePageItem] = []
+    stmt = select(Page).where(Page.site_id == site_id).order_by(Page.created_at.desc())
+    if count > 0 and offset >= 0:
+        stmt = stmt.limit(count).offset(offset)
+
+    with SqlSession() as db:
+        site = db.scalar(select(Site).where(Site.id == site_id))
+        if site is None:
+            return "Site not found", 404
+        res = ResponseSite(site)
+    return jsonify(res)
 
 @web.route("/page")
 @login_required
@@ -147,7 +163,8 @@ def get_pages():
         for page in db.scalars(stmt):
             info = ResponsePageItem(page)
             result.append(info)
-    return jsonify(result)
+    new_cursor_id = min([x["id"] for x in result]) if result else None
+    return jsonify({"pages": result, "cursor_id": new_cursor_id})
 
 
 @web.route("/page/<int:page_id>")
@@ -383,7 +400,7 @@ def remove_bookmark():
     with SqlSession() as db:
         db.execute(
             delete(Bookmark).where(
-                Bookmark.user_id == current_user.id and Bookmark.page_id == page_id
+                (Bookmark.user_id == current_user.id) & (Bookmark.page_id == page_id)
             )
         )
     return jsonify({"code": 0, "msg": "ok"})
@@ -439,47 +456,98 @@ def get_keywords():
 @web.route("/keyword", methods=["POST"])
 @login_required
 def add_keyword():
-    data = request.json()
-    word = data["word"]
+    data = request.json
+    words = data["words"]
     add_for_user = data["add_for_user"]
-    if type(word) is not str:
-        return jsonify({"code": 1, "msg": "invalid request"})
+    if type(words) is not list:
+        return jsonify({"code": 1, "msg": "invalid request: words is not an array"})
+    for word in words:
+        if type(word) is not str:
+            return jsonify({"code": 1, "msg": "invalid request: word is not a string"})
     if add_for_user is not None and type(add_for_user) is not bool:
         return jsonify({"code": 1, "msg": "invalid request"})
-    if word is None:
-        return jsonify({"code": 1, "msg": "missing word"})
+    kw_ids = []
     with SqlSession() as db:
-        kw = db.scalar(select(Keyword).where(Keyword.word == word))
-        if kw is None:
-            kw = Keyword(word=word)
-            db.add(kw)
-            db.flush()
-            kw_id = kw.id
-        else:
-            kw_id = kw.id
-        if add_for_user:
-            db.add(UserKeywordRelation(user_id=current_user.id, keyword_id=kw_id))
+        for word in words:
+            kw = db.scalar(select(Keyword).where(Keyword.word == word))
+            if kw is None:
+                kw = Keyword(word=word)
+                db.add(kw)
+                db.flush()
+                kw_id = kw.id
+            else:
+                kw_id = kw.id
+            if add_for_user:
+                db.add(UserKeywordRelation(user_id=current_user.id, keyword_id=kw_id))
+            kw_ids.append(kw_id)
         db.commit()
-    return jsonify({"code": 0, "msg": "ok", "keyword_id": kw_id})
+    return jsonify({"code": 0, "msg": "ok", "keywords_id": kw_ids})
 
 
 @web.route("/keyword", methods=["DELETE"])
 @login_required
 def remove_keyword():
-    data = request.json()
+    data = request.json
     keyword_id = data["keyword_id"]
     if type(keyword_id) is not int:
         return jsonify({"code": 1, "msg": "invalid request"})
+    stmt = delete(UserKeywordRelation).where(
+        (UserKeywordRelation.user_id == current_user.id)
+        & (UserKeywordRelation.keyword_id == keyword_id)
+    )
+    print(stmt.compile())
+    with SqlSession() as db:
+        db.execute(stmt)
+        db.commit()
+    return jsonify({"code": 0, "msg": "ok"})
+
+
+@web.route("/subscribe", methods=["GET"])
+@login_required
+def get_subscribes():
+    stmt = select(UserSiteRelation).where(UserSiteRelation.user_id == current_user.id)
+    result = []
+    with SqlSession() as db:
+        for us in db.scalars(stmt):
+            info = ResponseSiteItem(us.site)
+            result.append(info)
+    return jsonify({"sites": result})
+
+@web.route("/subscribe", methods=["POST"])
+@login_required
+def add_subscribe():
+    data = request.json
+    sites_id = data.get("sites_id")
+    if type(sites_id) is not list:
+        return jsonify({"code": 1, "msg": "invalid request: sites_id is not an array"})
+    for site_id in sites_id:
+        if type(site_id) is not int:
+            return jsonify({"code": 1, "msg": "invalid request: site_id is not a number"})
+    with SqlSession() as db:
+        for site_id in sites_id:
+            site = db.scalar(select(Site).where(Site.id == site_id))
+            if site is None:
+                return jsonify({"code": 2, "msg": "site not found: " + str(site_id)})
+            db.add(UserSiteRelation(user_id=current_user.id, site_id=site_id))
+        db.commit()
+    return jsonify({"code": 0, "msg": "ok"})
+
+@web.route("/subscribe", methods=["DELETE"])
+@login_required
+def remove_subscribe():
+    data = request.json
+    site_id = data.get("site_id")
+    if site_id is None:
+        return jsonify({"code": 1, "msg": "missing site_id"})
     with SqlSession() as db:
         db.execute(
-            delete(UserKeywordRelation).where(
-                UserKeywordRelation.user_id == current_user.id
-                and UserKeywordRelation.keyword_id == keyword_id
+            delete(UserSiteRelation).where(
+                (UserSiteRelation.user_id == current_user.id)
+                & (UserSiteRelation.site_id == site_id)
             )
         )
         db.commit()
     return jsonify({"code": 0, "msg": "ok"})
-
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = AppConfig.secret_key
