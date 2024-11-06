@@ -1,8 +1,8 @@
 from flask_cors import CORS
-from flask import Flask, request, url_for, redirect
+from flask import Flask, request, url_for, redirect, g
 from flask import Blueprint
 
-from server.db import SqlSession
+from server.db import db, Session
 from sqlalchemy import select, delete, exists, func, not_
 
 from common.models import *
@@ -23,6 +23,17 @@ current_user: User4login
 web = Blueprint("web", __name__, static_folder="static", template_folder="templates")
 
 
+@web.teardown_request
+def teardown_request(exception):
+    db: Session | None = g.pop("db", None)
+    if db is not None:
+        with db:
+            if exception is None:
+                db.commit()
+            else:
+                db.rollback()
+
+
 @web.route("/")
 def index():
     return "Hello, World!"
@@ -33,10 +44,9 @@ def index():
 def get_categories():
     result: list[ResponseCategory] = []
     stmt = select(Category).order_by(Category.id)
-    with SqlSession() as db:
-        for cate in db.scalars(stmt):
-            info = ResponseCategory(cate)
-            result.append(info)
+    for cate in db.scalars(stmt):
+        info = ResponseCategory(cate)
+        result.append(info)
     return jsonify(result)
 
 
@@ -56,10 +66,9 @@ def get_sites():
                 & (UserSiteRelation.site_id == Site.id)
             )
         )
-    with SqlSession() as db:
-        for site in db.scalars(stmt):
-            info = ResponseSiteItem(site)
-            result.append(info)
+    for site in db.scalars(stmt):
+        info = ResponseSiteItem(site)
+        result.append(info)
     return jsonify(result)
 
 
@@ -72,15 +81,13 @@ def add_site():
     cate_id = int(data.get("cate_id"))
     url = data.get("url")
     icon = data.get("icon")
-    with SqlSession() as db:
-        try:
-            site = Site(name=name, url=url, cate_id=cate_id, icon=icon)
-            db.add(site)
-            db.flush()
-            site_id = site.id
-            db.commit()
-        except:
-            return jsonify({"code": 1, "msg": "failed to add site."})
+    try:
+        site = Site(name=name, url=url, cate_id=cate_id, icon=icon)
+        db.add(site)
+        db.flush()
+        site_id = site.id
+    except:
+        return jsonify({"code": 1, "msg": "failed to add site."})
     return jsonify({"code": 0, "msg": "ok", "site_id": site_id})
 
 
@@ -91,16 +98,14 @@ def remove_site():
     data = request.json
     id = data.get("id")
     is_force = data.get("force")
-    with SqlSession() as db:
-        if (
-            not is_force
-            and db.scalar(select(Page.id).where(Page.site_id == id)) is not None
-        ):
-            return jsonify(
-                {"code": 1, "msg": "there are pages in this site. set force:true."}
-            )
-        db.execute(delete(Site).where(Site.id == id))
-        db.commit()
+    if (
+        not is_force
+        and db.scalar(select(Page.id).where(Page.site_id == id)) is not None
+    ):
+        return jsonify(
+            {"code": 1, "msg": "there are pages in this site. set force:true."}
+        )
+    db.execute(delete(Site).where(Site.id == id))
     return jsonify({"code": 0, "msg": "deleted"})
 
 
@@ -169,10 +174,9 @@ def get_pages():
         stmt = stmt.limit(count)
 
     result: list[ResponsePageItem] = []
-    with SqlSession() as db:
-        for page in db.scalars(stmt):
-            info = ResponsePageItem(page)
-            result.append(info)
+    for page in db.scalars(stmt):
+        info = ResponsePageItem(page)
+        result.append(info)
     new_cursor_id = min([x["id"] for x in result]) if result else None
     return jsonify({"pages": result, "cursor_id": new_cursor_id})
 
@@ -181,11 +185,10 @@ def get_pages():
 @login_required
 def get_page(page_id):
     stmt = select(Page).where(Page.id == page_id)
-    with SqlSession() as db:
-        page = db.scalar(stmt)
-        if page is None:
-            return "Page not found", 404
-        res = ResponsePage(page)
+    page = db.scalar(stmt)
+    if page is None:
+        return "Page not found", 404
+    res = ResponsePage(page)
     return jsonify(res)
 
 
@@ -218,10 +221,9 @@ def search_page():
     if time_end:
         stmt = stmt.where(Page.publish_time <= time_end)
     result: list[ResponsePageItem] = []
-    with SqlSession() as db:
-        for page in db.scalars(stmt):
-            info = ResponsePageItem(page)
-            result.append(info)
+    for page in db.scalars(stmt):
+        info = ResponsePageItem(page)
+        result.append(info)
     return jsonify(result)
 
 
@@ -253,35 +255,33 @@ def add_page(site_id):
             400,
         )
 
-    with SqlSession() as db:
-        # check if site exists
-        cate_id = db.scalar(select(Site.cate_id).where(Site.id == site_id))
-        if cate_id is None:
-            return "Site not found", 404
-        # check if page already exists
-        existed_id = db.scalar(select(Page.id).where(Page.source_url == source_url))
-        if existed_id is not None:
-            return jsonify(
-                {
-                    "status": "duplicated",
-                    "page_id": existed_id,
-                    "error": "this url has been added.",
-                }
-            )
-
-        page = Page(
-            site_id=site_id,
-            title=title,
-            content=content,
-            full_content=full_content,
-            source_url=source_url,
-            cate_id=cate_id,
-            publish_time=publish_time,  # TODO: this line may cause error
+    # check if site exists
+    cate_id = db.scalar(select(Site.cate_id).where(Site.id == site_id))
+    if cate_id is None:
+        return "Site not found", 404
+    # check if page already exists
+    existed_id = db.scalar(select(Page.id).where(Page.source_url == source_url))
+    if existed_id is not None:
+        return jsonify(
+            {
+                "status": "duplicated",
+                "page_id": existed_id,
+                "error": "this url has been added.",
+            }
         )
-        db.add(page)
-        db.flush()
-        page_id = page.id
-        db.commit()
+
+    page = Page(
+        site_id=site_id,
+        title=title,
+        content=content,
+        full_content=full_content,
+        source_url=source_url,
+        cate_id=cate_id,
+        publish_time=publish_time,  # TODO: this line may cause error
+    )
+    db.add(page)
+    db.flush()
+    page_id = page.id
     response = {
         "status": "ok",
         "page_id": page_id,
@@ -320,28 +320,26 @@ def do_auth_callback():
         print(entity)
         code = entity.get("code")
         print(f"{code=}")
-        with SqlSession() as db:
-            user = db.scalar(select(User).where(User.jaccount_code == code))
-            if user is None:
-                user = User(
-                    jaccount_code=code,
-                    username=entity.get("account"),
-                    userType=entity.get("userType"),
-                    name=entity.get("name"),
-                    organization=entity.get("organize").get("name"),
-                    is_admin=False,
-                    avatars=entity.get("accountPhotoUrl"),
-                )
-                db.add(user)
-            else:
-                user.username = entity.get("account")
-                user.userType = entity.get("userType")
-                user.name = entity.get("name")
-                user.organization = entity.get("organize").get("name")
-                user.avatars = entity.get("accountPhotoUrl")
-            db.flush()
-            db.commit()
-            login_user(User4login(user), remember=True)
+        user = db.scalar(select(User).where(User.jaccount_code == code))
+        if user is None:
+            user = User(
+                jaccount_code=code,
+                username=entity.get("account"),
+                userType=entity.get("userType"),
+                name=entity.get("name"),
+                organization=entity.get("organize").get("name"),
+                is_admin=False,
+                avatars=entity.get("accountPhotoUrl"),
+            )
+            db.add(user)
+        else:
+            user.username = entity.get("account")
+            user.userType = entity.get("userType")
+            user.name = entity.get("name")
+            user.organization = entity.get("organize").get("name")
+            user.avatars = entity.get("accountPhotoUrl")
+        db.flush()
+        login_user(User4login(user), remember=True)
         return redirect(state, code=302)
     except Exception as e:
         print(f"exception: {e=}")
@@ -355,17 +353,16 @@ def do_login_with_password():
     password = data.get("password")
     if not all([username, password]):
         return jsonify({"code": -1, "msg": "something missing"})
-    with SqlSession() as db:
-        user = db.scalar(select(User).where(User.username == username))
-        if user is None:
-            return jsonify({"code": -4, "msg": "用户不存在"})
-        if user.password is None:
-            return jsonify({"code": -2, "msg": "尚未设置密码"})
-        [salt, hash_str] = user.password.split("-", 1)
-        check_hash = sha256((salt + password).encode("utf-8")).hexdigest()
-        if check_hash != hash_str:
-            return jsonify({"code": -3, "msg": "密码错误"})
-        login_user(User4login(user), remember=True)
+    user = db.scalar(select(User).where(User.username == username))
+    if user is None:
+        return jsonify({"code": -4, "msg": "用户不存在"})
+    if user.password is None:
+        return jsonify({"code": -2, "msg": "尚未设置密码"})
+    [salt, hash_str] = user.password.split("-", 1)
+    check_hash = sha256((salt + password).encode("utf-8")).hexdigest()
+    if check_hash != hash_str:
+        return jsonify({"code": -3, "msg": "密码错误"})
+    login_user(User4login(user), remember=True)
     return jsonify({"code": 0, "msg": "登录成功"})
 
 
@@ -388,15 +385,13 @@ def get_me():
 def add_bookmark():
     data = request.json
     page_id = data.get("page_id")
-    with SqlSession() as db:
-        user = db.scalar(select(User).where(User.id == current_user.id))
-        if user is None:
-            return jsonify({"code": 1, "msg": "user not found"})
-        page = db.scalar(select(Page).where(Page.id == page_id))
-        if page is None:
-            return jsonify({"code": 2, "msg": "page not found"})
-        user.bookmarks.append(page)
-        db.commit()
+    user = db.scalar(select(User).where(User.id == current_user.id))
+    if user is None:
+        return jsonify({"code": 1, "msg": "user not found"})
+    page = db.scalar(select(Page).where(Page.id == page_id))
+    if page is None:
+        return jsonify({"code": 2, "msg": "page not found"})
+    user.bookmarks.append(page)
     return jsonify({"code": 0, "msg": "ok"})
 
 
@@ -407,12 +402,11 @@ def remove_bookmark():
     page_id = data.get("page_id")
     if page_id is None:
         return jsonify({"code": 1, "msg": "missing page_id"})
-    with SqlSession() as db:
-        db.execute(
-            delete(Bookmark).where(
-                (Bookmark.user_id == current_user.id) & (Bookmark.page_id == page_id)
-            )
+    db.execute(
+        delete(Bookmark).where(
+            (Bookmark.user_id == current_user.id) & (Bookmark.page_id == page_id)
         )
+    )
     return jsonify({"code": 0, "msg": "ok"})
 
 
@@ -434,12 +428,12 @@ def get_bookmarks():
         stmt = stmt.where(Bookmark.created_at >= time_start)
     if time_end:
         stmt = stmt.where(Bookmark.created_at <= time_end)
-    with SqlSession() as db:
-        result = []
-        bookmarks = db.scalars(stmt)
-        for bm in bookmarks:
-            info = ResponsePageItem(bm.page)
-            result.append(info)
+
+    result = []
+    bookmarks = db.scalars(stmt)
+    for bm in bookmarks:
+        info = ResponsePageItem(bm.page)
+        result.append(info)
     return jsonify(result)
 
 
@@ -456,10 +450,9 @@ def get_keywords():
             )
         )
     result = []
-    with SqlSession() as db:
-        for kw in db.scalars(stmt):
-            info = ResponseKeywordItem(kw)
-            result.append(info)
+    for kw in db.scalars(stmt):
+        info = ResponseKeywordItem(kw)
+        result.append(info)
     return jsonify(result)
 
 
@@ -478,36 +471,34 @@ def add_keyword():
     if add_for_user is not None and type(add_for_user) is not bool:
         return jsonify({"code": 1, "msg": "invalid request"})
     kw_ids = []
-    with SqlSession() as db:
-        if not keep_user_existed and add_for_user:
-            db.execute(
-                delete(UserKeywordRelation).where(
-                    UserKeywordRelation.user_id == current_user.id
-                )
+    if not keep_user_existed and add_for_user:
+        db.execute(
+            delete(UserKeywordRelation).where(
+                UserKeywordRelation.user_id == current_user.id
             )
-        for word in words:
-            kw = db.scalar(select(Keyword).where(Keyword.word == word))
-            if kw is None:
-                kw = Keyword(word=word)
-                db.add(kw)
-                db.flush()
-                kw_id = kw.id
-            else:
-                kw_id = kw.id
-            if add_for_user:
-                if (
-                    db.scalar(
-                        select(UserKeywordRelation).where(
-                            (UserKeywordRelation.user_id == current_user.id)
-                            & (UserKeywordRelation.keyword_id == kw_id)
-                        )
+        )
+    for word in words:
+        kw = db.scalar(select(Keyword).where(Keyword.word == word))
+        if kw is None:
+            kw = Keyword(word=word)
+            db.add(kw)
+            db.flush()
+            kw_id = kw.id
+        else:
+            kw_id = kw.id
+        if add_for_user:
+            if (
+                db.scalar(
+                    select(UserKeywordRelation).where(
+                        (UserKeywordRelation.user_id == current_user.id)
+                        & (UserKeywordRelation.keyword_id == kw_id)
                     )
-                    is not None
-                ):
-                    continue
-                db.add(UserKeywordRelation(user_id=current_user.id, keyword_id=kw_id))
-            kw_ids.append(kw_id)
-        db.commit()
+                )
+                is not None
+            ):
+                continue
+            db.add(UserKeywordRelation(user_id=current_user.id, keyword_id=kw_id))
+        kw_ids.append(kw_id)
     return jsonify({"code": 0, "msg": "ok", "keywords_id": kw_ids})
 
 
@@ -522,10 +513,7 @@ def remove_keyword():
         (UserKeywordRelation.user_id == current_user.id)
         & (UserKeywordRelation.keyword_id == keyword_id)
     )
-    print(stmt.compile())
-    with SqlSession() as db:
-        db.execute(stmt)
-        db.commit()
+    db.execute(stmt)
     return jsonify({"code": 0, "msg": "ok"})
 
 
@@ -533,11 +521,10 @@ def remove_keyword():
 @login_required
 def get_subscribes():
     result = []
-    with SqlSession() as db:
-        user = db.scalar(select(User).where(User.id == current_user.id))
-        for site in user.sites:
-            info = ResponseSiteItem(site)
-            result.append(info)
+    user = db.scalar(select(User).where(User.id == current_user.id))
+    for site in user.sites:
+        info = ResponseSiteItem(site)
+        result.append(info)
     return jsonify({"sites": result})
 
 
@@ -554,30 +541,28 @@ def add_subscribe():
             return jsonify(
                 {"code": 1, "msg": "invalid request: site_id is not a number"}
             )
-    with SqlSession() as db:
-        if not keep_user_existed:
-            db.execute(
-                delete(UserSiteRelation).where(
+    if not keep_user_existed:
+        db.execute(
+            delete(UserSiteRelation).where(
+                (UserSiteRelation.user_id == current_user.id)
+                & (UserSiteRelation.site_id.not_in(sites_id))
+            )
+        )
+    for site_id in sites_id:
+        site = db.scalar(select(Site).where(Site.id == site_id))
+        if site is None:
+            return jsonify({"code": 2, "msg": "site not found: " + str(site_id)})
+        if (
+            db.scalar(
+                select(UserSiteRelation).where(
                     (UserSiteRelation.user_id == current_user.id)
-                    & (UserSiteRelation.site_id.not_in(sites_id))
+                    & (UserSiteRelation.site_id == site_id)
                 )
             )
-        for site_id in sites_id:
-            site = db.scalar(select(Site).where(Site.id == site_id))
-            if site is None:
-                return jsonify({"code": 2, "msg": "site not found: " + str(site_id)})
-            if (
-                db.scalar(
-                    select(UserSiteRelation).where(
-                        (UserSiteRelation.user_id == current_user.id)
-                        & (UserSiteRelation.site_id == site_id)
-                    )
-                )
-                is not None
-            ):
-                continue
-            db.add(UserSiteRelation(user_id=current_user.id, site_id=site_id))
-        db.commit()
+            is not None
+        ):
+            continue
+        db.add(UserSiteRelation(user_id=current_user.id, site_id=site_id))
     return jsonify({"code": 0, "msg": "ok"})
 
 
@@ -588,14 +573,12 @@ def remove_subscribe():
     site_id = data.get("site_id")
     if site_id is None:
         return jsonify({"code": 1, "msg": "missing site_id"})
-    with SqlSession() as db:
-        db.execute(
-            delete(UserSiteRelation).where(
-                (UserSiteRelation.user_id == current_user.id)
-                & (UserSiteRelation.site_id == site_id)
-            )
+    db.execute(
+        delete(UserSiteRelation).where(
+            (UserSiteRelation.user_id == current_user.id)
+            & (UserSiteRelation.site_id == site_id)
         )
-        db.commit()
+    )
     return jsonify({"code": 0, "msg": "ok"})
 
 

@@ -1,6 +1,6 @@
 from flask_login import LoginManager, UserMixin, current_user
 from common.models import User
-from server.db import SqlSession
+from server.db import db
 from sqlalchemy import select
 from server.utils import jsonify
 from functools import wraps
@@ -22,11 +22,10 @@ class User4login(UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
-    with SqlSession() as db:
-        user = db.scalar(select(User).where(User.id == user_id))
-        if user is None:
-            return None
-        return User4login(user)
+    user = db.scalar(select(User).where(User.id == user_id))
+    if user is None:
+        return None
+    return User4login(user)
 
 
 @login_manager.unauthorized_handler
