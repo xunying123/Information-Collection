@@ -50,6 +50,14 @@ def get_categories():
     return jsonify(result)
 
 
+@web.route("/category/<int:cate_id>")
+@login_required
+def get_category(cate_id):
+    cate = db.scalar(select(Category).where(Category.id == cate_id))
+    if cate is None:
+        return "Category not found", 404
+    return jsonify(ResponseCategory(cate))
+
 @web.route("/site")
 @login_required
 def get_sites():
