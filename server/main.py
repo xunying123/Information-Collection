@@ -105,8 +105,8 @@ def get_pages():
     site = request.args.get("site", None, type=int)
     only_today = request.args.get("today", False, type=bool)
     bookmarked = request.args.get("bookmarked", False, type=bool)
-    filterd_by_keyword = request.args.get("keyword", None, type=str)
-    filterd_by_subscribe = request.args.get("subscribe", None, type=int)
+    filterd_by_keyword = request.args.get("keyword", False, type=bool)
+    filterd_by_subscribe = request.args.get("subscribe", False, type=bool)
 
     stmt = select(Page).order_by(Page.created_at.desc())
 
@@ -120,7 +120,7 @@ def get_pages():
         stmt = stmt.where(func.date(Page.publish_time) == today)
     if bookmarked:
         stmt = stmt.join(Bookmark).where(Bookmark.user_id == current_user.id)
-    if filterd_by_keyword is not None:
+    if filterd_by_keyword:
         stmt = stmt.where(
             exists().where(
                 (UserKeywordRelation.user_id == current_user.id)
@@ -129,7 +129,7 @@ def get_pages():
                 & (PageKeywordRelation.page_id == Page.id)
             )
         )
-    if filterd_by_subscribe is not None:
+    if filterd_by_subscribe:
         stmt = stmt.where(
             exists().where(
                 (UserSiteRelation.user_id == current_user.id)
@@ -414,6 +414,71 @@ def get_bookmarks():
             info = ResponsePageItem(bm.page)
             result.append(info)
     return jsonify(result)
+
+
+@web.route("/keyword")
+@login_required
+def get_keywords():
+    personal = request.args.get("personal", False, type=bool)
+    stmt = select(Keyword)
+    if personal:
+        stmt = stmt.where(
+            exists().where(
+                (UserKeywordRelation.user_id == current_user.id)
+                & (UserKeywordRelation.keyword_id == Keyword.id)
+            )
+        )
+    result = []
+    with SqlSession() as db:
+        for kw in db.scalars(stmt):
+            info = ResponseKeywordItem(kw)
+            result.append(info)
+    return jsonify(result)
+
+
+@web.route("/keyword", methods=["POST"])
+@login_required
+def add_keyword():
+    data = request.json()
+    word = data["word"]
+    add_for_user = data["add_for_user"]
+    if type(word) is not str:
+        return jsonify({"code": 1, "msg": "invalid request"})
+    if add_for_user is not None and type(add_for_user) is not bool:
+        return jsonify({"code": 1, "msg": "invalid request"})
+    if word is None:
+        return jsonify({"code": 1, "msg": "missing word"})
+    with SqlSession() as db:
+        kw = db.scalar(select(Keyword).where(Keyword.word == word))
+        if kw is None:
+            kw = Keyword(word=word)
+            db.add(kw)
+            db.flush()
+            kw_id = kw.id
+        else:
+            kw_id = kw.id
+        if add_for_user:
+            db.add(UserKeywordRelation(user_id=current_user.id, keyword_id=kw_id))
+        db.commit()
+    return jsonify({"code": 0, "msg": "ok", "keyword_id": kw_id})
+
+
+@web.route("/keyword", methods=["DELETE"])
+@login_required
+def remove_keyword():
+    data = request.json()
+    keyword_id = data["keyword_id"]
+    if type(keyword_id) is not int:
+        return jsonify({"code": 1, "msg": "invalid request"})
+    with SqlSession() as db:
+        db.execute(
+            delete(UserKeywordRelation).where(
+                UserKeywordRelation.user_id == current_user.id
+                and UserKeywordRelation.keyword_id == keyword_id
+            )
+        )
+        db.commit()
+    return jsonify({"code": 0, "msg": "ok"})
 
 
 app = Flask(__name__)

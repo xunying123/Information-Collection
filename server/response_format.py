@@ -1,4 +1,4 @@
-from common.models import Category, Site, Page
+from common.models import *
 
 
 class ResponseSiteItem(dict):
@@ -45,3 +45,10 @@ class ResponsePage(ResponsePageItem):
         super().__init__(page)
         # self["content"] = page.content
         self["full_content"] = page.full_content
+
+
+class ResponseKeywordItem(dict):
+    def __init__(self, keyword: Keyword):
+        super().__init__()
+        self["id"] = keyword.id
+        self["word"] = keyword.word
