@@ -95,6 +95,7 @@ def remove_site():
         db.commit()
     return jsonify({"code": 0, "msg": "deleted"})
 
+
 @web.route("/site/<int:site_id>")
 @login_required
 def get_site_pages(site_id):
@@ -111,6 +112,7 @@ def get_site_pages(site_id):
             return "Site not found", 404
         res = ResponseSite(site)
     return jsonify(res)
+
 
 @web.route("/page")
 @login_required
@@ -478,6 +480,16 @@ def add_keyword():
             else:
                 kw_id = kw.id
             if add_for_user:
+                if (
+                    db.scalar(
+                        select(UserKeywordRelation).where(
+                            (UserKeywordRelation.user_id == current_user.id)
+                            & (UserKeywordRelation.keyword_id == kw_id)
+                        )
+                    )
+                    is not None
+                ):
+                    continue
                 db.add(UserKeywordRelation(user_id=current_user.id, keyword_id=kw_id))
             kw_ids.append(kw_id)
         db.commit()
@@ -513,6 +525,7 @@ def get_subscribes():
             result.append(info)
     return jsonify({"sites": result})
 
+
 @web.route("/subscribe", methods=["POST"])
 @login_required
 def add_subscribe():
@@ -522,15 +535,28 @@ def add_subscribe():
         return jsonify({"code": 1, "msg": "invalid request: sites_id is not an array"})
     for site_id in sites_id:
         if type(site_id) is not int:
-            return jsonify({"code": 1, "msg": "invalid request: site_id is not a number"})
+            return jsonify(
+                {"code": 1, "msg": "invalid request: site_id is not a number"}
+            )
     with SqlSession() as db:
         for site_id in sites_id:
             site = db.scalar(select(Site).where(Site.id == site_id))
             if site is None:
                 return jsonify({"code": 2, "msg": "site not found: " + str(site_id)})
+            if (
+                db.scalar(
+                    select(UserSiteRelation).where(
+                        (UserSiteRelation.user_id == current_user.id)
+                        & (UserSiteRelation.site_id == site_id)
+                    )
+                )
+                is not None
+            ):
+                continue
             db.add(UserSiteRelation(user_id=current_user.id, site_id=site_id))
         db.commit()
     return jsonify({"code": 0, "msg": "ok"})
+
 
 @web.route("/subscribe", methods=["DELETE"])
 @login_required
@@ -548,6 +574,7 @@ def remove_subscribe():
         )
         db.commit()
     return jsonify({"code": 0, "msg": "ok"})
+
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = AppConfig.secret_key
