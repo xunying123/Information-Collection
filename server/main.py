@@ -58,6 +58,7 @@ def get_category(cate_id):
         return "Category not found", 404
     return jsonify(ResponseCategory(cate))
 
+
 @web.route("/site")
 @login_required
 def get_sites():
@@ -148,10 +149,6 @@ def get_pages():
 
     stmt = select(Page).order_by(Page.created_at.desc())
 
-    if category is not None:
-        stmt = stmt.where(Page.cate_id == category)
-    if site is not None:
-        stmt = stmt.where(Page.site_id == site)
     if only_today:
         shanghai_tz = pytz.timezone("Asia/Shanghai")
         today = datetime.now(shanghai_tz).date()
@@ -175,15 +172,28 @@ def get_pages():
                 & (Site.id == Page.site_id)
             )
         )
+    # cursor_id should be avoid when category is set but site is not
     if cursor_id is not None:
         stmt = stmt.where(Page.id < cursor_id)
     if count > 0:
         stmt = stmt.limit(count)
 
     result: list[ResponsePageItem] = []
-    for page in db.scalars(stmt):
-        info = ResponsePageItem(page)
-        result.append(info)
+    if site is not None:
+        stmt = stmt.where(Page.site_id == site)
+        for page in db.scalars(stmt):
+            info = ResponsePageItem(page)
+            result.append(info)
+    elif category is not None:
+        # special logic: count is used to limit every SITE instead of total pages
+        # cursor_id should not be used in this case CURRENTLY
+        # TODO: support cursor_id in this case
+        for site in db.scalars(select(Site).where(Site.cate_id == category)):
+            stmt2 = stmt.where(Page.site_id == site.id)
+            for page in db.scalars(stmt2):
+                info = ResponsePageItem(page)
+                result.append(info)
+
     new_cursor_id = min([x["id"] for x in result]) if result else None
     return jsonify({"pages": result, "cursor_id": new_cursor_id})
 
