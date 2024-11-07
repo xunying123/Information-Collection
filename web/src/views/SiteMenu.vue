@@ -26,7 +26,7 @@ let sites = reactive<CateSite[]>([])
 function loadSites() {
   fetch(`${server}/site?subscribe=${filter_subscribe.value ? "true" : "false"}`)
     .then((r) => r.json())
-    .then((data: SiteItem[]) => {      
+    .then((data: SiteItem[]) => {
       let tmp_sites: CateSite[] = []
       let cateSites: CateSite = { cate_id: 0, cate_name: '', sites: [] }
       for (let site of data) {
@@ -37,14 +37,13 @@ function loadSites() {
         cateSites.sites.push(site)
       }
       if (cateSites.cate_id != 0) tmp_sites.push(cateSites)
-      sites.splice(0, sites.length)      
-      sites.push(...tmp_sites)      
+      sites.splice(0, sites.length)
+      sites.push(...tmp_sites)
     })
 }
 
-function handleSubMenuClick(cate_id: number) {
-  console.log(cate_id)
-  // router.push(`/category/${cate_id}`);
+function handleSubMenuClick(index: string) {
+  router.push(index)
 }
 
 watch(filter_subscribe, () => {
@@ -62,7 +61,7 @@ onMounted(() => {
       <router-link to="/user">
         <UserCard />
       </router-link>
-      <el-menu class="el-menu-vertical-demo" :router="true">
+      <el-menu class="el-menu-vertical-demo" :router="true" @open="handleSubMenuClick" @close="handleSubMenuClick">
         <el-menu-item index="/">
           <LayersSVG class="menu-icon" />
           <span class="menu-top">全部</span>
@@ -79,12 +78,12 @@ onMounted(() => {
           <FolderPlusSVG class="menu-icon" />
           <span class="menu-top">增删网站</span>
         </el-menu-item>
-        <el-sub-menu v-for:="cate in sites" @click="handleSubMenuClick(cate.cate_id)" :index="cate.cate_name">
+        <el-sub-menu v-for:="cate in sites" :index="`/category/` + String(cate.cate_id)">
           <template #title>
             <el-icon> </el-icon>
             <span>{{ cate.cate_name }}</span>
           </template>
-          <el-menu-item v-for:="site in cate.sites" :index="`/site/` + site.id">{{
+          <el-menu-item v-for:="site in cate.sites" :index="`/site/` + site.id" >{{
             site.name
           }}</el-menu-item>
         </el-sub-menu>

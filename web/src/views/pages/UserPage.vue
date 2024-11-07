@@ -3,7 +3,7 @@
         <h1>用户订阅</h1>
         <div class="section">
             <div class="source-header">
-                <h2 style="display: inline-block; margin-right: 10px;">网站源列表</h2>                
+                <h2 style="display: inline-block; margin-right: 10px;">网站源列表</h2>
                 <div style="display: inline-block;">
                     <el-button type="info" @click="exportSources" size="small" round>导出网站源</el-button>
                     <el-upload action="" :before-upload="importSources" :show-file-list="false"
@@ -12,7 +12,8 @@
                     </el-upload>
                 </div>
             </div>
-            <el-switch v-model="filter_subscribe" class="mb-2" active-text="仅显示订阅的网站" inactive-text="显示全部网站" @change="saveFilter"/>
+            <el-switch v-model="filter_subscribe" class="mb-2" active-text="仅显示订阅的网站" inactive-text="显示全部网站"
+                @change="saveFilter" />
             <el-scrollbar class="source-scrollbar" height="180px" :always="true">
                 <p v-for="source in sources" :key="source.id" class="scrollbar-item">
                     <strong>{{ source.category }}</strong> - {{ source.name }} - <a :href="source.url"
@@ -66,10 +67,17 @@
                         style="display: inline-block; margin-left: 10px; margin-right: 10px;">
                         <el-button type="success" size="small" round>导入关键词</el-button>
                     </el-upload>
-                    <el-button type="danger" @click="clearKeywords" size="small" round>清空关键词</el-button>
+                    <!-- <el-button type="danger" @click="clearKeywords" size="small" round>清空关键词</el-button> -->
+                    <el-popconfirm title="此操作将清空所有关键词，是否继续？" confirm-button-text="确定" cancel-button-text="取消"
+                        icon="el-icon-question" @confirm="clearKeywords">
+                        <template #reference>
+                            <el-button type="danger" size="small" round>清空关键词</el-button>
+                        </template>
+                    </el-popconfirm>
                 </div>
             </div>
-            <el-switch v-model="filter_keyword" class="mb-2" active-text="仅显示订阅关键词相关的文章" inactive-text="显示全部文章" @change="saveFilter"/>
+            <el-switch v-model="filter_keyword" class="mb-2" active-text="仅显示订阅关键词相关的文章" inactive-text="显示全部文章"
+                @change="saveFilter" />
             <div class="keyword-tags">
                 <el-tag v-for="keyword in keywords" :key="keyword.id" round :type="getRandomTagType()" size="large">
                     {{ keyword.name }}

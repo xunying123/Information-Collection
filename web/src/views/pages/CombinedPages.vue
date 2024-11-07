@@ -11,8 +11,9 @@ import useScrollFetch from '@/useScrollFetch'
 import { filter_subscribe_key, filter_keyword_key } from '@/key'
 
 const props = defineProps<{
-    pageType: 'all' | 'daily' | 'site'
+    pageType: 'all' | 'daily' | 'site' | 'category'
     site_id?: String
+    category_id?: String
 }>()
 
 
@@ -41,6 +42,10 @@ const fetchPages = (count: number) => {
             if (!props.site_id) return
             endpoint = `${server}/page?site=${props.site_id}&count=${count}&keyword=${filter_keyword.value}`
             break
+        case 'category':
+            if (!props.category_id) return
+            endpoint = `${server}/page?category=${props.category_id}&count=${count}&subscribe=${filter_subscribe.value ? 'true' : 'false'}&keyword=${filter_keyword.value}`
+            break
     }
 
     try {
@@ -53,11 +58,20 @@ const fetchPages = (count: number) => {
                 })
             title.value = site.value.name
         }
+        if (props.pageType === 'category' && props.category_id) {
+            fetch(`${server}/category/${props.category_id}`)
+                .then((r) => r.json())
+                .then((data) => {
+                    title.value = data.name
+                })
+        }
 
         fetch(endpoint)
             .then((r) => r.json())
             .then((data) => {
-                site.value.pages = data.pages
+                if (props.pageType === 'site') {
+                    site.value.pages = data.pages
+                }                
                 pages.value = data.pages
                 loading.value = false
             })        
@@ -71,17 +85,16 @@ onMounted(() => {
 })
 
 watch(
-  () => props.site_id,
-  (newSiteId, oldSiteId) => {
-    if (newSiteId) {
+  [() => props.site_id, () => props.category_id],
+  ([newSiteId, newCategoryId], [oldSiteId, oldCategoryId]) => {
+    if (newSiteId || newCategoryId) {
       fetchPages(50)
     }
-  }  
+  }
 )
 watch(site, async (newSite) => {
   title.value = newSite.name
-  await nextTick()
-  console.log('Title updated:', title.value)
+  await nextTick()  
 })
 const { handleScroll, handleWheel } = useScrollFetch(fetchPages)
 </script>

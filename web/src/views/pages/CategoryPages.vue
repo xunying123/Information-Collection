@@ -1,11 +1,11 @@
 <template>
-    <CombinedPages pageType="site" :site_id="props.site_id" />
+    <CombinedPages pageType="category" :category_id="props.category_id" />
   </template>
   
   <script setup lang="ts">
   import CombinedPages from '@/views/pages/CombinedPages.vue'
   
   const props = defineProps({
-    site_id: String
+    category_id: String
   })
   </script>

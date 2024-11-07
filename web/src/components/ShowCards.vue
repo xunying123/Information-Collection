@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, defineProps, watch, onMounted } from 'vue'
+import { ref, defineProps, watch, onMounted, computed, reactive } from 'vue'
+import { useRoute } from 'vue-router'
 import type { PageItem } from '@/api_interface'
 import SearchInput from '@/components/SearchInput.vue'
 import { server } from '@/const'
+import { reactify } from '@vueuse/core'
+import type { List } from 'lodash'
 
 const props = defineProps<{ pages: PageItem[]; title: string; loading: Boolean }>()
 let searchKeyword = ref('')
@@ -26,23 +29,57 @@ watch(searchKeyword, (newKeyword) => {
 })
 
 const view = ref('card')
+const notCateView = ref('card')
 
-const options = [
-  { label: '卡片', value: 'card' },
-  { label: '标题列表', value: 'list' },
-  { label: '摘要列表', value: 'excerpt' },
-]
+// let show_options = computed(() => route.path.includes("category"))
+
+// const allOptions = reactive<List<{ label: string, value: string, disabled?: boolean }>>([
+//   {
+//     label: '网站卡片', value: 'site'
+//   },
+//   { label: '卡片', value: 'card' },
+//   { label: '标题列表', value: 'list' },
+//   { label: '摘要列表', value: 'excerpt' },
+// ])
+
+let options = computed(() => {
+  if (route.path.includes("category"))
+    return [
+      { label: '网站卡片', value: 'site' },
+      { label: '卡片', value: 'card' },
+      { label: '标题列表', value: 'list' },
+      { label: '摘要列表', value: 'excerpt' }
+    ]
+  else
+    return [
+      { label: '卡片', value: 'card' },
+      { label: '标题列表', value: 'list' },
+      { label: '摘要列表', value: 'excerpt' }
+    ]
+})
+
+const route = useRoute()
+// const options = ref(allOptions)
 
 watch(view, (newView) => {
   localStorage.setItem('viewMode', newView)
+  if (!route.path.includes("category")) {
+    localStorage.setItem('notCateView', newView)
+  }
 })
+
 
 onMounted(() => {
   const savedView = localStorage.getItem('viewMode')
+  const savedNotCateView = localStorage.getItem('notCateView')
   if (savedView) {
     view.value = savedView
   }
+  if (!route.path.includes("category") && view.value === 'site') {
+    view.value = savedNotCateView? savedNotCateView : 'card'
+  }
 })
+
 </script>
 
 <template>
@@ -52,22 +89,20 @@ onMounted(() => {
         <h1>{{ title }}</h1>
         <SearchInput @update:searchQuery="searchKeyword = $event"></SearchInput>
         <el-segmented v-model="view" :options="options" block class="spaced-segmented" />
-        <!-- <SearchInput v-model="searchKeyword"></SearchInput> -->
         <slot></slot>
       </div>
-      <el-scrollbar
-        v-if="pages && pages.length"
-        v-loading="loading"
-        @scroll="$emit('scroll', $event)"
-      >
-      <div v-if="view === 'card'" class="container-grid">
+      <el-scrollbar v-if="pages && pages.length" v-loading="loading" @scroll="$emit('scroll', $event)">
+        <div v-if="view === 'card'" class="container-grid">
           <ArticleCard v-for="page in filteredPages" :key="page.id" :page="page" />
         </div>
         <div v-else-if="view === 'list'">
-          <ArticleList :pages="filteredPages" :showExcerpt="false"/>
+          <ArticleList :pages="filteredPages" :showExcerpt="false" />
         </div>
         <div v-else-if="view === 'excerpt'">
-          <ArticleList :pages="filteredPages" :showExcerpt="true" />          
+          <ArticleList :pages="filteredPages" :showExcerpt="true" />
+        </div>
+        <div v-else-if="view === 'site'">
+          <SiteArticleCard :pages="filteredPages" :showExcerpt="true" />
         </div>
       </el-scrollbar>
       <el-empty v-else :image-size="200" />
@@ -109,13 +144,12 @@ h1 {
   padding-right: 2em;
 }
 
-.header > :first-child {
+.header> :first-child {
   margin-right: auto;
 }
 
 .spaced-segmented {
   margin-left: 1em;
-  width: 20em;
+  width: 23em;
 }
-
 </style>
