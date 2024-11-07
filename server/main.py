@@ -178,22 +178,27 @@ def get_pages():
     if count > 0:
         stmt = stmt.limit(count)
 
-    result: list[ResponsePageItem] = []
+    sites_id = None
     if site is not None:
-        stmt = stmt.where(Page.site_id == site)
-        for page in db.scalars(stmt):
-            info = ResponsePageItem(page)
-            result.append(info)
+        sites_id = [site]
     elif category is not None:
         # special logic: count is used to limit every SITE instead of total pages
         # cursor_id should not be used in this case CURRENTLY
         # TODO: support cursor_id in this case
-        for site in db.scalars(select(Site).where(Site.cate_id == category)):
-            stmt2 = stmt.where(Page.site_id == site.id)
-            for page in db.scalars(stmt2):
-                info = ResponsePageItem(page)
-                result.append(info)
+        sites_id = db.scalars(select(Site.id).where(Site.cate_id == category))
 
+    result: list[ResponsePageItem] = []
+
+    def get_once(stmt):
+        for page in db.scalars(stmt):
+            info = ResponsePageItem(page)
+            result.append(info)
+
+    if sites_id is not None:
+        for site_id in sites_id:
+            get_once(stmt.where(Page.site_id == site_id))
+    else:
+        get_once(stmt)
     new_cursor_id = min([x["id"] for x in result]) if result else None
     return jsonify({"pages": result, "cursor_id": new_cursor_id})
 
