@@ -2,23 +2,13 @@
 import { defineProps, computed } from 'vue'
 import type { PageItem } from '@/api_interface'
 import { is_bookmarked } from '@/bookmark'
+import { timeType } from '@/timeUtils'
 // defineProps<{ page: PageItem }>()
 
 import { NTime, zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
 import BookmarkSvg from './svg/BookmarkSvg.vue'
 
 const props = defineProps<{ page: PageItem }>()
-
-const timeType = (date: string) => {
-  const now = new Date()
-  const diff = now.getTime() - new Date(date).getTime()
-  const diffHours = diff / 1000 / 60 / 60
-  if (diffHours < 24) {
-    return 'relative'
-  } else {
-    return 'date'
-  }
-}
 
 const computedTimeType = computed(() => timeType(props.page.publish_time))
 

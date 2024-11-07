@@ -33,6 +33,7 @@
   import { NTime, zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
   import { ElAvatar, ElCard, ElScrollbar } from 'element-plus'
   import type { PageItem } from '@/api_interface'
+  import { timeType } from '@/timeUtils'
   
   const props = defineProps<{ pages: PageItem[] }>()
   
@@ -47,12 +48,6 @@
     return groups
   })
   
-  const timeType = (date: string) => {
-    const now = new Date()
-    const diff = now.getTime() - new Date(date).getTime()
-    const diffHours = diff / 1000 / 60 / 60
-    return diffHours < 24 ? 'relative' : 'date'
-  }
   </script>
   
   <style scoped>

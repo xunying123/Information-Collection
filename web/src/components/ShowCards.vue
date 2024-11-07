@@ -29,18 +29,6 @@ watch(searchKeyword, (newKeyword) => {
 })
 
 const view = ref('card')
-const notCateView = ref('card')
-
-// let show_options = computed(() => route.path.includes("category"))
-
-// const allOptions = reactive<List<{ label: string, value: string, disabled?: boolean }>>([
-//   {
-//     label: '网站卡片', value: 'site'
-//   },
-//   { label: '卡片', value: 'card' },
-//   { label: '标题列表', value: 'list' },
-//   { label: '摘要列表', value: 'excerpt' },
-// ])
 
 let options = computed(() => {
   if (route.path.includes("category"))
@@ -59,7 +47,6 @@ let options = computed(() => {
 })
 
 const route = useRoute()
-// const options = ref(allOptions)
 
 watch(view, (newView) => {
   localStorage.setItem('viewMode', newView)
