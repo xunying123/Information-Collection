@@ -1,10 +1,11 @@
 from datetime import datetime
-from utils import extract_domain, headers, normalize_url, read_content, save_content, title_, summary_, is_ad, check_
+from utils import extract_domain, headers, normalize_url, read_content, save_content, title_, summary_, is_ad, check_, check_page_content
 import asyncio
 from urllib.parse import urljoin
 from playwright.async_api import async_playwright
 from crawler import crawl
 import time
+import random
 
 proxies = {
     'http': 'http://127.0.0.1:7890',  # 为HTTP设置代理，端口根据实际情况修改
@@ -73,6 +74,9 @@ def preception(url):
             summary = summary_(content)
             title = title_(title)
             publish_time = current_date.strftime("%Y-%m-%d %H:%M")
+            if check_page_content(title) == 0 or check_page_content(content) == 0:
+                print(f"Page not found", flush=True)
+                continue
             data = {
                 "title": title,
                 "content": summary,
@@ -81,14 +85,15 @@ def preception(url):
                 "publish_time": publish_time
             }
             articles.append(data)
-            time.sleep(0.1)
+            sleep_time = random.uniform(0, 3)
+            time.sleep(sleep_time)
         save_content(articles, article_path)
     else:
         print(f"No new articles found.", flush=True)
 
 def add_website(url):
     print(f"Adding {url}", flush=True)    
-    current_links = asyncio.run(fetch_website_content(url)) 
+    current_links = asyncio.run(fetch_website_content(url))
     filename = "/home/dic/Information-Collection/src/data/saved_links/" + extract_domain(url) + '.json' 
     save_content(current_links, filename)  
 
