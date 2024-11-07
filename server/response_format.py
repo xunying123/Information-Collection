@@ -52,3 +52,4 @@ class ResponseKeywordItem(dict):
         super().__init__()
         self["id"] = keyword.id
         self["word"] = keyword.word
+        self["subject"] = keyword.subject.name

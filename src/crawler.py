@@ -3,9 +3,10 @@ from datetime import datetime
 from newspaper import Article
 import requests
 from bs4 import BeautifulSoup
-from utils import read_content, save_content, check_page_content
+from utils import read_content, save_content, check_page_content, headers
+import random
 
-url = 'https://sample.com'
+url = 'http://www.moe.gov.cn/jyb_xwfb/s6192/s222/moe_1733/202410/t20241014_1157184.html'
 
 def Newspaper(url):
     try:
@@ -47,7 +48,8 @@ def Play_Wright_new(url):
         
 def Beautiful_Soup(url):
     try:
-        response = requests.get(url)
+        # headers = random.choice(headers_pool)
+        response = requests.get(url, headers=headers)
 
         response.encoding = 'utf-8'
 
@@ -56,7 +58,7 @@ def Beautiful_Soup(url):
         title = soup.find('title').get_text()
         content = soup.find_all('p')
 
-        article_text = "\n".join([p.get_text() for p in content])
+        article_text = "\n\n".join([p.get_text() for p in content])
         if article_text :
             return title, article_text
     except Exception as e:
@@ -101,6 +103,8 @@ def crawl(url, source_url):
     if article :
         if article.title and article.text and len(article.text) > 10 and check_page_content(article.title):
             print(1, flush=True)
+            # print(article.title)
+            # print(article.text)
             return article.title, article.text
         
     title, content = Beautiful_Soup(url)
@@ -118,6 +122,8 @@ def crawl(url, source_url):
     title, content = Play_Wright_bs(url)
     if title and content and len(content) > 10 and check_page_content(title):
         print(4, flush=True)
+        # print(title)
+        # print(content)
         return title, content
     
     wrong = read_content(wrong_path)
