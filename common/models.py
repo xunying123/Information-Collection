@@ -1,11 +1,9 @@
-from sqlalchemy import Text, String, Boolean
+from sqlalchemy import Text, String, Boolean, Enum
 from sqlalchemy import ForeignKey, Text, func
-
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
-
 from typing_extensions import Annotated
-
 from datetime import datetime
+import enum
 
 
 class Base(DeclarativeBase):
@@ -124,9 +122,21 @@ class Bookmark(Base, UseTimestamps):
     page = relationship(Page)
 
 
+class KeywordSubject(enum.Enum):
+    UNSPECIFIED = "unspecified"
+    TITLE = "标题"
+    ORGANIZER = "主办单位"
+    THEME = "活动主题"
+    PARTICIPANT = "参与对象"
+
+
 class Keyword(Base):
     id: Mapped[intpk]
     word: Mapped[str] = mapped_column(unique=True, nullable=False)
+    subject: Mapped[str] = mapped_column(
+        nullable=False,
+        server_default=KeywordSubject.UNSPECIFIED.value,
+    )
     pages = relationship(
         Page, secondary="page_keyword_relation", back_populates="keywords"
     )
