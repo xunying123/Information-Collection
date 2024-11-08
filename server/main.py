@@ -246,26 +246,37 @@ def search_page():
 @login_required
 @admin_required
 def add_keyword_to_page():
-    page_id = request.json.get("page_id")
-    keyword_id = request.json.get("keyword_id")
+    page_id: int = request.json.get("page_id")
+    keyword_id: list[int] = request.json.get("keywords_id", [])
+
+    # check type
     if not all([page_id, keyword_id]):
         return jsonify({"code": 1, "msg": "missing field"})
-    if (
-        db.scalar(select(Page).where(Page.id == page_id)) is None
-        or db.scalar(select(Keyword).where(Keyword.id == keyword_id)) is None
-    ):
-        return jsonify({"code": 2, "msg": "page or keyword not found"})
-    if (
-        db.scalar(
-            select(PageKeywordRelation).where(
-                (PageKeywordRelation.page_id == page_id)
-                & (PageKeywordRelation.keyword_id == keyword_id)
+    if type(keyword_id) is not list or type(page_id) is not int:
+        return jsonify({"code": 1, "msg": "invalid request"})
+    for kw_id in keyword_id:
+        if type(kw_id) is not int:
+            return jsonify({"code": 1, "msg": "invalid request"})
+    # check if page exists
+    if db.scalar(select(Page.id).where(Page.id == page_id)) is None:
+        return jsonify({"code": 2, "msg": "page not found"})
+    # check if keyword exists
+    for kw_id in keyword_id:
+        if db.scalar(select(Keyword.id).where(Keyword.id == kw_id)) is None:
+            return jsonify({"code": 2, "msg": "keyword not found"})
+
+    for kw_id in keyword_id:
+        if (
+            db.scalar(
+                select(PageKeywordRelation).where(
+                    (PageKeywordRelation.page_id == page_id)
+                    & (PageKeywordRelation.keyword_id == kw_id)
+                )
             )
-        )
-        is not None
-    ):
-        return jsonify({"code": 3, "msg": "keyword already added"})
-    db.add(PageKeywordRelation(page_id=page_id, keyword_id=keyword_id))
+            is not None
+        ):
+            continue
+        db.add(PageKeywordRelation(page_id=page_id, keyword_id=kw_id))
     return jsonify({"code": 0, "msg": "ok"})
 
 
