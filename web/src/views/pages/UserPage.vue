@@ -90,7 +90,7 @@
                     <el-form :model="newKeyword" ref="keywordForm" label-width="120px">
                         <el-form-item label="关键词" prop="name" size="large">
                             <el-autocomplete v-model="newKeyword.name" :fetch-suggestions="queryAllKeywordSearch"
-                                placeholder="请输入关键词" @select="handAllKeywordleSelect" clearable>
+                                placeholder="请输入新关键词或选择已有关键词" @select="handAllKeywordleSelect" clearable>
                                 <template #default="{ item }">
                                     <div class="name">{{ item.name }}</div>
                                 </template>
