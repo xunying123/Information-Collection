@@ -25,7 +25,7 @@ class ResponsePageItem(dict):
         self["id"] = page.id
         self["source_url"] = page.source_url
         self["title"] = page.title
-        self["content"] = page.content
+        self["content"] = page.content[:50]
         self["site_id"] = page.site.id
         self["site"] = page.site.name
         self["site_icon"] = page.site.icon
@@ -43,8 +43,9 @@ class ResponseSite(ResponseSiteItem):
 class ResponsePage(ResponsePageItem):
     def __init__(self, page: Page):
         super().__init__(page)
-        # self["content"] = page.content
+        self["content"] = page.content
         self["full_content"] = page.full_content
+        self["keywords"] = [ResponseKeywordItem(k) for k in page.keywords]
 
 
 class ResponseKeywordItem(dict):
