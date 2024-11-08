@@ -29,9 +29,11 @@ watch(searchKeyword, (newKeyword) => {
 })
 
 const view = ref('card')
+const showSiteCard = computed(() => route.path.includes("category") || route.path.includes("daliyupdate") || route.path.includes("bookmarks"))
+// const showSiteCard = computed(() => !route.path.includes('site'))
 
 let options = computed(() => {
-  if (route.path.includes("category"))
+  if (showSiteCard.value)
     return [
       { label: '网站卡片', value: 'site' },
       { label: '卡片', value: 'card' },
@@ -50,7 +52,7 @@ const route = useRoute()
 
 watch(view, (newView) => {
   localStorage.setItem('viewMode', newView)
-  if (!route.path.includes("category")) {
+  if (!showSiteCard.value) {
     localStorage.setItem('notCateView', newView)
   }
 })
@@ -62,8 +64,8 @@ onMounted(() => {
   if (savedView) {
     view.value = savedView
   }
-  if (!route.path.includes("category") && view.value === 'site') {
-    view.value = savedNotCateView? savedNotCateView : 'card'
+  if (!showSiteCard.value && view.value === 'site') {
+    view.value = savedNotCateView ? savedNotCateView : 'card'
   }
 })
 

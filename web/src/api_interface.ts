@@ -14,6 +14,7 @@ interface PageItem {
 interface Page extends PageItem {
   // content: string
   full_content: string
+  keywords: Keyword[]
 }
 
 interface BookmarkItemPage extends Page {
@@ -46,7 +47,9 @@ interface User {
 
 interface Keyword {
   id: number
+  word: string
   name: string
+  subject: string
 }
 
 export type { PageItem, Page, SiteItem, Site, User, BookmarkItemPage, Keyword }

@@ -23,6 +23,7 @@ let pages = ref<PageItem[]>([])
 let loading = ref(true)
 let title = ref('')
 let site = ref<Site>(EmptySite)
+let count = ref(props.pageType === 'all' || props.pageType === 'site' ? 50 : 10)
 
 let filter_subscribe = inject(filter_subscribe_key)!;
 let filter_keyword = inject(filter_keyword_key)!;
@@ -36,7 +37,7 @@ const fetchPages = (count: number) => {
             break
         case 'daily':
             endpoint = `${server}/page?count=${count}&today=${true}&subscribe=${filter_subscribe.value ? 'true' : 'false'}&keyword=${filter_keyword.value}`
-            title.value = '每日更新'
+            title.value = '每日更新'            
             break
         case 'site':
             if (!props.site_id) return
@@ -81,14 +82,14 @@ const fetchPages = (count: number) => {
 }
 
 onMounted(() => {
-    fetchPages(50)
+    fetchPages(count.value)
 })
 
 watch(
   [() => props.site_id, () => props.category_id],
   ([newSiteId, newCategoryId], [oldSiteId, oldCategoryId]) => {
     if (newSiteId || newCategoryId) {
-      fetchPages(50)
+      fetchPages(count.value)
     }
   }
 )
