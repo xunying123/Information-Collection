@@ -99,9 +99,11 @@ function copyLink() {
     <el-scrollbar>
       <div class="article-content" v-loading="article.id == 0">
         <h2 class="article-title">{{ article.title }}</h2>
-        <el-tag v-for="keyword in article.keywords" :key="keyword.id" round type="primary" size="large" effect="dark">
-          {{ keyword.word }}
-        </el-tag>
+        <div class="keyword-tags">
+          <el-tag v-for="keyword in article.keywords" :key="keyword.id" round type="primary" size="large" effect="dark">
+            {{ keyword.word }}
+          </el-tag>
+        </div>
         <el-divider content-position="center">
           <n-time v-if="article.publish_time" :time="new Date(article.publish_time)" format="yyyy年MM月dd日 hh时mm分" />
         </el-divider>
@@ -300,5 +302,12 @@ function copyLink() {
 
 .flex-right {
   margin-left: auto;
+}
+
+.keyword-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
 }
 </style>
