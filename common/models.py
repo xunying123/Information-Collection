@@ -58,6 +58,7 @@ class Site(Base):
     icon: Mapped[url_type] = mapped_column(nullable=True)
     # the users who want to watch this site
     users = relationship("User", secondary="user_site_relation", back_populates="sites")
+    disabled: Mapped[bool] = mapped_column(Boolean, server_default="0")
 
 
 site_foreign_key = Annotated[
@@ -107,11 +108,13 @@ class User(Base):
     # the bookmarks the user saved
     bookmarks = relationship("Bookmark", back_populates="user")
     # the keywords the user concern
-    keywords = relationship(
+    keywords: Mapped[list["Keyword"]] = relationship(
         "Keyword", secondary="user_keyword_relation", back_populates="users"
     )
     # the sites the user want to watch
-    sites = relationship("Site", secondary="user_site_relation", back_populates="users")
+    sites: Mapped[list[Site]] = relationship(
+        "Site", secondary="user_site_relation", back_populates="users"
+    )
 
 
 class Bookmark(Base, UseTimestamps):

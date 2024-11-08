@@ -65,7 +65,7 @@ def get_sites():
     category = request.args.get("category", None, type=int)
     subscribe = request.args.get("subscribe", "false").lower() == "true"
     result = []
-    stmt = select(Site).order_by(Site.cate_id, Site.id)
+    stmt = select(Site).order_by(Site.cate_id, Site.id).where(Site.disabled == False)
     if category is not None:
         stmt = stmt.where(Site.cate_id == category)
     if subscribe:
@@ -120,16 +120,9 @@ def remove_site():
 
 @web.route("/site/<int:site_id>")
 @login_required
-def get_site_pages(site_id):
-    count = request.args.get("count", AppConfig.default_paging_size, type=int)
-    offset = request.args.get("offset", 0, type=int)
-    result: list[ResponsePageItem] = []
-    stmt = select(Page).where(Page.site_id == site_id).order_by(Page.created_at.desc())
-    if count > 0 and offset >= 0:
-        stmt = stmt.limit(count).offset(offset)
-
+def get_site_detail(site_id):
     site = db.scalar(select(Site).where(Site.id == site_id))
-    if site is None:
+    if site is None or site.disabled:
         return "Site not found", 404
     res = ResponseSite(site)
     return jsonify(res)
@@ -544,7 +537,11 @@ def remove_keyword():
 def get_subscribes():
     result = []
     user = db.scalar(select(User).where(User.id == current_user.id))
+    if user is None:
+        return jsonify({"code": 1, "msg": "user not found"})
     for site in user.sites:
+        if site.disabled:
+            continue
         info = ResponseSiteItem(site)
         result.append(info)
     return jsonify({"sites": result})
@@ -571,7 +568,7 @@ def add_subscribe():
             )
         )
     for site_id in sites_id:
-        site = db.scalar(select(Site).where(Site.id == site_id))
+        site = db.scalar(select(Site).where(Site.id == site_id).where(Site.disabled == False))
         if site is None:
             return jsonify({"code": 2, "msg": "site not found: " + str(site_id)})
         if (
