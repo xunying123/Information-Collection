@@ -46,6 +46,10 @@ let content = computed(() => {
   return article.value.content.split('\n').join('<br>')
 })
 
+let full_content = computed(() => {
+  return article.value.full_content.split('\n').join('<br>')
+})
+
 const { copy } = useClipboard({ legacy: !navigator.clipboard })
 
 function copyLink() {
@@ -111,7 +115,7 @@ function copyLink() {
           <hr class="divider" style="margin-bottom: 20px; margin-top: 20px" />
           <div class="section">
             <h3 class="section-title">【正文】</h3>
-            <div v-html="article.full_content" class="section-content"></div>
+            <div v-html="full_content" class="section-content"></div>
           </div>
         </div>
       </div>
