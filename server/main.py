@@ -242,6 +242,50 @@ def search_page():
     return jsonify(result)
 
 
+@web.route("/page/keyword", methods=["POST"])
+@login_required
+@admin_required
+def add_keyword_to_page():
+    page_id = request.json.get("page_id")
+    keyword_id = request.json.get("keyword_id")
+    if not all([page_id, keyword_id]):
+        return jsonify({"code": 1, "msg": "missing field"})
+    if (
+        db.scalar(select(Page).where(Page.id == page_id)) is None
+        or db.scalar(select(Keyword).where(Keyword.id == keyword_id)) is None
+    ):
+        return jsonify({"code": 2, "msg": "page or keyword not found"})
+    if (
+        db.scalar(
+            select(PageKeywordRelation).where(
+                (PageKeywordRelation.page_id == page_id)
+                & (PageKeywordRelation.keyword_id == keyword_id)
+            )
+        )
+        is not None
+    ):
+        return jsonify({"code": 3, "msg": "keyword already added"})
+    db.add(PageKeywordRelation(page_id=page_id, keyword_id=keyword_id))
+    return jsonify({"code": 0, "msg": "ok"})
+
+
+@web.route("/page/keyword", methods=["DELETE"])
+@login_required
+@admin_required
+def remove_keyword_from_page():
+    page_id = request.json.get("page_id")
+    keyword_id = request.json.get("keyword_id")
+    if not all([page_id, keyword_id]):
+        return jsonify({"code": 1, "msg": "missing field"})
+    db.execute(
+        delete(PageKeywordRelation).where(
+            (PageKeywordRelation.page_id == page_id)
+            & (PageKeywordRelation.keyword_id == keyword_id)
+        )
+    )
+    return jsonify({"code": 0, "msg": "ok"})
+
+
 @web.route("/site/<int:site_id>/page", methods=["POST"])
 @login_required
 @admin_required
@@ -568,7 +612,9 @@ def add_subscribe():
             )
         )
     for site_id in sites_id:
-        site = db.scalar(select(Site).where(Site.id == site_id).where(Site.disabled == False))
+        site = db.scalar(
+            select(Site).where(Site.id == site_id).where(Site.disabled == False)
+        )
         if site is None:
             return jsonify({"code": 2, "msg": "site not found: " + str(site_id)})
         if (
