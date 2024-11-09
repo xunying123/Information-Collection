@@ -6,19 +6,23 @@
           <div class="list-item-card">
             <div class="list-item-content">
               <div class="article-header">
+                <router-link :to="`/site/` + page.site_id">
+                  <el-button plain type="info" size="default" style="margin-right: 1em;">{{ page.site }}</el-button>
+                </router-link>
                 <span class="list-title">{{ page.title }}</span>
                 <div class="article-time">
                   <n-config-provider :locale="zhCN" :date-locale="dateZhCN">
                     <n-time :time="new Date(page.publish_time)" :type="timeType(page.publish_time)" />
                   </n-config-provider>
-                </div>
+                </div>                
               </div>
+              <p v-if="props.showExcerpt" class="list-excerpt" v-html="formatExcerpt(stripMarkdown(page.content))"></p>              
               <el-tooltip content="已加入书签" effect="light">
                 <BookmarkSvg v-show="is_bookmarked(page.id)" fill="#FFD700" class="bookmark-icon"></BookmarkSvg>
               </el-tooltip>
             </div>
-            <p v-if="props.showExcerpt" class="list-excerpt" v-html="formatExcerpt(page.content)"></p>
           </div>
+          
         </router-link>
       </li>
     </ul>
@@ -34,6 +38,10 @@ import BookmarkSvg from './svg/BookmarkSvg.vue'
 import { NTime, zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
 
 const props = defineProps<{ pages: PageItem[], showExcerpt: boolean }>()
+
+function stripMarkdown(content: string): string {
+  return content.replace(/[#`*]/g, '');
+}
 
 function formatExcerpt(content: string): string {
   return content.substring(0, 100).replace(/\n/g, '<br>') + '...';
@@ -56,13 +64,13 @@ function formatExcerpt(content: string): string {
 }
 
 .list-item {
-  margin-bottom: 1px;
+  margin-bottom: 1em;
   /* 进一步减少项之间的间距 */
   padding: 4px 0;
   /* 减少项的内边距 */
   height: 4em;
   /* 固定项的高度 */
-  width: 80%;
+  width: 100%;
 }
 
 .list-item.with-excerpt {
@@ -80,7 +88,7 @@ function formatExcerpt(content: string): string {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   /* 保持阴影 */
   transition: box-shadow 0.3s ease, transform 0.3s ease;
-  height: 80%;
+  height: 100%;  
   /* 保持卡片高度 */
 }
 
@@ -94,6 +102,7 @@ function formatExcerpt(content: string): string {
 .list-item-content {
   display: grid;
   align-items: center;
+  height: 100%;
 }
 
 .list-title {
@@ -125,7 +134,7 @@ function formatExcerpt(content: string): string {
   /* 设置行高 */
   height: 6em;
   /* 固定高度 */
-  width: 70em;
+  width: 100%;
   /* 固定宽度，限制每行字符数 */
   overflow: hidden;
   /* 隐藏超出内容 */

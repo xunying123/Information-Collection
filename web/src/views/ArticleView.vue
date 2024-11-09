@@ -43,11 +43,11 @@ watch(props, update)
 update(props)
 
 let content = computed(() => {
-  return article.value.content.split('\n').join('<br>')
+  return article.value.content.split('\n').join('<br>').replace(/[#`*]/g, '')
 })
 
 let full_content = computed(() => {
-  return article.value.full_content.split('\n').join('<br>')
+  return article.value.full_content.split('\n').join('<br>').replace(/[#`*]/g, '')
 })
 
 const { copy } = useClipboard({ legacy: !navigator.clipboard })

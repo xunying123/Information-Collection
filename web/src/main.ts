@@ -8,11 +8,15 @@ import router from './router'
 
 import 'element-plus/theme-chalk/el-notification.css'
 import 'element-plus/theme-chalk/el-message-box.css'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 import { user_key } from '@/key'
 import type { User } from '@/api_interface'
 
 const app = createApp(App)
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+    app.component(key, component)
+  }
 
 const user = ref<User | null>(null)
 app.provide(user_key, user)

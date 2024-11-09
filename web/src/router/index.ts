@@ -57,7 +57,19 @@ const router = createRouter({
         {
           path: 'user',
           name: 'UserPage',
-          component: () => import('@/views/pages/UserPage.vue')
+          component: () => import('@/views/pages/UserPage.vue'),
+          children: [
+            {
+              path: 'subscriptions',
+              name: 'subscriptions',
+              component: () => import('@/views/pages/SubscriptionsPage.vue')
+            },
+            {
+              path: 'keywords',
+              name: 'keywords',
+              component: () => import('@/views/pages/KeywordsPage.vue')
+            }
+          ]
         },
         {
           path: 'managesites',

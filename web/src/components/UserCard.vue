@@ -15,7 +15,7 @@ let user = inject(user_key)!
       <div class="user-info">
         <h2>{{ user.name }}</h2>
         <p>{{ user.organization }}</p>
-      </div>
+      </div>      
     </div>
   </div>
 </template>
@@ -29,7 +29,8 @@ let user = inject(user_key)!
 }
 
 .avatar {
-  width: 50px; /* 调整为你需要的大小 */
+  width: 50px;
+  /* 调整为你需要的大小 */
   height: 50px;
   object-fit: cover;
   border-radius: 50%;
@@ -48,7 +49,8 @@ let user = inject(user_key)!
   /* width: 20em; */
   width: 100%;
   display: grid;
-  grid-template-columns: auto 1fr; /* 调整为你需要的比例 */
+  grid-template-columns: auto 1fr;
+  /* 调整为你需要的比例 */
   align-items: center;
   cursor: pointer;
 }

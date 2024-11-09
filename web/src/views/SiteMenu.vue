@@ -57,7 +57,9 @@ onMounted(() => {
 <template>
   <div class="full">
     <el-scrollbar>
-      <img src="https://www.sjtu.edu.cn/resource/assets/img/LogoWhite.png" class="logo" />
+      <router-link to="/">
+        <img src="https://www.sjtu.edu.cn/resource/assets/img/LogoWhite.png" class="logo" />
+      </router-link>
       <router-link to="/user">
         <UserCard />
       </router-link>
@@ -80,13 +82,25 @@ onMounted(() => {
         </el-menu-item>
         <el-sub-menu v-for:="cate in sites" :index="`/category/` + String(cate.cate_id)">
           <template #title>
-            <el-icon> </el-icon>
+            <el-icon>
+              <Location />
+            </el-icon>
             <span>{{ cate.cate_name }}</span>
           </template>
-          <el-menu-item v-for:="site in cate.sites" :index="`/site/` + site.id" >{{
+          <el-menu-item v-for:="site in cate.sites" :index="`/site/` + site.id" style="margin-left: 2em;">{{
             site.name
-          }}</el-menu-item>
+            }}</el-menu-item>
         </el-sub-menu>
+        <el-menu-item>
+          <div style="margin-bottom: 1.2em; margin-left: 0.5em;">
+            <router-link to="/user/subscriptions">
+              <el-button plain type="primary">管理订阅源</el-button>
+            </router-link>
+            <router-link to="/user/keywords">
+              <el-button plain type="primary">管理关键词</el-button>
+            </router-link>
+          </div>
+        </el-menu-item>
       </el-menu>
     </el-scrollbar>
     <div class="overlay">
