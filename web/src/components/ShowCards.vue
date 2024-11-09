@@ -10,23 +10,55 @@ import type { List } from 'lodash'
 const props = defineProps<{ pages: PageItem[]; title: string; loading: Boolean }>()
 let searchKeyword = ref('')
 let filteredPages = ref<PageItem[]>(props.pages)
+let selectedCategories = ref<string[]>([])
+
+function filterPages() {
+  if (searchKeyword.value) {
+    let regex = new RegExp([...searchKeyword.value].join('.*'), 'g')
+    filteredPages.value = props.pages.filter((page) => regex.test(page.title))
+  } else {
+    filteredPages.value = props.pages
+  }
+  if (selectedCategories.value.length > 0) {
+    filteredPages.value = filteredPages.value.filter((page) => selectedCategories.value.includes(page.category))
+  }
+}
 
 watch(
   () => props.pages,
   (newPages) => {
     filteredPages.value = newPages
+    filterPages()
   }
 )
 
 watch(searchKeyword, (newKeyword) => {
-  if (newKeyword) {
-    // filteredPages.value = props.pages.filter(page => page.title.includes(newKeyword))
-    let regex = new RegExp([...newKeyword].join('.*'), 'g')
-    filteredPages.value = props.pages.filter((page) => regex.test(page.title))
-  } else {
-    filteredPages.value = props.pages
-  }
+  // if (newKeyword) {
+  //   // filteredPages.value = props.pages.filter(page => page.title.includes(newKeyword))
+  //   filterPages()
+  // } else {
+  //   // filteredPages.value = props.pages
+  // }
+  filterPages()
 })
+
+watch(selectedCategories, (newCategories) => {
+  // if (newCategories.length > 0) {
+  //   filteredPages.value = props.pages.filter((page) => newCategories.includes(page.category))
+  // } else {
+  //   filteredPages.value = props.pages
+  // }
+  filterPages()
+})
+
+const allCategories = computed(() => {
+  let categories = new Set<string>()
+  props.pages.forEach((page) => {
+    categories.add(page.category)
+  })
+  return categories
+})
+const showChooseCate = computed(() => allCategories.value.size > 1)
 
 const view = ref('card')
 const showSiteCard = computed(() => route.path.includes("category") || route.path.includes("daliyupdate") || route.path.includes("bookmarks"))
@@ -76,6 +108,11 @@ onMounted(() => {
     <el-main class="full-height top-down">
       <div class="header">
         <h1>{{ title }}</h1>
+        <el-checkbox-group v-model="selectedCategories" v-if="showChooseCate" style="margin-right: 20px;">
+          <el-checkbox-button v-for="cate in allCategories" :key="cate" :label="cate">
+            {{ cate }}
+          </el-checkbox-button>
+        </el-checkbox-group>
         <SearchInput @update:searchQuery="searchKeyword = $event"></SearchInput>
         <el-segmented v-model="view" :options="options" block class="spaced-segmented" />
         <slot></slot>

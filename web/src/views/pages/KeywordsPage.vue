@@ -10,7 +10,6 @@
                         style="display: inline-block; margin-left: 10px; margin-right: 10px;">
                         <el-button type="success" size="small" round>导入关键词</el-button>
                     </el-upload>
-                    <!-- <el-button type="danger" @click="clearKeywords" size="small" round>清空关键词</el-button> -->
                     <el-popconfirm title="此操作将清空所有关键词，是否继续？" confirm-button-text="确定" cancel-button-text="取消"
                         icon="el-icon-question" @confirm="clearKeywords">
                         <template #reference>
@@ -62,6 +61,7 @@
             </el-tabs>
         </div>
     </div>
+    <el-divider></el-divider>
 </template>
 
 <script setup lang="ts">
@@ -329,28 +329,10 @@ function handleKeywordSelect(item: Keyword) {
     margin: 20px 0;
 }
 
-.scrollbar-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 40px;
-    margin: 12px;
-    text-align: center;
-    border-radius: 4px;
-    background: var(--el-color-primary-light-9);
-    color: var(--el-color-primary);
-}
-
 .keyword-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 16px;
-}
-
-.button-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
 }
 </style>

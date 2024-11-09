@@ -1,7 +1,6 @@
 <template>
     <div class="user-page">
         <router-view></router-view>
-        <el-divider></el-divider>
         <div class="section">
             <el-popconfirm title="确定退出登录吗？" confirm-button-text="确定" cancel-button-text="取消" icon="el-icon-question"
                 @confirm="logout">
@@ -69,33 +68,6 @@ const logout = async () => {
 .section {
     margin-bottom: 24px;
     height: 1em;
-}
-
-.el-tabs {
-    margin-bottom: 20px;
-}
-
-.el-divider {
-    margin: 20px 0;
-}
-
-.scrollbar-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 40px;
-    margin: 12px;
-    text-align: center;
-    border-radius: 4px;
-    background: var(--el-color-primary-light-9);
-    color: var(--el-color-primary);
-}
-
-.keyword-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 16px;
 }
 
 .button-container {

@@ -56,10 +56,11 @@
             </el-tabs>
         </div>
     </div>
+    <el-divider></el-divider>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, inject, onMounted, type Ref } from 'vue'
+import { ref, reactive, inject, onMounted } from 'vue'
 import { ElNotification } from 'element-plus'
 import { filter_subscribe_key } from '@/key'
 import { server } from '@/const'
@@ -308,11 +309,5 @@ function handleSourceSelect(item: SiteItem) {
     border-radius: 4px;
     background: var(--el-color-primary-light-9);
     color: var(--el-color-primary);
-}
-
-.button-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
 }
 </style>
