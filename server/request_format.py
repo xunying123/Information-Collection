@@ -9,7 +9,7 @@ class PageGet(BaseModel):
     keyword: bool = False
     subscribe: bool = False
     count: int = AppConfig.default_paging_size
-    cursor_id: int = None
+    cursor_id: int = 0 # zero should be ignored
 
 
 __all__ = [PageGet]

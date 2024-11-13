@@ -170,7 +170,7 @@ def get_pages():
             )
         )
     # cursor_id should be avoid when category is set but site is not
-    if data.cursor_id is not None:
+    if data.cursor_id > 0:
         stmt = stmt.where(Page.id < data.cursor_id)
     if data.count > 0:
         stmt = stmt.limit(data.count)
