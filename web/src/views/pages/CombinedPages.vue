@@ -96,14 +96,11 @@ onMounted(() => {
   }
 })
 
-watch(
-  [() => props.site_id, () => props.category_id],
-  ([newSiteId, newCategoryId], [oldSiteId, oldCategoryId]) => {
-    if (newSiteId || newCategoryId) {
-      fetchPages(count.value)
-    }
+watch([() => props.site_id, () => props.category_id], ([newSiteId, newCategoryId]) => {
+  if (newSiteId || newCategoryId) {
+    fetchPages(count.value)
   }
-)
+})
 watch(site, async (newSite) => {
   title.value = newSite.name
   await nextTick()

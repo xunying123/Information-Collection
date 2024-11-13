@@ -33,16 +33,19 @@
             v-for="bookmark in bookmarks"
             :value="bookmark"
             :label="bookmark.title"
+            :key="bookmark.id"
             class="checkbox"
           >
             {{ bookmark.title }} - {{ bookmark.publish_time.slice(0, 10) }}
           </el-checkbox>
         </el-checkbox-group>
       </el-scrollbar>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmExport">确认导出</el-button>
-      </span>
+      <template v-slot:footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="confirmExport">确认导出</el-button>
+        </span>
+      </template>
     </el-dialog>
   </ShowCards>
 </template>

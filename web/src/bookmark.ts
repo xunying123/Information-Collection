@@ -1,6 +1,5 @@
 import { reactive, watch } from 'vue'
 import type { BookmarkItemPage, Page } from './api_interface'
-import { extend } from 'lodash'
 
 function load_bookmarks() {
   let bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]')

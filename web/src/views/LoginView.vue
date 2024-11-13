@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { jaccount_client_id, jaccount_oauth, server } from '@/const'
 import { computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 
 let route = useRoute()
-let router = useRouter()
 
 const next = computed(() => {
   return typeof route.query.next === 'string' ? route.query.next : '/err'

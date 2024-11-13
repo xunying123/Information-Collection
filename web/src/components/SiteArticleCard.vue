@@ -1,10 +1,10 @@
 <template>
   <div class="site-article-container">
     <div v-for="(pages, site) in groupedPages" :key="site" class="site-card">
-      <el-card shadow="hover" class="site-el-card">
+      <ElCard shadow="hover" class="site-el-card">
         <template #header>
           <div class="site-card-header">
-            <el-avatar
+            <ElAvatar
               size="small"
               :src="pages[0].site_icon"
               v-if="pages[0].site_icon"
@@ -13,7 +13,7 @@
             <span>{{ site }}</span>
           </div>
         </template>
-        <el-scrollbar height="300px">
+        <ElScrollbar height="300px">
           <div v-for="page in pages" :key="page.id" class="article-item">
             <router-link
               :to="{ name: `${String($route.matched[1].name)}-page`, params: { page_id: page.id } }"
@@ -22,13 +22,13 @@
               {{ page.title }}
             </router-link>
             <div class="article-time">
-              <n-config-provider :locale="zhCN" :date-locale="dateZhCN">
-                <n-time :time="new Date(page.publish_time)" :type="timeType(page.publish_time)" />
-              </n-config-provider>
+              <NConfigProvider :locale="zhCN" :date-locale="dateZhCN">
+                <NTime :time="new Date(page.publish_time)" :type="timeType(page.publish_time)" />
+              </NConfigProvider>
             </div>
           </div>
-        </el-scrollbar>
-      </el-card>
+        </ElScrollbar>
+      </ElCard>
     </div>
   </div>
 </template>

@@ -62,7 +62,7 @@ onMounted(() => {
     <router-link to="/user">
       <UserCard />
     </router-link>
-    <el-scrollbar class="scrach-height">
+    <ElScrollbar class="scrach-height">
       <el-menu
         class="el-menu-vertical-demo"
         :router="true"
@@ -100,7 +100,7 @@ onMounted(() => {
           >
         </el-sub-menu>
       </el-menu>
-    </el-scrollbar>
+    </ElScrollbar>
     <div class="bottom-buttons">
       <router-link to="/user/subscriptions">
         <el-button plain type="primary">管理订阅源</el-button>

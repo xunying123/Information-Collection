@@ -117,11 +117,11 @@ onMounted(() => {
         @scroll="$emit('scroll', $event)"
       >
         <div v-if="view === 'card'" class="container-grid">
-          <article-card v-for="page in filteredPages" :key="page.id" :page="page" />
+          <ArticleCard v-for="page in filteredPages" :key="page.id" :page="page" />
         </div>
-        <article-list :pages="filteredPages" :showExcerpt="false" v-else-if="view === 'list'" />
-        <article-list :pages="filteredPages" :showExcerpt="true" v-else-if="view === 'excerpt'" />
-        <site-article-card :pages="filteredPages" :showExcerpt="true" v-else-if="view === 'site'" />
+        <ArticleList :pages="filteredPages" :showExcerpt="false" v-else-if="view === 'list'" />
+        <ArticleList :pages="filteredPages" :showExcerpt="true" v-else-if="view === 'excerpt'" />
+        <SiteArticleCard :pages="filteredPages" :showExcerpt="true" v-else-if="view === 'site'" />
       </el-scrollbar>
       <el-empty v-else :image-size="200" />
     </el-main>

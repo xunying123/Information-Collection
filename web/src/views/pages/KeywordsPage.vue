@@ -34,7 +34,7 @@
         inactive-text="显示全部文章"
         @change="saveFilter"
       />
-      <keyword-list :keywords="keywords"></keyword-list>
+      <KeywordList :keywords="keywords"></KeywordList>
     </div>
     <div class="section">
       <el-tabs v-model="activeKeywordTab">

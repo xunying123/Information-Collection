@@ -20,12 +20,12 @@
                 </router-link>
                 <span class="list-title">{{ page.title }}</span>
                 <div class="article-time">
-                  <n-config-provider :locale="zhCN" :date-locale="dateZhCN">
-                    <n-time
+                  <NConfigProvider :locale="zhCN" :date-locale="dateZhCN">
+                    <NTime
                       :time="new Date(page.publish_time)"
                       :type="timeType(page.publish_time)"
                     />
-                  </n-config-provider>
+                  </NConfigProvider>
                 </div>
               </div>
               <p

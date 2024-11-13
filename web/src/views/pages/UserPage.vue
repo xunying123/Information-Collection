@@ -2,7 +2,7 @@
   <div class="user-page">
     <router-view></router-view>
     <div class="section">
-      <el-popconfirm
+      <ElPopconfirm
         title="确定退出登录吗？"
         confirm-button-text="确定"
         cancel-button-text="取消"
@@ -14,7 +14,7 @@
             <el-button size="large" type="danger">退出登录</el-button>
           </div>
         </template>
-      </el-popconfirm>
+      </ElPopconfirm>
     </div>
   </div>
 </template>

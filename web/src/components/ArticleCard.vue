@@ -31,9 +31,9 @@ const computedTimeType = computed(() => timeType(props.page.publish_time))
         <h3 class="small-card-body">{{ page.title }}</h3>
         <template #footer>
           <div class="small-card-footer">
-            <n-config-provider :locale="zhCN" :date-locale="dateZhCN">
-              <n-time :time="new Date(page.publish_time)" :type="computedTimeType" />
-            </n-config-provider>
+            <NConfigProvider :locale="zhCN" :date-locale="dateZhCN">
+              <NTime :time="new Date(page.publish_time)" :type="computedTimeType" />
+            </NConfigProvider>
           </div>
         </template>
       </el-card>

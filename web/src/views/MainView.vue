@@ -11,8 +11,8 @@ let filter_keyword = ref(localStorage.getItem('filter_keyword') === 'true')
 provide(filter_keyword_key, filter_keyword)
 </script>
 <template>
-  <n-layout has-sider class="full-height">
-    <n-layout-sider
+  <NLayout has-sider class="full-height">
+    <NLayoutSider
       class="sidebar"
       collapse-mode="transform"
       :collapsed-width="0"
@@ -21,11 +21,11 @@ provide(filter_keyword_key, filter_keyword)
       bordered
     >
       <SiteMenu class="site-menu" />
-    </n-layout-sider>
-    <n-layout-content class="content overlay">
+    </NLayoutSider>
+    <NLayoutContent class="content overlay">
       <RouterView />
-    </n-layout-content>
-  </n-layout>
+    </NLayoutContent>
+  </NLayout>
 </template>
 
 <style scoped>
