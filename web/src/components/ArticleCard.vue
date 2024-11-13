@@ -11,7 +11,6 @@ import BookmarkSvg from './svg/BookmarkSvg.vue'
 const props = defineProps<{ page: PageItem }>()
 
 const computedTimeType = computed(() => timeType(props.page.publish_time))
-
 </script>
 
 <template>

@@ -20,7 +20,9 @@ function filterPages() {
     filteredPages.value = props.pages
   }
   if (selectedCategories.value.length > 0) {
-    filteredPages.value = filteredPages.value.filter((page) => selectedCategories.value.includes(page.category))
+    filteredPages.value = filteredPages.value.filter((page) =>
+      selectedCategories.value.includes(page.category)
+    )
   }
 }
 
@@ -61,7 +63,12 @@ const allCategories = computed(() => {
 const showChooseCate = computed(() => allCategories.value.size > 1)
 
 const view = ref('card')
-const showSiteCard = computed(() => route.path.includes("category") || route.path.includes("daliyupdate") || route.path.includes("bookmarks"))
+const showSiteCard = computed(
+  () =>
+    route.path.includes('category') ||
+    route.path.includes('daliyupdate') ||
+    route.path.includes('bookmarks')
+)
 // const showSiteCard = computed(() => !route.path.includes('site'))
 
 let options = computed(() => {
@@ -89,7 +96,6 @@ watch(view, (newView) => {
   }
 })
 
-
 onMounted(() => {
   const savedView = localStorage.getItem('viewMode')
   const savedNotCateView = localStorage.getItem('notCateView')
@@ -100,7 +106,6 @@ onMounted(() => {
     view.value = savedNotCateView ? savedNotCateView : 'card'
   }
 })
-
 </script>
 
 <template>
@@ -108,7 +113,11 @@ onMounted(() => {
     <el-main class="full-height top-down">
       <div class="header">
         <h1>{{ title }}</h1>
-        <el-checkbox-group v-model="selectedCategories" v-if="showChooseCate" style="margin-right: 20px;">
+        <el-checkbox-group
+          v-model="selectedCategories"
+          v-if="showChooseCate"
+          style="margin-right: 20px"
+        >
           <el-checkbox-button v-for="cate in allCategories" :key="cate" :label="cate">
             {{ cate }}
           </el-checkbox-button>
@@ -117,7 +126,11 @@ onMounted(() => {
         <el-segmented v-model="view" :options="options" block class="spaced-segmented" />
         <slot></slot>
       </div>
-      <el-scrollbar v-if="pages && pages.length" v-loading="loading" @scroll="$emit('scroll', $event)">
+      <el-scrollbar
+        v-if="pages && pages.length"
+        v-loading="loading"
+        @scroll="$emit('scroll', $event)"
+      >
         <div v-if="view === 'card'" class="container-grid">
           <ArticleCard v-for="page in filteredPages" :key="page.id" :page="page" />
         </div>
@@ -170,7 +183,7 @@ h1 {
   padding-right: 2em;
 }
 
-.header> :first-child {
+.header > :first-child {
   margin-right: auto;
 }
 

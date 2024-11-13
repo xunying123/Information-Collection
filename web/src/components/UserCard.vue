@@ -2,10 +2,8 @@
 import { user_key } from '@/key'
 import { inject } from 'vue'
 import { ElAvatar } from 'element-plus'
-import { server } from '@/const'
 
 let user = inject(user_key)!
-
 </script>
 
 <template>
@@ -15,7 +13,7 @@ let user = inject(user_key)!
       <div class="user-info">
         <h2>{{ user.name }}</h2>
         <p>{{ user.organization }}</p>
-      </div>      
+      </div>
     </div>
   </div>
 </template>

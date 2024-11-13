@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { inject, onMounted, reactive, watch } from 'vue'
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
 import { server } from '@/const'
 import type { SiteItem } from '@/api_interface'
 import { ElScrollbar } from 'element-plus'
@@ -17,14 +17,14 @@ interface CateSite {
   sites: SiteItem[]
 }
 
-let filter_subscribe = inject(filter_subscribe_key)!;
+let filter_subscribe = inject(filter_subscribe_key)!
 const user = inject(user_key)!
-const router = useRouter();
+const router = useRouter()
 
 let sites = reactive<CateSite[]>([])
 
 function loadSites() {
-  fetch(`${server}/site?subscribe=${filter_subscribe.value ? "true" : "false"}`)
+  fetch(`${server}/site?subscribe=${filter_subscribe.value ? 'true' : 'false'}`)
     .then((r) => r.json())
     .then((data: SiteItem[]) => {
       let tmp_sites: CateSite[] = []
@@ -56,14 +56,19 @@ onMounted(() => {
 
 <template>
   <div class="full">
-    <el-scrollbar>
-      <router-link to="/">
-        <img src="https://www.sjtu.edu.cn/resource/assets/img/LogoWhite.png" class="logo" />
-      </router-link>
-      <router-link to="/user">
-        <UserCard />
-      </router-link>
-      <el-menu class="el-menu-vertical-demo" :router="true" @open="handleSubMenuClick" @close="handleSubMenuClick">
+    <router-link to="/">
+      <img src="https://www.sjtu.edu.cn/resource/assets/img/LogoWhite.png" class="logo" />
+    </router-link>
+    <router-link to="/user">
+      <UserCard />
+    </router-link>
+    <el-scrollbar class="scrach-height">
+      <el-menu
+        class="el-menu-vertical-demo"
+        :router="true"
+        @open="handleSubMenuClick"
+        @close="handleSubMenuClick"
+      >
         <el-menu-item index="/">
           <LayersSVG class="menu-icon" />
           <span class="menu-top">全部</span>
@@ -87,22 +92,23 @@ onMounted(() => {
             </el-icon>
             <span>{{ cate.cate_name }}</span>
           </template>
-          <el-menu-item v-for:="site in cate.sites" :index="`/site/` + site.id" style="margin-left: 2em;">{{
-            site.name
-            }}</el-menu-item>
+          <el-menu-item
+            v-for:="site in cate.sites"
+            :index="`/site/` + site.id"
+            style="margin-left: 2em"
+            >{{ site.name }}</el-menu-item
+          >
         </el-sub-menu>
-        <el-menu-item>
-          <div style="margin-bottom: 1.2em; margin-left: 0.5em;">
-            <router-link to="/user/subscriptions">
-              <el-button plain type="primary">管理订阅源</el-button>
-            </router-link>
-            <router-link to="/user/keywords">
-              <el-button plain type="primary">管理关键词</el-button>
-            </router-link>
-          </div>
-        </el-menu-item>
       </el-menu>
     </el-scrollbar>
+    <div class="bottom-buttons">
+      <router-link to="/user/subscriptions">
+        <el-button plain type="primary">管理订阅源</el-button>
+      </router-link>
+      <router-link to="/user/keywords">
+        <el-button plain type="primary">管理关键词</el-button>
+      </router-link>
+    </div>
     <div class="overlay">
       <img src="/static/image_21_1-1.png" class="overlay-image" />
     </div>
@@ -117,14 +123,12 @@ onMounted(() => {
   width: 100%;
   height: auto;
   pointer-events: none;
-  /* 添加这一行 */
 }
 
 .overlay-image {
   width: 100%;
   height: auto;
   opacity: 0.1;
-  /* 设置透明度，你可以根据需要调整这个值 */
 }
 
 .full {
@@ -136,6 +140,16 @@ onMounted(() => {
   --el-menu-text-color: #ffffff;
   --el-menu-hover-bg-color: rgba(0, 134, 209, 1);
   --el-menu-item-font-size: 1.1em;
+}
+
+.full {
+  display: flex;
+  flex-direction: column;
+}
+
+.scrach-height {
+  flex-grow: 1;
+  overflow: auto;
 }
 
 .menu-icon {
@@ -155,6 +169,11 @@ onMounted(() => {
   /* Adjust as needed */
   margin: 20px;
   /* Adjust as needed */
+}
+
+.bottom-buttons {
+  display: flex;
+  margin: 0.5em;
 }
 </style>
 
