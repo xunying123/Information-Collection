@@ -8,6 +8,7 @@
       >
         <router-link
           :to="{ name: `${String($route.matched[1].name)}-page`, params: { page_id: page.id } }"
+          class="block"
         >
           <div class="list-item-card">
             <div class="list-item-content">
@@ -68,8 +69,8 @@ function formatExcerpt(content: string): string {
 
 <style scoped>
 .list-container {
-  /* padding: 5em; 减少容器内边距 */
-  margin-left: 5em;
+  margin-left: 3em;
+  margin-right: 3em;
 }
 
 .list {
@@ -83,17 +84,8 @@ function formatExcerpt(content: string): string {
 
 .list-item {
   margin-bottom: 1em;
-  /* 进一步减少项之间的间距 */
   padding: 4px 0;
-  /* 减少项的内边距 */
-  height: 4em;
-  /* 固定项的高度 */
   width: 100%;
-}
-
-.list-item.with-excerpt {
-  height: 10em;
-  /* 自动调整高度以适应内容 */
 }
 
 .list-item-card {
@@ -151,19 +143,13 @@ function formatExcerpt(content: string): string {
   color: #666;
   font-size: 0.9em;
   line-height: 1.5em;
-  /* 设置行高 */
-  height: 6em;
-  /* 固定高度 */
+  max-height: 6em;
   width: 100%;
-  /* 固定宽度，限制每行字符数 */
   overflow: hidden;
-  /* 隐藏超出内容 */
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
-  /* 限制行数 */
   white-space: pre-wrap;
-  /* 保留换行符 */
 }
 
 .article-time {
@@ -171,5 +157,10 @@ function formatExcerpt(content: string): string {
   font-size: 0.9em;
   color: #888;
   margin-left: 1em;
+}
+
+.block {
+  display: block;
+  max-height: 100%;
 }
 </style>

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, defineProps, watch, onMounted, computed, reactive } from 'vue'
+import { ref, defineProps, watch, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import type { PageItem } from '@/api_interface'
 import SearchInput from '@/components/SearchInput.vue'
-import { server } from '@/const'
-import { reactify } from '@vueuse/core'
-import type { List } from 'lodash'
+
+import ArticleCard from '@/components/ArticleCard.vue'
+import ArticleList from '@/components/ArticleList.vue'
+import SiteArticleCard from '@/components/SiteArticleCard.vue'
 
 const props = defineProps<{ pages: PageItem[]; title: string; loading: Boolean }>()
 let searchKeyword = ref('')
@@ -34,24 +35,8 @@ watch(
   }
 )
 
-watch(searchKeyword, (newKeyword) => {
-  // if (newKeyword) {
-  //   // filteredPages.value = props.pages.filter(page => page.title.includes(newKeyword))
-  //   filterPages()
-  // } else {
-  //   // filteredPages.value = props.pages
-  // }
-  filterPages()
-})
-
-watch(selectedCategories, (newCategories) => {
-  // if (newCategories.length > 0) {
-  //   filteredPages.value = props.pages.filter((page) => newCategories.includes(page.category))
-  // } else {
-  //   filteredPages.value = props.pages
-  // }
-  filterPages()
-})
+watch(searchKeyword, filterPages)
+watch(selectedCategories, filterPages)
 
 const allCategories = computed(() => {
   let categories = new Set<string>()
@@ -132,17 +117,11 @@ onMounted(() => {
         @scroll="$emit('scroll', $event)"
       >
         <div v-if="view === 'card'" class="container-grid">
-          <ArticleCard v-for="page in filteredPages" :key="page.id" :page="page" />
+          <article-card v-for="page in filteredPages" :key="page.id" :page="page" />
         </div>
-        <div v-else-if="view === 'list'">
-          <ArticleList :pages="filteredPages" :showExcerpt="false" />
-        </div>
-        <div v-else-if="view === 'excerpt'">
-          <ArticleList :pages="filteredPages" :showExcerpt="true" />
-        </div>
-        <div v-else-if="view === 'site'">
-          <SiteArticleCard :pages="filteredPages" :showExcerpt="true" />
-        </div>
+        <article-list :pages="filteredPages" :showExcerpt="false" v-else-if="view === 'list'" />
+        <article-list :pages="filteredPages" :showExcerpt="true" v-else-if="view === 'excerpt'" />
+        <site-article-card :pages="filteredPages" :showExcerpt="true" v-else-if="view === 'site'" />
       </el-scrollbar>
       <el-empty v-else :image-size="200" />
     </el-main>
@@ -180,7 +159,9 @@ h1 {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  padding: 1em;
   padding-right: 2em;
+  flex-wrap: wrap;
 }
 
 .header > :first-child {
@@ -190,5 +171,9 @@ h1 {
 .spaced-segmented {
   margin-left: 1em;
   width: 23em;
+}
+
+.header > h1 {
+  margin: 0.2em;
 }
 </style>
