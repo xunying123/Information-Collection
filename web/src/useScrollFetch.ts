@@ -1,5 +1,3 @@
-// useScrollFetch.ts
-
 export default function useScrollFetch(
   fetchPages: (count: number) => void,
   initialCount: number = 0
@@ -8,9 +6,7 @@ export default function useScrollFetch(
   let scrollEventTriggered = false
   let wheelTimeout: ReturnType<typeof setTimeout> | null = null
 
-  const handleScroll = (event: any) => {
-    const scrollTop = event
-    console.log('scrollTop', scrollTop)
+  const handleScroll = () => {
     scrollEventTriggered = true
   }
 
@@ -22,7 +18,6 @@ export default function useScrollFetch(
     wheelTimeout = setTimeout(() => {
       requestAnimationFrame(() => {
         if (event.deltaY > 0 && !scrollEventTriggered) {
-          console.log('鼠标向下滚动，但滚动事件没有被触发')
           count += 10
           fetchPages(count)
         }

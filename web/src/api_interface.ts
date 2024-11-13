@@ -53,3 +53,16 @@ interface Keyword {
 }
 
 export type { PageItem, Page, SiteItem, Site, User, BookmarkItemPage, Keyword }
+
+interface GetPage {
+  category?: number | number[]
+  site?: number
+  today?: boolean
+  bookmarked?: boolean
+  keyword?: boolean
+  subscribe?: boolean
+  count?: number
+  cursor_id?: number
+}
+
+export type { GetPage }

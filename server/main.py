@@ -7,6 +7,7 @@ from sqlalchemy import select, delete, exists, func, not_
 
 from common.models import *
 from server.response_format import *
+from server.request_format import PageGet
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -17,6 +18,7 @@ from server.login import login_manager, User4login, admin_required
 from server.utils import jsonify
 from hashlib import sha256
 import pytz
+import json
 
 current_user: User4login
 
@@ -128,17 +130,19 @@ def get_site_detail(site_id):
     return jsonify(res)
 
 
-@web.route("/page")
+@web.route("/page", methods=["GET"])
 @login_required
 def get_pages():
-    count = request.args.get("count", AppConfig.default_paging_size, type=int)
-    cursor_id = request.args.get("cursor_id", None, type=int)
-    category = request.args.get("category", None, type=int)
-    site = request.args.get("site", None, type=int)
-    only_today = request.args.get("today", "false").lower() == "true"
-    bookmarked = request.args.get("bookmarked", "false").lower() == "true"
-    filterd_by_keyword = request.args.get("keyword", "false").lower() == "true"
-    filterd_by_subscribe = request.args.get("subscribe", "false").lower() == "true"
+    data = request.args.get("data", type=str)
+    try:
+        data = json.loads(data)
+        data = PageGet.model_validate(data, strict=True)
+        print(data)
+    except Exception as e:
+        return jsonify({"code": 1, "msg": str(e)})
+    only_today = data.today
+    filterd_by_keyword = data.keyword
+    filterd_by_subscribe = data.subscribe
 
     stmt = select(Page).order_by(Page.created_at.desc())
 
@@ -146,7 +150,7 @@ def get_pages():
         shanghai_tz = pytz.timezone("Asia/Shanghai")
         today = datetime.now(shanghai_tz).date()
         stmt = stmt.where(func.date(Page.publish_time) == today)
-    if bookmarked:
+    if data.bookmarked:
         stmt = stmt.join(Bookmark).where(Bookmark.user_id == current_user.id)
     if filterd_by_keyword:
         stmt = stmt.where(
@@ -166,19 +170,26 @@ def get_pages():
             )
         )
     # cursor_id should be avoid when category is set but site is not
-    if cursor_id is not None:
-        stmt = stmt.where(Page.id < cursor_id)
-    if count > 0:
-        stmt = stmt.limit(count)
+    if data.cursor_id is not None:
+        stmt = stmt.where(Page.id < data.cursor_id)
+    if data.count > 0:
+        stmt = stmt.limit(data.count)
 
     sites_id = None
-    if site is not None:
-        sites_id = [site]
-    elif category is not None:
+    if data.site is not None:
+        sites_id = [data.site]
+    elif data.category is not None:
         # special logic: count is used to limit every SITE instead of total pages
         # cursor_id should not be used in this case CURRENTLY
         # TODO: support cursor_id in this case
-        sites_id = db.scalars(select(Site.id).where(Site.cate_id == category))
+        if type(data.category) is int:
+            sites_id = db.scalars(select(Site.id).where(Site.cate_id == data.category))
+        elif type(data.category) is list:
+            sites_id = db.scalars(
+                select(Site.id).where(Site.cate_id.in_(data.category))
+            )
+        else:
+            raise ValueError("invalid category type")
 
     result: list[ResponsePageItem] = []
 

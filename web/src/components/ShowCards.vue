@@ -8,7 +8,7 @@ import ArticleCard from '@/components/ArticleCard.vue'
 import ArticleList from '@/components/ArticleList.vue'
 import SiteArticleCard from '@/components/SiteArticleCard.vue'
 
-const props = defineProps<{ pages: PageItem[]; title: string; loading: Boolean }>()
+const props = defineProps<{ pages: PageItem[]; title: string; loading: boolean }>()
 let searchKeyword = ref('')
 let filteredPages = ref<PageItem[]>(props.pages)
 let selectedCategories = ref<string[]>([])

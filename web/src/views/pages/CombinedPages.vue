@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, inject, nextTick } from 'vue'
-import type { PageItem, Site } from '@/api_interface'
+import type { GetPage, PageItem, Site } from '@/api_interface'
 import { server } from '@/const'
 import ShowCards from '@/components/ShowCards.vue'
 import useScrollFetch from '@/useScrollFetch'
@@ -34,51 +34,41 @@ let filter_subscribe = inject(filter_subscribe_key)!
 let filter_keyword = inject(filter_keyword_key)!
 
 const fetchPages = (count: number) => {
-  let endpoint = ''
+  let done = false
+  setTimeout(() => {
+    if (!done) {
+      loading.value = true
+    }
+  }, 200)
+  let body: GetPage = {
+    count: count,
+    keyword: filter_keyword.value,
+    subscribe: filter_subscribe.value
+  }
   switch (props.pageType) {
     case 'all':
-      endpoint = `${server}/page?count=${count}&subscribe=${filter_subscribe.value ? 'true' : 'false'}&keyword=${filter_keyword.value}`
       title.value = '全部文章'
       break
     case 'daily':
-      endpoint = `${server}/page?count=${count}&today=${true}&subscribe=${filter_subscribe.value ? 'true' : 'false'}&keyword=${filter_keyword.value}`
+      body.today = true
       title.value = '每日更新'
       break
     case 'site':
       if (!props.site_id) return
-      endpoint = `${server}/page?site=${props.site_id}&count=${count}&keyword=${filter_keyword.value}`
+      body.site = Number(props.site_id)
       break
     case 'category':
       if (!props.category_id) return
-      endpoint = `${server}/page?category=${props.category_id}&count=${count}&subscribe=${filter_subscribe.value ? 'true' : 'false'}&keyword=${filter_keyword.value}`
+      body.category = Number(props.category_id)
       break
   }
-
+  let params = encodeURIComponent(JSON.stringify(body))
   try {
-    if (props.pageType === 'site' && props.site_id) {
-      fetch(`${server}/site/${props.site_id}`)
-        .then((r) => r.json())
-        .then((data) => {
-          data.pages = site.value.pages
-          site.value = data
-        })
-      title.value = site.value.name
-    }
-    if (props.pageType === 'category' && props.category_id) {
-      fetch(`${server}/category/${props.category_id}`)
-        .then((r) => r.json())
-        .then((data) => {
-          title.value = data.name
-        })
-    }
-
-    fetch(endpoint)
+    fetch(`${server}/page?data=${params}`)
       .then((r) => r.json())
       .then((data) => {
-        if (props.pageType === 'site') {
-          site.value.pages = data.pages
-        }
         pages.value = data.pages
+        done = true
         loading.value = false
       })
   } catch (error) {
@@ -88,6 +78,22 @@ const fetchPages = (count: number) => {
 
 onMounted(() => {
   fetchPages(count.value)
+  if (props.pageType === 'site' && props.site_id) {
+    fetch(`${server}/site/${props.site_id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        data.pages = site.value.pages
+        site.value = data
+      })
+    title.value = site.value.name
+  }
+  if (props.pageType === 'category' && props.category_id) {
+    fetch(`${server}/category/${props.category_id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        title.value = data.name
+      })
+  }
 })
 
 watch(
