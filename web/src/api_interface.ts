@@ -48,7 +48,7 @@ interface User {
 interface Keyword {
   id: number
   word: string
-  name: string
+  // name: string
   subject: string
 }
 

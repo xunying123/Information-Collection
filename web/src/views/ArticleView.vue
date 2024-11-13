@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, defineProps, ref, watch } from 'vue'
-import type { Page, BookmarkItemPage } from '@/api_interface'
+import type { Page } from '@/api_interface'
 import { server } from '@/const'
 import { is_bookmarked, toggle_bookmark } from '@/bookmark'
 import { useClipboard } from '@vueuse/core'
@@ -9,6 +9,7 @@ import BookmarkSvg from '@/components/svg/BookmarkSvg.vue'
 import CloseSVG from '@/components/svg/CloseSVG.vue'
 import CopySVG from '@/components/svg/CopySVG.vue'
 import { NTime } from 'naive-ui'
+import KeywordList from '@/components/KeywordList.vue'
 
 let props = defineProps({ page_id: String })
 
@@ -102,18 +103,7 @@ function copyLink() {
     <el-scrollbar>
       <div class="article-content" v-loading="article.id == 0">
         <h2 class="article-title">{{ article.title }}</h2>
-        <div class="keyword-tags">
-          <el-tag
-            v-for="keyword in article.keywords"
-            :key="keyword.id"
-            round
-            type="primary"
-            size="large"
-            effect="dark"
-          >
-            {{ keyword.word }}
-          </el-tag>
-        </div>
+        <keyword-list :keywords="article.keywords"></keyword-list>
         <el-divider content-position="center">
           <n-time
             v-if="article.publish_time"

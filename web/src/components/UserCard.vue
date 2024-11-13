@@ -8,13 +8,13 @@ let user = inject(user_key)!
 
 <!-- <div v-if="user" class="horizon-grid"> -->
 <template>
-    <div class="user-card" v-if="user">
-      <el-avatar :src="user.avatars" class="avatar" />
-      <div class="user-info">
-        <h2>{{ user.name }}</h2>
-        <p>{{ user.organization }}</p>
-      </div>
+  <div class="user-card" v-if="user">
+    <el-avatar :src="user.avatars" class="avatar" />
+    <div class="user-info">
+      <h2>{{ user.name }}</h2>
+      <p>{{ user.organization }}</p>
     </div>
+  </div>
 </template>
 <!-- </div> -->
 

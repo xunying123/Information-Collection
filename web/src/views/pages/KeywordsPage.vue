@@ -34,32 +34,22 @@
         inactive-text="显示全部文章"
         @change="saveFilter"
       />
-      <div class="keyword-tags">
-        <el-tag
-          v-for="keyword in keywords"
-          :key="keyword.id"
-          round
-          :type="getRandomTagType()"
-          size="large"
-        >
-          {{ keyword.name }}
-        </el-tag>
-      </div>
+      <keyword-list :keywords="keywords"></keyword-list>
     </div>
     <div class="section">
       <el-tabs v-model="activeKeywordTab">
         <el-tab-pane label="添加关键词" name="add-keyword">
           <el-form :model="newKeyword" ref="keywordForm" label-width="120px">
-            <el-form-item label="关键词" prop="name" size="large">
+            <el-form-item label="关键词" prop="word" size="large">
               <el-autocomplete
-                v-model="newKeyword.name"
-                :fetch-suggestions="queryAllKeywordSearch"
+                v-model="newKeyword.word"
+                :fetch-suggestions="queryKeywordSearchAdd"
                 placeholder="请输入新关键词或选择已有关键词"
                 @select="handleAllKeywordleSelect"
                 clearable
               >
                 <template #default="{ item }">
-                  <div class="name">{{ item.name }}</div>
+                  <div class="name">{{ item.word }}</div>
                 </template>
               </el-autocomplete>
             </el-form-item>
@@ -72,14 +62,14 @@
           <el-form :model="keywordToDelete" label-width="120px">
             <el-form-item label="关键词" size="large">
               <el-autocomplete
-                v-model="keywordToDelete.name"
-                :fetch-suggestions="queryKeywordSearch"
+                v-model="keywordToDelete.word"
+                :fetch-suggestions="queryKeywordSearchDelete"
                 placeholder="输入要删除的关键词"
                 @select="handleKeywordSelect"
                 clearable
               >
                 <template #default="{ item }">
-                  <div class="name">{{ item.name }}</div>
+                  <div class="name">{{ item.word }}</div>
                 </template>
               </el-autocomplete>
             </el-form-item>
@@ -100,14 +90,14 @@ import { ElNotification } from 'element-plus'
 import { filter_keyword_key } from '@/key'
 import { server } from '@/const'
 import type { Keyword } from '@/api_interface'
+import KeywordList from '@/components/KeywordList.vue'
 
 const filter_keyword = inject(filter_keyword_key)!
 const activeKeywordTab = ref('add-keyword')
-const newKeyword = reactive({ name: '' })
-const keywordToDelete = reactive({ name: '' })
+const newKeyword = reactive({ word: '' })
+const keywordToDelete = reactive({ word: '' })
 const keywords: Ref<Keyword[]> = ref([])
 const allKeywords: Ref<Keyword[]> = ref([])
-const tagTypes = ['primary', 'success', 'warning', 'danger']
 
 onMounted(() => {
   loadAllKeywords()
@@ -118,7 +108,7 @@ function loadAllKeywords() {
   fetch(`${server}/keyword?personal=false`)
     .then((r) => r.json())
     .then((data) => {
-      allKeywords.value = data.map((item: any) => ({ id: item.id, name: item.word }))
+      allKeywords.value = data
     })
     .catch((error) => {
       console.error('Error fetching keywords:', error)
@@ -129,7 +119,7 @@ function loadKeywords() {
   fetch(`${server}/keyword?personal=true`)
     .then((r) => r.json())
     .then((data) => {
-      keywords.value = data.map((item: any) => ({ id: item.id, name: item.word }))
+      keywords.value = data
     })
     .catch((error) => {
       console.error('Error fetching keywords:', error)
@@ -140,13 +130,8 @@ function saveFilter() {
   localStorage.setItem('filter_keyword', filter_keyword.value.toString())
 }
 
-function getRandomTagType() {
-  const randomIndex = Math.floor(Math.random() * tagTypes.length)
-  return tagTypes[randomIndex]
-}
-
 function addKeyword() {
-  const trimmedKeyword = newKeyword.name.trim()
+  const trimmedKeyword = newKeyword.word.trim()
   if (trimmedKeyword) {
     fetch(`${server}/keyword`, {
       method: 'POST',
@@ -163,7 +148,7 @@ function addKeyword() {
       .then((data) => {
         if (data.code === 0) {
           loadKeywords()
-          newKeyword.name = ''
+          newKeyword.word = ''
           ElNotification({
             title: '成功',
             message: '关键词添加成功',
@@ -219,7 +204,7 @@ function clearKeywords() {
 }
 
 function deleteKeyword() {
-  const keyword = keywords.value.find((k) => k.name === keywordToDelete.name)
+  const keyword = keywords.value.find((k) => k.word === keywordToDelete.word)
   if (keyword) {
     fetch(`${server}/keyword`, {
       method: 'DELETE',
@@ -235,7 +220,7 @@ function deleteKeyword() {
       .then((data) => {
         if (data.code === 0) {
           loadKeywords()
-          keywordToDelete.name = ''
+          keywordToDelete.word = ''
           ElNotification({
             title: '成功',
             message: '关键词删除成功',
@@ -300,7 +285,7 @@ function importKeywords(file: File) {
 }
 
 function exportKeywords() {
-  const content = JSON.stringify(keywords.value.map((keyword) => keyword.name))
+  const content = JSON.stringify(keywords.value.map((keyword) => keyword.word))
   const blob = new Blob([content], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -311,27 +296,28 @@ function exportKeywords() {
 }
 
 function createFilter(queryString: string) {
-  return (keyword: Keyword) => keyword.name.toLowerCase().includes(queryString.toLowerCase())
+  return (keyword: Keyword) => keyword.word.toLowerCase().includes(queryString.toLowerCase())
 }
 
-function queryAllKeywordSearch(queryString: string, cb: (results: Keyword[]) => void) {
-  const results = queryString
+function queryKeywordSearchAdd(queryString: string, cb: (results: Keyword[]) => void) {
+  let results = queryString
     ? allKeywords.value.filter(createFilter(queryString))
     : allKeywords.value
+  results = results.filter((keyword) => !keywords.value.some((k) => k.id == keyword.id))
   cb(results)
 }
 
-function queryKeywordSearch(queryString: string, cb: (results: Keyword[]) => void) {
+function queryKeywordSearchDelete(queryString: string, cb: (results: Keyword[]) => void) {
   const results = queryString ? keywords.value.filter(createFilter(queryString)) : keywords.value
   cb(results)
 }
 
 function handleAllKeywordleSelect(item: Keyword) {
-  newKeyword.name = item.name
+  newKeyword.word = item.word
 }
 
 function handleKeywordSelect(item: Keyword) {
-  keywordToDelete.name = item.name
+  keywordToDelete.word = item.word
 }
 </script>
 
