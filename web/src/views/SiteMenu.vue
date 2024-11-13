@@ -63,12 +63,7 @@ onMounted(() => {
       <UserCard />
     </router-link>
     <el-scrollbar class="scrach-height">
-      <el-menu
-        class="el-menu-vertical-demo"
-        :router="true"
-        @open="handleSubMenuClick"
-        @close="handleSubMenuClick"
-      >
+      <el-menu class="el-menu-vertical-demo" :router="true" @open="handleSubMenuClick" @close="handleSubMenuClick">
         <el-menu-item index="/">
           <LayersSVG class="menu-icon" />
           <span class="menu-top">全部</span>
@@ -92,12 +87,8 @@ onMounted(() => {
             </el-icon>
             <span>{{ cate.cate_name }}</span>
           </template>
-          <el-menu-item
-            v-for:="site in cate.sites"
-            :index="`/site/` + site.id"
-            style="margin-left: 2em"
-            >{{ site.name }}</el-menu-item
-          >
+          <el-menu-item v-for:="site in cate.sites" :index="`/site/` + site.id" style="margin-left: 2em">{{ site.name
+            }}</el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-scrollbar>
@@ -164,11 +155,9 @@ onMounted(() => {
 
 .logo {
   width: 75%;
-  /* Adjust as needed */
   height: auto;
-  /* Adjust as needed */
-  margin: 20px;
-  /* Adjust as needed */
+  margin-left: 20px;
+  margin-top: 0.2em;
 }
 
 .bottom-buttons {
