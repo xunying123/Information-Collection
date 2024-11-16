@@ -7,11 +7,17 @@ import SearchInput from '@/components/SearchInput.vue'
 import ArticleCard from '@/components/ArticleCard.vue'
 import ArticleList from '@/components/ArticleList.vue'
 import SiteArticleCard from '@/components/SiteArticleCard.vue'
+import { server } from '@/const'
+
+interface Cate {
+  id: number
+  name: string
+}
 
 const props = defineProps<{ pages: PageItem[]; title: string; loading: boolean }>()
 let searchKeyword = ref('')
 let filteredPages = ref<PageItem[]>(props.pages)
-let selectedCategories = ref<string[]>([])
+let selectedCategories = ref<Cate[]>([])
 
 function filterPages() {
   if (searchKeyword.value) {
@@ -22,8 +28,16 @@ function filterPages() {
   }
   if (selectedCategories.value.length > 0) {
     filteredPages.value = filteredPages.value.filter((page) =>
-      selectedCategories.value.includes(page.category)
+      selectedCategories.value.some((category) => category.id === page.cate_id)
     )
+  }
+  if (selectedTimeRange.value !== 'all') {
+    const days = parseInt(selectedTimeRange.value)
+    const now = new Date()
+    filteredPages.value = filteredPages.value.filter((page) => {
+      const publishTime = new Date(page.publish_time)
+      return (now.getTime() - publishTime.getTime()) / (1000 * 60 * 60 * 24) <= days
+    })
   }
 }
 
@@ -32,20 +46,25 @@ watch(
   (newPages) => {
     filteredPages.value = newPages
     filterPages()
+    console.log('selectedCategories', selectedCategories.value)
   }
 )
 
+const timeOptions = [
+  { label: '全部', value: 'all' },
+  { label: '7天内', value: '7' },
+  { label: '30天内', value: '30' },
+  { label: '一年内', value: '365' }
+]
+const selectedTimeRange = ref('all')
+
 watch(searchKeyword, filterPages)
 watch(selectedCategories, filterPages)
+watch(selectedTimeRange, filterPages)
 
-const allCategories = computed(() => {
-  let categories = new Set<string>()
-  props.pages.forEach((page) => {
-    categories.add(page.category)
-  })
-  return categories
-})
-const showChooseCate = computed(() => allCategories.value.size > 1)
+const allCategories = ref(new Set<Cate>())
+
+const showChooseCate = computed(() => route.path === '/')
 
 const view = ref('card')
 const showSiteCard = computed(
@@ -90,6 +109,16 @@ onMounted(() => {
   if (!showSiteCard.value && view.value === 'site') {
     view.value = savedNotCateView ? savedNotCateView : 'card'
   }
+  try {
+    fetch(`${server}/category`)
+      .then((res) => res.json())
+      .then((data) => {
+        allCategories.value = new Set(data)
+        console.log('获取类别信息成功：', allCategories.value)
+      })
+  } catch (error) {
+    console.error('获取类别信息失败：', error)
+  }
 })
 </script>
 
@@ -103,10 +132,15 @@ onMounted(() => {
           v-if="showChooseCate"
           style="margin-right: 20px"
         >
-          <el-checkbox-button v-for="cate in allCategories" :key="cate" :label="cate">
-            {{ cate }}
+          <el-checkbox-button v-for="cate in allCategories" :key="cate" :value="cate">
+            {{ cate.name }}
           </el-checkbox-button>
         </el-checkbox-group>
+        <el-segmented
+          v-model="selectedTimeRange"
+          :options="timeOptions"
+          style="margin-right: 20px"
+        />
         <SearchInput @update:searchQuery="searchKeyword = $event"></SearchInput>
         <el-segmented v-model="view" :options="options" block class="spaced-segmented" />
         <slot></slot>

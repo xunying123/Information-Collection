@@ -34,7 +34,10 @@ function loadSites() {
           if (cateSites.cate_id != 0) tmp_sites.push(cateSites)
           cateSites = { cate_id: site.cate_id, cate_name: site.category, sites: [] }
         }
-        cateSites.sites.push(site)
+        if (site.name == '上海交通大学')
+          // push to the front
+          cateSites.sites.unshift(site)
+        else cateSites.sites.push(site)
       }
       if (cateSites.cate_id != 0) tmp_sites.push(cateSites)
       sites.splice(0, sites.length)

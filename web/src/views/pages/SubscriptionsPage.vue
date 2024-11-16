@@ -43,7 +43,7 @@
                 clearable
               >
                 <template #default="{ item }">
-                  <div class="name">{{ item.name }}</div>
+                  <div class="name">{{ item.category }} - {{ item.name }}</div>
                 </template>
               </el-autocomplete>
             </el-form-item>
