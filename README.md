@@ -1,7 +1,5 @@
 # Information-Collection
 
-
-
 1.0 计划：
 - Web
   * 基本的数据库和前端
@@ -49,3 +47,7 @@
 - 文本总结
   * 模型：本地qwen2-72b
   * Agent：General Agent
+
+2.0：
+
+[Web User Guide](docs/web.md)
