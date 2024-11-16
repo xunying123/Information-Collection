@@ -52,6 +52,22 @@ def get_categories():
     return jsonify(result)
 
 
+@web.route("/category", methods=["POST"])
+@login_required
+@admin_required
+def add_category():
+    data = request.json
+    name = data.get("name")
+    if name is None:
+        return jsonify({"code": 1, "msg": "missing field: name"})
+    if db.scalar(select(Category.id).where(Category.name == name)) is not None:
+        return jsonify({"code": 2, "msg": "category already exists"})
+    cate = Category(name=name)
+    db.add(cate)
+    db.flush()
+    return jsonify({"code": 0, "msg": "ok", "cate_id": cate.id})
+
+
 @web.route("/category/<int:cate_id>")
 @login_required
 def get_category(cate_id):
