@@ -153,7 +153,6 @@ def get_pages():
     try:
         data = json.loads(data)
         data = PageGet.model_validate(data, strict=True)
-        print(data)
     except Exception as e:
         return jsonify({"code": 1, "msg": str(e)})
     only_today = data.today
@@ -404,19 +403,14 @@ def do_auth_callback():
             data=data,
             auth=HTTPBasicAuth("czZCaGRSa3F0MzpnWDFmQmF0M2JW", ""),
         )
-        print(f"{response.json()=}")
         access_token: str = response.json().get("access_token")
-        print(f"{access_token=}")
         profile = requests.get(
             "https://api.sjtu.edu.cn/v1/me/profile",
             headers={"Authorization": f"Bearer {access_token}"},
         ).json()
         entity = profile.get("entities")[0]
 
-        print("get entity success")
-        print(entity)
         code = entity.get("code")
-        print(f"{code=}")
         user = db.scalar(select(User).where(User.jaccount_code == code))
         if user is None:
             user = User(
