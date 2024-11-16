@@ -46,7 +46,6 @@ watch(
   (newPages) => {
     filteredPages.value = newPages
     filterPages()
-    console.log('selectedCategories', selectedCategories.value)
   }
 )
 
@@ -114,7 +113,6 @@ onMounted(() => {
       .then((res) => res.json())
       .then((data) => {
         allCategories.value = new Set(data)
-        console.log('获取类别信息成功：', allCategories.value)
       })
   } catch (error) {
     console.error('获取类别信息失败：', error)
@@ -126,7 +124,7 @@ onMounted(() => {
   <el-container class="full-height">
     <el-main class="full-height top-down">
       <div class="header">
-        <h1>{{ title }}</h1>
+        <h1>{{ props.title }}</h1>
         <el-checkbox-group
           v-model="selectedCategories"
           v-if="showChooseCate"

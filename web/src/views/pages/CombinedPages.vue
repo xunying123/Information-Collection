@@ -1,11 +1,5 @@
 <template>
-  <ShowCards
-    :pages="pages"
-    :title="title"
-    :loading="loading"
-    @scroll="handleScroll"
-    @wheel="handleWheel"
-  ></ShowCards>
+  <ShowCards :pages="pages" :title="title" :loading="loading" @scroll="handleScroll" @wheel="handleWheel"></ShowCards>
 </template>
 
 <script setup lang="ts">
@@ -76,34 +70,45 @@ const fetchPages = (count: number) => {
   }
 }
 
+function updateSite() {
+  fetch(`${server}/site/${props.site_id}`)
+    .then((r) => r.json())
+    .then((data) => {
+      data.pages = site.value.pages
+      site.value = data
+      title.value = site.value.name
+      console.log('site:', site.value.name)
+    })
+}
+
+function updateCategory() {
+  fetch(`${server}/category/${props.category_id}`)
+    .then((r) => r.json())
+    .then((data) => {
+      title.value = data.name
+    })
+}
+
 onMounted(() => {
   fetchPages(count.value)
   if (props.pageType === 'site' && props.site_id) {
-    fetch(`${server}/site/${props.site_id}`)
-      .then((r) => r.json())
-      .then((data) => {
-        data.pages = site.value.pages
-        site.value = data
-      })
-    title.value = site.value.name
+    updateSite()
   }
   if (props.pageType === 'category' && props.category_id) {
-    fetch(`${server}/category/${props.category_id}`)
-      .then((r) => r.json())
-      .then((data) => {
-        title.value = data.name
-      })
+    updateCategory()
   }
 })
 
 watch([() => props.site_id, () => props.category_id], ([newSiteId, newCategoryId]) => {
   if (newSiteId || newCategoryId) {
     fetchPages(count.value)
+    if (props.pageType === 'site' && newSiteId) {
+      updateSite()
+    }
+    if (props.pageType === 'category' && newCategoryId) {
+      updateCategory()
+    }
   }
-})
-watch(site, async (newSite) => {
-  title.value = newSite.name
-  await nextTick()
 })
 const { handleScroll, handleWheel } = useScrollFetch(fetchPages)
 </script>
