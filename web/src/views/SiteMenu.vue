@@ -39,7 +39,7 @@ function loadSites() {
           cateSites.sites.unshift(site)
         else cateSites.sites.push(site)
       }
-      if (cateSites.cate_id != 0) tmp_sites.push(cateSites)
+      if (cateSites.cate_id != 0) tmp_sites.unshift(cateSites)
       sites.splice(0, sites.length)
       sites.push(...tmp_sites)
     })
