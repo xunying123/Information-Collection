@@ -77,7 +77,6 @@ function updateSite() {
       data.pages = site.value.pages
       site.value = data
       title.value = site.value.name
-      console.log('site:', site.value.name)
     })
 }
 

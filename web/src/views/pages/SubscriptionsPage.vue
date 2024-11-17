@@ -216,8 +216,7 @@ function importSources(file: File) {
     const reader = new FileReader()
     reader.onload = (e) => {
       const content = e.target?.result as string
-      const sites = JSON.parse(content)
-      console.log(sites)
+      const sites = JSON.parse(content)      
       fetch(`${server}/subscribe`, {
         method: 'POST',
         credentials: 'include',

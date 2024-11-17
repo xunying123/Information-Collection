@@ -18,7 +18,6 @@ let auth_redirect_url = computed(() => {
   url.searchParams.append('state', `${location.origin}${next.value}`)
   return url.toString()
 })
-console.log(route)
 
 onMounted(() => {
   window.location.href = auth_redirect_url.value
