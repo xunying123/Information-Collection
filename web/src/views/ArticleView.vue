@@ -10,6 +10,7 @@ import CloseSVG from '@/components/svg/CloseSVG.vue'
 import CopySVG from '@/components/svg/CopySVG.vue'
 import { NTime } from 'naive-ui'
 import KeywordList from '@/components/KeywordList.vue'
+import { ar } from 'element-plus/es/locales.mjs'
 
 let props = defineProps({ page_id: String })
 
@@ -27,6 +28,9 @@ const empty_article: Page = {
   site_icon: '',
   keywords: []
 }
+
+const slide_value = ref(128)
+const content_width = computed(() => 178 - slide_value.value)
 
 let article = ref<Page>(empty_article)
 
@@ -74,14 +78,11 @@ function copyLink() {
 </script>
 
 <template>
-  <el-aside class="details-area">
+  <el-aside class="details-area" :style="{ width: content_width + 'em' }">
     <!-- 独立功能区 -->
     <div class="top-bar">
       <div class="button-group">
-        <router-link
-          :to="{ name: $route.matched[$route.matched.length - 2].name }"
-          class="close-button"
-        >
+        <router-link :to="{ name: $route.matched[$route.matched.length - 2].name }" class="close-button">
           <CloseSVG />
         </router-link>
         <el-tooltip content="复制链接" effect="light">
@@ -99,17 +100,16 @@ function copyLink() {
         </a>
       </div>
     </div>
+    <div class="slider-container">
+      <el-slider v-model="slide_value" :min="50" :max="128" :show-tooltip="false"/>
+    </div>
     <!-- 文章内容区域 -->
     <el-scrollbar>
       <div class="article-content" v-loading="article.id == 0">
         <h2 class="article-title">{{ article.title }}</h2>
-        <KeywordList :keywords="article.keywords" :closable=false :handleClose="() => {}"></KeywordList>
+        <KeywordList :keywords="article.keywords" :closable=false :handleClose="() => { }"></KeywordList>
         <el-divider content-position="center">
-          <NTime
-            v-if="article.publish_time"
-            :time="new Date(article.publish_time)"
-            format="yyyy年MM月dd日 hh时mm分"
-          />
+          <NTime v-if="article.publish_time" :time="new Date(article.publish_time)" format="yyyy年MM月dd日 hh时mm分" />
         </el-divider>
         <!-- <div v-html="content"></div> -->
         <!-- <div v-html="article.full_content"></div> -->
@@ -148,7 +148,8 @@ function copyLink() {
 }
 
 .details-area {
-  width: 50em;
+  /* width: 50em; */
+  /* width: v-bind="content_width + 'em'"; */
   background-color: #ffffff;
   position: relative;
   border: 1px solid #ddd;
@@ -156,10 +157,12 @@ function copyLink() {
   border-radius: 8px;
   overflow: auto;
   margin: 1.5em 1.5em 1.5em 0;
-  display: grid;
+  /* display: grid; */
   grid-template-rows: min-content 1fr;
   background-color: rgba(255, 255, 255, 0.7);
   /* 设置背景颜色为半透明的白色 */
+  display: flex;
+  flex-direction: column;
 }
 
 .top-bar {
@@ -205,6 +208,19 @@ function copyLink() {
 
 .close-button:hover {
   fill: #f00;
+}
+
+.slider-container {
+  height: 1em;
+  width: 97%;
+}
+
+.slider-container .el-slider {
+  --el-slider-main-bg-color: rgba(0, 0, 0, 0.05);
+}
+
+.el-slider >>> .el-slider__button {
+  background-color: rgba(0, 134, 209, 0.5);
 }
 
 .section-title {
