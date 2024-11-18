@@ -4,6 +4,8 @@ import type { Keyword } from '@/api_interface'
 
 defineProps<{
   keywords: Keyword[]
+  closable?: boolean
+  handleClose: (keyword: Keyword) => void
 }>()
 
 const tagTypes = ['primary', 'success', 'warning', 'danger']
@@ -11,6 +13,7 @@ function getRandomTagType() {
   const randomIndex = Math.floor(Math.random() * tagTypes.length)
   return tagTypes[randomIndex]
 }
+
 </script>
 
 <template>
@@ -21,6 +24,8 @@ function getRandomTagType() {
       round
       :type="getRandomTagType()"
       size="large"
+      :closable=closable
+      @close="handleClose(keyword)"
     >
       {{ keyword.word }}
     </el-tag>

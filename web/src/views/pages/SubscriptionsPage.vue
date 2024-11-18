@@ -6,23 +6,20 @@
         <h2 style="display: inline-block; margin-right: 10px">网站源列表</h2>
         <div style="display: inline-block">
           <el-button type="info" @click="exportSources" size="small" round>导出网站源</el-button>
-          <el-upload
-            action=""
-            :before-upload="importSources"
-            :show-file-list="false"
-            style="display: inline-block; margin-left: 10px"
-          >
+          <el-upload action="" :before-upload="importSources" :show-file-list="false"
+            style="display: inline-block; margin-left: 10px; margin-right: 10px">
             <el-button type="success" size="small" round>导入网站源</el-button>
           </el-upload>
+          <el-popconfirm title="此操作将清空所有订阅的网站源，是否继续？" confirm-button-text="确定" cancel-button-text="取消"
+            icon="el-icon-question" @confirm="clearSubscriptions">
+            <template #reference>
+              <el-button type="danger" size="small" round>清空网站源</el-button>
+            </template>
+          </el-popconfirm>
         </div>
       </div>
-      <el-switch
-        v-model="filter_subscribe"
-        class="mb-2"
-        active-text="仅显示订阅的网站"
-        inactive-text="显示全部网站"
-        @change="saveFilter"
-      />
+      <el-switch v-model="filter_subscribe" class="mb-2" active-text="仅显示订阅的网站" inactive-text="显示全部网站"
+        @change="saveFilter" />
       <el-scrollbar class="source-scrollbar" height="24em" :always="true">
         <p v-for="source in sources" :key="source.id" class="scrollbar-item">
           <strong>{{ source.category }}</strong> - {{ source.name }} -
@@ -35,13 +32,8 @@
         <el-tab-pane label="添加网站源" name="add-source">
           <el-form :model="newSource" ref="sourceForm" label-width="120px">
             <el-form-item label="网站名称" prop="name" size="large">
-              <el-autocomplete
-                v-model="newSource.name"
-                :fetch-suggestions="querySearch"
-                placeholder="请输入网站名称"
-                @select="handleSelect"
-                clearable
-              >
+              <el-autocomplete v-model="newSource.name" :fetch-suggestions="querySearch" placeholder="请输入网站名称"
+                @select="handleSelect" clearable>
                 <template #default="{ item }">
                   <div class="name">{{ item.category }} - {{ item.name }}</div>
                 </template>
@@ -55,13 +47,8 @@
         <el-tab-pane label="删除网站源" name="remove-source">
           <el-form :model="sourceToDelete" label-width="120px">
             <el-form-item label="网站名称" size="large">
-              <el-autocomplete
-                v-model="sourceToDelete.name"
-                :fetch-suggestions="querySourceSearch"
-                placeholder="输入要删除的网站名称"
-                @select="handleSourceSelect"
-                clearable
-              >
+              <el-autocomplete v-model="sourceToDelete.name" :fetch-suggestions="querySourceSearch"
+                placeholder="输入要删除的网站名称" @select="handleSourceSelect" clearable>
                 <template #default="{ item }">
                   <div class="name">{{ item.name }}</div>
                 </template>
@@ -216,7 +203,7 @@ function importSources(file: File) {
     const reader = new FileReader()
     reader.onload = (e) => {
       const content = e.target?.result as string
-      const sites = JSON.parse(content)      
+      const sites = JSON.parse(content)
       fetch(`${server}/subscribe`, {
         method: 'POST',
         credentials: 'include',
@@ -269,6 +256,42 @@ function exportSources() {
   a.download = 'subscriptions.json'
   a.click()
   URL.revokeObjectURL(url)
+}
+
+function clearSubscriptions() {
+  fetch(`${server}/subscribe`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      sites_id: [],
+      add_for_user: true,
+      keep_user_existed: false
+    })
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.code === 0) {
+        loadSubscribedSources()
+        ElNotification({
+          title: '成功',
+          message: '网站源清空成功',
+          type: 'success'
+        })
+      } else {
+        throw new Error(data.msg)
+      }
+    })
+    .catch((error) => {
+      ElNotification({
+        title: '错误',
+        message: '清空网站源失败: ' + error,
+        type: 'error'
+      })
+    })
+
 }
 
 function createFilter(queryString: string) {

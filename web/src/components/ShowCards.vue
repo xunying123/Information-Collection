@@ -34,9 +34,29 @@ function filterPages() {
   if (selectedTimeRange.value !== 'all') {
     const days = parseInt(selectedTimeRange.value)
     const now = new Date()
+    let startTime
+
+    if (days === 1) {
+      const yesterday = new Date(now)
+      const day = now.getDay()
+      if (day === 1) { // 如果今天是周一
+        yesterday.setDate(now.getDate() - 3) // 上一个工作日是周五
+      } else if (day === 0) { // 如果今天是周日
+        yesterday.setDate(now.getDate() - 2) // 上一个工作日是周五
+      } else {
+        yesterday.setDate(now.getDate() - 1) // 其他情况，上一个工作日是昨天
+      }
+      yesterday.setHours(0, 0, 0, 0)
+      startTime = yesterday
+    } else {
+      startTime = new Date(now)
+      startTime.setDate(now.getDate() - days)
+      startTime.setHours(0, 0, 0, 0)
+    }
+
     filteredPages.value = filteredPages.value.filter((page) => {
       const publishTime = new Date(page.publish_time)
-      return (now.getTime() - publishTime.getTime()) / (1000 * 60 * 60 * 24) <= days
+      return publishTime >= startTime && publishTime <= now
     })
   }
 }
@@ -51,6 +71,7 @@ watch(
 
 const timeOptions = [
   { label: '全部', value: 'all' },
+  { label: '1天内', value: '1' },
   { label: '7天内', value: '7' },
   { label: '30天内', value: '30' },
   { label: '一年内', value: '365' }
@@ -125,29 +146,17 @@ onMounted(() => {
     <el-main class="full-height top-down">
       <div class="header">
         <h1>{{ props.title }}</h1>
-        <el-checkbox-group
-          v-model="selectedCategories"
-          v-if="showChooseCate"
-          style="margin-right: 20px"
-        >
+        <el-checkbox-group v-model="selectedCategories" v-if="showChooseCate" style="margin-right: 20px">
           <el-checkbox-button v-for="cate in allCategories" :key="cate" :value="cate">
             {{ cate.name }}
           </el-checkbox-button>
         </el-checkbox-group>
-        <el-segmented
-          v-model="selectedTimeRange"
-          :options="timeOptions"
-          style="margin-right: 20px"
-        />
+        <el-segmented v-model="selectedTimeRange" :options="timeOptions" style="margin-right: 20px" />
         <SearchInput @update:searchQuery="searchKeyword = $event"></SearchInput>
         <el-segmented v-model="view" :options="options" block class="spaced-segmented" />
         <slot></slot>
       </div>
-      <el-scrollbar
-        v-if="pages && pages.length"
-        v-loading="loading"
-        @scroll="$emit('scroll', $event)"
-      >
+      <el-scrollbar v-if="pages && pages.length" v-loading="loading" @scroll="$emit('scroll', $event)">
         <div v-if="view === 'card'" class="container-grid">
           <ArticleCard v-for="page in filteredPages" :key="page.id" :page="page" />
         </div>
@@ -196,7 +205,7 @@ h1 {
   flex-wrap: wrap;
 }
 
-.header > :first-child {
+.header> :first-child {
   margin-right: auto;
 }
 
@@ -205,7 +214,7 @@ h1 {
   width: 23em;
 }
 
-.header > h1 {
+.header>h1 {
   margin: 0.2em;
 }
 </style>

@@ -6,48 +6,29 @@
         <h2 style="display: inline-block; margin-right: 10px">关键词列表</h2>
         <div style="display: inline-block">
           <el-button type="info" @click="exportKeywords" size="small" round>导出关键词</el-button>
-          <el-upload
-            action=""
-            :before-upload="importKeywords"
-            :show-file-list="false"
-            style="display: inline-block; margin-left: 10px; margin-right: 10px"
-          >
+          <el-upload action="" :before-upload="importKeywords" :show-file-list="false"
+            style="display: inline-block; margin-left: 10px; margin-right: 10px">
             <el-button type="success" size="small" round>导入关键词</el-button>
           </el-upload>
-          <el-popconfirm
-            title="此操作将清空所有关键词，是否继续？"
-            confirm-button-text="确定"
-            cancel-button-text="取消"
-            icon="el-icon-question"
-            @confirm="clearKeywords"
-          >
+          <el-popconfirm title="此操作将清空所有关键词，是否继续？" confirm-button-text="确定" cancel-button-text="取消"
+            icon="el-icon-question" @confirm="clearKeywords">
             <template #reference>
               <el-button type="danger" size="small" round>清空关键词</el-button>
             </template>
           </el-popconfirm>
         </div>
       </div>
-      <el-switch
-        v-model="filter_keyword"
-        class="mb-2"
-        active-text="仅显示订阅关键词相关的文章"
-        inactive-text="显示全部文章"
-        @change="saveFilter"
-      />
-      <KeywordList :keywords="keywords"></KeywordList>
+      <el-switch v-model="filter_keyword" class="mb-2" active-text="仅显示订阅关键词相关的文章" inactive-text="显示全部文章"
+        @change="saveFilter" />
+      <KeywordList :keywords="keywords" closable :handleClose="handleClose"></KeywordList>
     </div>
     <div class="section">
       <el-tabs v-model="activeKeywordTab">
         <el-tab-pane label="添加关键词" name="add-keyword">
           <el-form :model="newKeyword" ref="keywordForm" label-width="120px">
             <el-form-item label="关键词" prop="word" size="large">
-              <el-autocomplete
-                v-model="newKeyword.word"
-                :fetch-suggestions="queryKeywordSearchAdd"
-                placeholder="请输入新关键词或选择已有关键词"
-                @select="handleAllKeywordleSelect"
-                clearable
-              >
+              <el-autocomplete v-model="newKeyword.word" :fetch-suggestions="queryKeywordSearchAdd"
+                placeholder="请输入新关键词或选择已有关键词" @select="handleAllKeywordleSelect" clearable>
                 <template #default="{ item }">
                   <div class="name">{{ item.word }}</div>
                 </template>
@@ -61,20 +42,15 @@
         <el-tab-pane label="删除关键词" name="remove-keyword">
           <el-form :model="keywordToDelete" label-width="120px">
             <el-form-item label="关键词" size="large">
-              <el-autocomplete
-                v-model="keywordToDelete.word"
-                :fetch-suggestions="queryKeywordSearchDelete"
-                placeholder="输入要删除的关键词"
-                @select="handleKeywordSelect"
-                clearable
-              >
+              <el-autocomplete v-model="keywordToDelete.word" :fetch-suggestions="queryKeywordSearchDelete"
+                placeholder="输入要删除的关键词" @select="handleKeywordSelect" clearable>
                 <template #default="{ item }">
                   <div class="name">{{ item.word }}</div>
                 </template>
               </el-autocomplete>
             </el-form-item>
             <el-form-item>
-              <el-button type="danger" size="large" @click="deleteKeyword">删除</el-button>
+              <el-button type="danger" size="large" @click="handelDeleteKeyword">删除</el-button>
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -203,8 +179,7 @@ function clearKeywords() {
     })
 }
 
-function deleteKeyword() {
-  const keyword = keywords.value.find((k) => k.word === keywordToDelete.word)
+function deleteKeyword(keyword: Keyword) {
   if (keyword) {
     fetch(`${server}/keyword`, {
       method: 'DELETE',
@@ -220,7 +195,6 @@ function deleteKeyword() {
       .then((data) => {
         if (data.code === 0) {
           loadKeywords()
-          keywordToDelete.word = ''
           ElNotification({
             title: '成功',
             message: '关键词删除成功',
@@ -240,13 +214,22 @@ function deleteKeyword() {
   }
 }
 
+function handelDeleteKeyword() {
+  const keyword = keywords.value.find((k) => k.word === keywordToDelete.word)
+  if (keyword)
+    deleteKeyword(keyword)
+}
+
+function handleClose(keyword: Keyword) {
+  deleteKeyword(keyword)
+}
+
 function importKeywords(file: File) {
   if (file) {
     const reader = new FileReader()
     reader.onload = (e) => {
       const content = e.target?.result as string
       const words = JSON.parse(content)
-      console.log(words)
       fetch(`${server}/keyword`, {
         method: 'POST',
         credentials: 'include',

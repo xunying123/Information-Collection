@@ -103,7 +103,7 @@ function copyLink() {
     <el-scrollbar>
       <div class="article-content" v-loading="article.id == 0">
         <h2 class="article-title">{{ article.title }}</h2>
-        <KeywordList :keywords="article.keywords"></KeywordList>
+        <KeywordList :keywords="article.keywords" :closable=false :handleClose="() => {}"></KeywordList>
         <el-divider content-position="center">
           <NTime
             v-if="article.publish_time"
