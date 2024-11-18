@@ -152,7 +152,7 @@ def get_pages():
     data = request.args.get("data", type=str)
     try:
         data = json.loads(data)
-        data = PageGet.model_validate(data, strict=True)
+        data = PageGet.model_validate(data, strict=False)
     except Exception as e:
         return jsonify({"code": 1, "msg": str(e)})
     only_today = data.today
@@ -189,6 +189,14 @@ def get_pages():
         stmt = stmt.where(Page.id < data.cursor_id)
     if data.count > 0:
         stmt = stmt.limit(data.count)
+    if data.time_start:
+        stmt = stmt.where(Page.publish_time >= data.time_start)
+    if data.time_end:
+        stmt = stmt.where(Page.publish_time <= data.time_end)
+    if data.search_title:
+        stmt = stmt.where(Page.title.like(f"%{data.search_title}%"))
+    if data.search_content:
+        stmt = stmt.where(Page.content.like(f"%{data.search_content}%"))
 
     sites_id = None
     if data.site is not None:
@@ -236,36 +244,7 @@ def get_page(page_id):
 @web.route("/page/search")
 @login_required
 def search_page():
-    count = request.args.get("count", AppConfig.default_paging_size, type=int)
-    offset = request.args.get("offset", 0, type=int)
-    key = request.args.get("key", type=str)
-    site = request.args.get("site", 0, type=int)
-    cate = request.args.get("cate", 0, type=int)
-    time_start = request.args.get("time_start", type=str)
-    time_end = request.args.get("time_end", type=str)
-    if not any([key, site, cate, time_start, time_end]):
-        return jsonify(
-            {
-                "code": 1,
-                "msg": "at least one of key, site, cate, time_start, time_end is required.",
-            }
-        )
-    stmt = select(Page).order_by(Page.created_at.desc()).limit(count).offset(offset)
-    if key:
-        stmt = stmt.where(Page.title.like(f"%{key}%"))
-    if site:
-        stmt = stmt.where(Page.site_id == site)
-    if cate:
-        stmt = stmt.where(Page.cate_id == cate)
-    if time_start:
-        stmt = stmt.where(Page.publish_time >= time_start)
-    if time_end:
-        stmt = stmt.where(Page.publish_time <= time_end)
-    result: list[ResponsePageItem] = []
-    for page in db.scalars(stmt):
-        info = ResponsePageItem(page)
-        result.append(info)
-    return jsonify(result)
+    return "Deprecated, use /api/page instead", 404
 
 
 @web.route("/page/keyword", methods=["POST"])
