@@ -241,6 +241,14 @@ def get_page(page_id):
     return jsonify(res)
 
 
+@web.route("/page/<int:page_id>", methods=["DELETE"])
+@login_required
+@admin_required
+def remove_page(page_id):
+    db.execute(delete(Page).where(Page.id == page_id))
+    return jsonify({"code": 0, "msg": "ok"})
+
+
 @web.route("/page/search")
 @login_required
 def search_page():
