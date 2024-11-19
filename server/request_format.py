@@ -11,10 +11,10 @@ class PageGet(BaseModel):
     bookmarked: bool = False
     keyword: bool = False
     subscribe: bool = False
-    time_start: Optional[datetime]
-    time_end: Optional[datetime]
-    search_title: Optional[str]
-    search_content: Optional[str]
+    time_start: Optional[datetime] = None
+    time_end: Optional[datetime] = None
+    search_title: Optional[str] = None
+    search_content: Optional[str] = None
 
     count: int = AppConfig.default_paging_size
     cursor_id: int = 0  # zero should be ignored
