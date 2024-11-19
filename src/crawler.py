@@ -3,18 +3,38 @@ from datetime import datetime
 from newspaper import Article
 import requests
 from bs4 import BeautifulSoup
-from utils import read_content, save_content, check_page_content, headers
-import random
+from utils import read_content, save_content, check_page_content, headers, extract_domain
 
-url = 'http://www.moe.gov.cn/jyb_xwfb/s6192/s222/moe_1733/202410/t20241014_1157184.html'
+url = 'http://www.jyb.cn/rmtzgjyb/202411/t20241111_2111267743.html'
 
 def Newspaper(url):
     try:
         article = Article(url, language='zh')
         article.download()
         article.parse()
+
         if article.text:
+            soup = BeautifulSoup(article.html, 'html.parser')
+            
+            # 删除所有 display:none 的元素
+            for element in soup.find_all(style=lambda value: value and 'display:none' in value):
+                element.decompose()
+
+            for hidden_input in soup.find_all('input', type='hidden'):
+                hidden_input.decompose()
+
+            for element in soup.find_all(['div', 'p', 'span', 'a']):
+                text_content = element.get_text()
+                if 'ICP备' in text_content or '版权所有' in text_content or '公安机关备案' in text_content:
+                    element.decompose()  # 删除该元素
+
+
+            # 重新解析清理后的 HTML 内容
+            article.html = str(soup)
+
+            # 返回清理后的文章
             return article
+
     except Exception as e:
         return None
     return None
@@ -40,8 +60,26 @@ def Play_Wright_new(url):
             article.parse()
 
             if article:
+                soup = BeautifulSoup(article.html, 'html.parser')
+            
+            # 删除所有 display:none 的元素
+                for element in soup.find_all(style=lambda value: value and 'display:none' in value):
+                    element.decompose()
+                
+                for hidden_input in soup.find_all('input', type='hidden'):
+                    hidden_input.decompose()
+
+                for element in soup.find_all(['div', 'p', 'span', 'a']):
+                    text_content = element.get_text()
+                    if 'ICP备' in text_content or '版权所有' in text_content or '公安机关备案' in text_content:
+                        element.decompose()  # 删除该元素
+
+
+            # 重新解析清理后的 HTML 内容
+                article.html = str(soup)
                 if article.title and article.text:
                     return article.title, article.text
+                
     except Exception as e:
         return None, None
     return None, None
@@ -54,6 +92,17 @@ def Beautiful_Soup(url):
         response.encoding = 'utf-8'
 
         soup = BeautifulSoup(response.text, 'lxml')
+
+        for element in soup.find_all(style=lambda value: value and 'display:none' in value):
+            element.decompose()  # 删除该元素
+
+        for hidden_input in soup.find_all('input', type='hidden'):
+            hidden_input.decompose()
+
+        for element in soup.find_all(['div', 'p', 'span', 'a']):
+            text_content = element.get_text()
+            if 'ICP备' in text_content or '版权所有' in text_content or '公安机关备案' in text_content:
+                element.decompose()  # 删除该元素
 
         title = soup.find('title').get_text()
         content = soup.find_all('p')
@@ -75,7 +124,6 @@ def Play_Wright_bs(url):
             page = context.new_page()
             page.goto(url)
 
-
             page.wait_for_load_state("networkidle")
 
             page_content = page.content()
@@ -83,10 +131,21 @@ def Play_Wright_bs(url):
             browser.close()
             soup = BeautifulSoup(page_content, 'lxml')
 
+            for element in soup.find_all(style=lambda value: value and 'display:none' in value):
+                element.decompose()  # 删除该元素
+
+            for hidden_input in soup.find_all('input', type='hidden'):
+                hidden_input.decompose()
+
+            for element in soup.find_all(['div', 'p', 'span', 'a']):
+                text_content = element.get_text()
+                if 'ICP备' in text_content or '版权所有' in text_content or '公安机关备案' in text_content:
+                    element.decompose()  # 删除该元素
+
             title = soup.find('title').get_text()
             content = soup.find_all('p')
 
-            article_text = "\n".join([p.get_text() for p in content])
+            article_text = "\n\n".join([p.get_text() for p in content])
             if article_text :
                 return title, article_text
     except Exception as e:
@@ -96,35 +155,44 @@ def Play_Wright_bs(url):
 def crawl(url, source_url):
     #print(f"Fetching {url}")
     today_date = datetime.today().strftime('%Y-%m-%d')
-    wrong_path = "/home/dic/Information-Collection/src/data/wrong/" + today_date + '.json'
+    wrong_path = "/home/dic/Information-Collection/src/data/wrong/" + today_date + '/' + extract_domain(source_url) + '.json'
+
+    temp = extract_domain(source_url)
+    path = f"/home/dic/Information-Collection/src/data/out/{today_date}" + "/" + temp + '.txt'
 
     article = Newspaper(url)
-
-    if article :
-        if article.title and article.text and len(article.text) > 10 and check_page_content(article.title):
-            print(1, flush=True)
-            # print(article.title)
-            # print(article.text)
-            return article.title, article.text
+    with open(path, 'a') as f:
+        if article :
+            if article.title and article.text and len(article.text) > 10 and check_page_content(article.title) and check_page_content(article.text):
+                f.write("1")
+                f.write('\n')
+                # print(article.title)
+                # print(article.text)
+                return article.title, article.text
         
-    title, content = Beautiful_Soup(url)
-    if title and content and len(content) > 10 and check_page_content(title):
-        print(2, flush=True)
-        # print(title)
-        # print(content)
-        return title, content
+        title, content = Beautiful_Soup(url)
+        if title and content and len(content) > 10 and check_page_content(title) and check_page_content(content):
+            f.write("2")
+            f.write('\n')
+            # print(title)
+            # print(content)
+            return title, content
     
-    title, content = Play_Wright_new(url)
-    if title and content and len(content) > 10 and check_page_content(title):
-        print(3, flush=True)
-        return title, content
+        title, content = Play_Wright_new(url)
+        if title and content and len(content) > 10 and check_page_content(title) and check_page_content(content):
+            f.write("3")
+            f.write('\n')
+            return title, content
     
-    title, content = Play_Wright_bs(url)
-    if title and content and len(content) > 10 and check_page_content(title):
-        print(4, flush=True)
-        # print(title)
-        # print(content)
-        return title, content
+        title, content = Play_Wright_bs(url)
+        if title and content and len(content) > 10 and check_page_content(title) and check_page_content(content):
+            f.write("4")
+            f.write('\n')
+            # print(title)
+            # print(content)
+            return title, content
+        
+        f.close()
     
     wrong = read_content(wrong_path)
     wrong.append({"url": url, "source_url": source_url})

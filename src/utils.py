@@ -9,7 +9,7 @@ cookie = "HSID=AMaXiW-mKafze-IIs; SSID=A_ZmnTiS1rJFe09Lg; APISID=gCnWRnrS8tIxdkO
 headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         'Accept-Language': 'zh-CN,zh;q=0.9',
-        'cookie': cookie
+        # 'cookie': cookie
 }
 
 Api_key = 'bca111853985e628815e95d53b0d33aa.I9JlapMD8IOQfrPe'
@@ -28,9 +28,8 @@ def normalize_url(url):
         return url
 
 def extract_domain(url):
-        ext = tldextract.extract(url)
-        domain = f"{ext.domain}.{ext.suffix}"
-        return domain
+    sanitized_url = re.sub(r'[^a-zA-Z0-9\-]', '-', url)
+    return sanitized_url
 
 def save_content(content, filename):
     with open(filename, 'w', encoding='utf-8') as f:
@@ -47,7 +46,6 @@ def check_page_content(page_content):
         return 0;
     else:
         return 1;
-
 
 def summary_(content):
     if len(content) > 4096:
@@ -82,3 +80,9 @@ def check_(url):
            return 1
     else:
            return 0
+
+def what_word(content):
+    path = "/home/dic/Information-Collection/src/data/word" + '.json'
+    word = read_content(path)
+    matched_word_ids = [entry["id"] for entry in word if entry["word"] in content]
+    return matched_word_ids
