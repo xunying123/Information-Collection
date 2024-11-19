@@ -10,7 +10,6 @@ import CloseSVG from '@/components/svg/CloseSVG.vue'
 import CopySVG from '@/components/svg/CopySVG.vue'
 import { NTime } from 'naive-ui'
 import KeywordList from '@/components/KeywordList.vue'
-import { ar } from 'element-plus/es/locales.mjs'
 
 let props = defineProps({ page_id: String })
 

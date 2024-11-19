@@ -63,6 +63,8 @@ interface GetPage {
   subscribe?: boolean
   count?: number
   cursor_id?: number
+  search_title?: string
+  search_content?: string
 }
 
 export type { GetPage }

@@ -1,9 +1,9 @@
 <template>
-  <ShowCards :pages="pages" :title="title" :loading="loading" @scroll="handleScroll" @wheel="handleWheel"></ShowCards>
+  <ShowCards :pages="pages" :title="title" :loading="loading"  @scroll="handleScroll" @wheel="handleWheel"></ShowCards>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, inject, nextTick } from 'vue'
+import { ref, onMounted, watch, inject, provide } from 'vue'
 import type { GetPage, PageItem, Site } from '@/api_interface'
 import { server } from '@/const'
 import ShowCards from '@/components/ShowCards.vue'
@@ -17,6 +17,9 @@ const props = defineProps<{
 }>()
 
 const EmptySite: Site = { id: 0, name: '', url: '', category: '', cate_id: 0, pages: [], icon: '' }
+
+let searchKeyword = ref('')
+provide('searchKeyword', searchKeyword)
 
 let pages = ref<PageItem[]>([])
 let loading = ref(true)
@@ -37,7 +40,9 @@ const fetchPages = (count: number) => {
   let body: GetPage = {
     count: count,
     keyword: filter_keyword.value,
-    subscribe: filter_subscribe.value
+    subscribe: filter_subscribe.value,
+    search_title: searchKeyword.value? searchKeyword.value : '',
+    search_content: searchKeyword.value? searchKeyword.value : ''
   }
   switch (props.pageType) {
     case 'all':
@@ -96,6 +101,10 @@ onMounted(() => {
   if (props.pageType === 'category' && props.category_id) {
     updateCategory()
   }
+})
+
+watch(searchKeyword, (newKeyword) => {
+  fetchPages(count.value)
 })
 
 watch([() => props.site_id, () => props.category_id], ([newSiteId, newCategoryId]) => {

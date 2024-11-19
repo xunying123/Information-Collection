@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineProps, watch, onMounted, computed } from 'vue'
+import { ref, defineProps, watch, onMounted, computed, inject } from 'vue'
 import { useRoute } from 'vue-router'
 import type { PageItem } from '@/api_interface'
 import SearchInput from '@/components/SearchInput.vue'
@@ -14,18 +14,13 @@ interface Cate {
   name: string
 }
 
-const props = defineProps<{ pages: PageItem[]; title: string; loading: boolean }>()
-let searchKeyword = ref('')
+const props = defineProps<{ pages: PageItem[]; title: string; loading: boolean; }>()
+let searchKeyword = inject('searchKeyword', ref(''))
 let filteredPages = ref<PageItem[]>(props.pages)
 let selectedCategories = ref<Cate[]>([])
 
 function filterPages() {
-  if (searchKeyword.value) {
-    let regex = new RegExp([...searchKeyword.value].join('.*'), 'g')
-    filteredPages.value = props.pages.filter((page) => regex.test(page.title))
-  } else {
-    filteredPages.value = props.pages
-  }
+  filteredPages.value = props.pages
   if (selectedCategories.value.length > 0) {
     filteredPages.value = filteredPages.value.filter((page) =>
       selectedCategories.value.some((category) => category.id === page.cate_id)
@@ -78,7 +73,6 @@ const timeOptions = [
 ]
 const selectedTimeRange = ref('all')
 
-watch(searchKeyword, filterPages)
 watch(selectedCategories, filterPages)
 watch(selectedTimeRange, filterPages)
 
@@ -152,7 +146,7 @@ onMounted(() => {
           </el-checkbox-button>
         </el-checkbox-group>
         <el-segmented v-model="selectedTimeRange" :options="timeOptions" style="margin-right: 20px" />
-        <SearchInput @update:searchQuery="searchKeyword = $event"></SearchInput>
+        <SearchInput @update:searchQuery="searchKeyword = $event"/>
         <el-segmented v-model="view" :options="options" block class="spaced-segmented" />
         <slot></slot>
       </div>
