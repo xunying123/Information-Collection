@@ -1,5 +1,11 @@
 <template>
-  <ShowCards :pages="pages" :title="title" :loading="loading"  @scroll="handleScroll" @wheel="handleWheel"></ShowCards>
+  <ShowCards
+    :pages="pages"
+    :title="title"
+    :loading="loading"
+    @scroll="handleScroll"
+    @wheel="handleWheel"
+  ></ShowCards>
 </template>
 
 <script setup lang="ts">
@@ -8,7 +14,7 @@ import type { GetPage, PageItem, Site } from '@/api_interface'
 import { server } from '@/const'
 import ShowCards from '@/components/ShowCards.vue'
 import useScrollFetch from '@/useScrollFetch'
-import { filter_subscribe_key, filter_keyword_key } from '@/key'
+import { filter_subscribe_key, filter_keyword_key, search_keyword_key } from '@/key'
 
 const props = defineProps<{
   pageType: 'all' | 'daily' | 'site' | 'category'
@@ -19,7 +25,7 @@ const props = defineProps<{
 const EmptySite: Site = { id: 0, name: '', url: '', category: '', cate_id: 0, pages: [], icon: '' }
 
 let searchKeyword = ref('')
-provide('searchKeyword', searchKeyword)
+provide(search_keyword_key, searchKeyword)
 
 let pages = ref<PageItem[]>([])
 let loading = ref(true)
@@ -40,9 +46,11 @@ const fetchPages = (count: number) => {
   let body: GetPage = {
     count: count,
     keyword: filter_keyword.value,
-    subscribe: filter_subscribe.value,
-    search_title: searchKeyword.value? searchKeyword.value : '',
-    search_content: searchKeyword.value? searchKeyword.value : ''
+    subscribe: filter_subscribe.value
+  }
+  if (searchKeyword.value) {
+    body.search_title = searchKeyword.value
+    body.search_content = searchKeyword.value
   }
   switch (props.pageType) {
     case 'all':
@@ -103,7 +111,7 @@ onMounted(() => {
   }
 })
 
-watch(searchKeyword, (newKeyword) => {
+watch(searchKeyword, () => {
   fetchPages(count.value)
 })
 

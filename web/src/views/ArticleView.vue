@@ -81,7 +81,10 @@ function copyLink() {
     <!-- 独立功能区 -->
     <div class="top-bar">
       <div class="button-group">
-        <router-link :to="{ name: $route.matched[$route.matched.length - 2].name }" class="close-button">
+        <router-link
+          :to="{ name: $route.matched[$route.matched.length - 2].name }"
+          class="close-button"
+        >
           <CloseSVG />
         </router-link>
         <el-tooltip content="复制链接" effect="light">
@@ -100,15 +103,23 @@ function copyLink() {
       </div>
     </div>
     <div class="slider-container">
-      <el-slider v-model="slide_value" :min="50" :max="128" :show-tooltip="false"/>
+      <el-slider v-model="slide_value" :min="50" :max="128" :show-tooltip="false" />
     </div>
     <!-- 文章内容区域 -->
     <el-scrollbar>
       <div class="article-content" v-loading="article.id == 0">
         <h2 class="article-title">{{ article.title }}</h2>
-        <KeywordList :keywords="article.keywords" :closable=false :handleClose="() => { }"></KeywordList>
+        <KeywordList
+          :keywords="article.keywords"
+          :closable="false"
+          :handleClose="() => {}"
+        ></KeywordList>
         <el-divider content-position="center">
-          <NTime v-if="article.publish_time" :time="new Date(article.publish_time)" format="yyyy年MM月dd日 hh时mm分" />
+          <NTime
+            v-if="article.publish_time"
+            :time="new Date(article.publish_time)"
+            format="yyyy年MM月dd日 hh时mm分"
+          />
         </el-divider>
         <!-- <div v-html="content"></div> -->
         <!-- <div v-html="article.full_content"></div> -->

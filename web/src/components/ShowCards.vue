@@ -8,14 +8,15 @@ import ArticleCard from '@/components/ArticleCard.vue'
 import ArticleList from '@/components/ArticleList.vue'
 import SiteArticleCard from '@/components/SiteArticleCard.vue'
 import { server } from '@/const'
+import { search_keyword_key } from '@/key'
 
 interface Cate {
   id: number
   name: string
 }
 
-const props = defineProps<{ pages: PageItem[]; title: string; loading: boolean; }>()
-let searchKeyword = inject('searchKeyword', ref(''))
+const props = defineProps<{ pages: PageItem[]; title: string; loading: boolean }>()
+let searchKeyword = inject(search_keyword_key)!
 let filteredPages = ref<PageItem[]>(props.pages)
 let selectedCategories = ref<Cate[]>([])
 
@@ -34,9 +35,11 @@ function filterPages() {
     if (days === 1) {
       const yesterday = new Date(now)
       const day = now.getDay()
-      if (day === 1) { // 如果今天是周一
+      if (day === 1) {
+        // 如果今天是周一
         yesterday.setDate(now.getDate() - 3) // 上一个工作日是周五
-      } else if (day === 0) { // 如果今天是周日
+      } else if (day === 0) {
+        // 如果今天是周日
         yesterday.setDate(now.getDate() - 2) // 上一个工作日是周五
       } else {
         yesterday.setDate(now.getDate() - 1) // 其他情况，上一个工作日是昨天
@@ -140,17 +143,29 @@ onMounted(() => {
     <el-main class="full-height top-down">
       <div class="header">
         <h1>{{ props.title }}</h1>
-        <el-checkbox-group v-model="selectedCategories" v-if="showChooseCate" style="margin-right: 20px">
+        <el-checkbox-group
+          v-model="selectedCategories"
+          v-if="showChooseCate"
+          style="margin-right: 20px"
+        >
           <el-checkbox-button v-for="cate in allCategories" :key="cate" :value="cate">
             {{ cate.name }}
           </el-checkbox-button>
         </el-checkbox-group>
-        <el-segmented v-model="selectedTimeRange" :options="timeOptions" style="margin-right: 20px" />
-        <SearchInput @update:searchQuery="searchKeyword = $event"/>
+        <el-segmented
+          v-model="selectedTimeRange"
+          :options="timeOptions"
+          style="margin-right: 20px"
+        />
+        <SearchInput @update:searchQuery="searchKeyword = $event" />
         <el-segmented v-model="view" :options="options" block class="spaced-segmented" />
         <slot></slot>
       </div>
-      <el-scrollbar v-if="pages && pages.length" v-loading="loading" @scroll="$emit('scroll', $event)">
+      <el-scrollbar
+        v-if="pages && pages.length"
+        v-loading="loading"
+        @scroll="$emit('scroll', $event)"
+      >
         <div v-if="view === 'card'" class="container-grid">
           <ArticleCard v-for="page in filteredPages" :key="page.id" :page="page" />
         </div>
@@ -199,7 +214,7 @@ h1 {
   flex-wrap: wrap;
 }
 
-.header> :first-child {
+.header > :first-child {
   margin-right: auto;
 }
 
@@ -208,7 +223,7 @@ h1 {
   width: 23em;
 }
 
-.header>h1 {
+.header > h1 {
   margin: 0.2em;
 }
 </style>

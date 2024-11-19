@@ -13,7 +13,6 @@ function getRandomTagType() {
   const randomIndex = Math.floor(Math.random() * tagTypes.length)
   return tagTypes[randomIndex]
 }
-
 </script>
 
 <template>
@@ -24,7 +23,7 @@ function getRandomTagType() {
       round
       :type="getRandomTagType()"
       size="large"
-      :closable=closable
+      :closable="closable"
       @close="handleClose(keyword)"
     >
       {{ keyword.word }}
