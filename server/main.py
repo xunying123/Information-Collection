@@ -3,7 +3,7 @@ from flask import Flask, request, url_for, redirect, g
 from flask import Blueprint
 
 from server.db import db, Session
-from sqlalchemy import select, delete, exists, func, not_
+from sqlalchemy import select, delete, exists, func, not_, or_
 
 from common.models import *
 from server.response_format import *
@@ -193,9 +193,17 @@ def get_pages():
         stmt = stmt.where(Page.publish_time >= data.time_start)
     if data.time_end:
         stmt = stmt.where(Page.publish_time <= data.time_end)
-    if data.search_title:
+
+    if data.search_title and data.search_content:
+        stmt = stmt.where(
+            or_(
+                Page.title.like(f"%{data.search_title}%"),
+                Page.full_content.like(f"%{data.search_content}%"),
+            )
+        )
+    elif data.search_title:
         stmt = stmt.where(Page.title.like(f"%{data.search_title}%"))
-    if data.search_content:
+    elif data.search_content:
         stmt = stmt.where(Page.full_content.like(f"%{data.search_content}%"))
 
     sites_id = None
@@ -245,7 +253,9 @@ def get_page(page_id):
 @login_required
 @admin_required
 def remove_page(page_id):
-    db.execute(delete(PageKeywordRelation).where(PageKeywordRelation.page_id == page_id))
+    db.execute(
+        delete(PageKeywordRelation).where(PageKeywordRelation.page_id == page_id)
+    )
     db.execute(delete(Page).where(Page.id == page_id))
     return jsonify({"code": 0, "msg": "ok"})
 
