@@ -154,7 +154,7 @@ def get_pages():
         data = json.loads(data)
         data = PageGet.model_validate(data, strict=False)
     except Exception as e:
-        return jsonify({"code": 1, "msg": str(e)})
+        return jsonify({"code": 1, "msg": str(e)}), 417
     only_today = data.today
     filterd_by_keyword = data.keyword
     filterd_by_subscribe = data.subscribe
@@ -196,7 +196,7 @@ def get_pages():
     if data.search_title:
         stmt = stmt.where(Page.title.like(f"%{data.search_title}%"))
     if data.search_content:
-        stmt = stmt.where(Page.content.like(f"%{data.search_content}%"))
+        stmt = stmt.where(Page.full_content.like(f"%{data.search_content}%"))
 
     sites_id = None
     if data.site is not None:
