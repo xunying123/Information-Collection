@@ -245,6 +245,7 @@ def get_page(page_id):
 @login_required
 @admin_required
 def remove_page(page_id):
+    db.execute(delete(PageKeywordRelation).where(PageKeywordRelation.page_id == page_id))
     db.execute(delete(Page).where(Page.id == page_id))
     return jsonify({"code": 0, "msg": "ok"})
 
