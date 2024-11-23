@@ -106,7 +106,7 @@ function copyLink() {
       <el-slider v-model="slide_value" :min="50" :max="128" :show-tooltip="false" />
     </div>
     <!-- 文章内容区域 -->
-    <el-scrollbar>
+    <el-scrollbar @wheel.stop>
       <div class="article-content" v-loading="article.id == 0">
         <h2 class="article-title">{{ article.title }}</h2>
         <KeywordList
