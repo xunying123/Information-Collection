@@ -124,15 +124,10 @@ def add_site():
 def remove_site():
     data = request.json
     id = data.get("id")
-    is_force = data.get("force")
-    if (
-        not is_force
-        and db.scalar(select(Page.id).where(Page.site_id == id)) is not None
-    ):
-        return jsonify(
-            {"code": 1, "msg": "there are pages in this site. set force:true."}
-        )
-    db.execute(delete(Site).where(Site.id == id))
+    site = db.scalar(select(Site).where(Site.id == id))
+    if site is None:
+        return jsonify({"code": 1, "msg": "site not found"})
+    site.disabled = True
     return jsonify({"code": 0, "msg": "deleted"})
 
 
