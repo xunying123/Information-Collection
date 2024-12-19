@@ -1,4 +1,4 @@
-from sqlalchemy import Text, String, Boolean, Enum
+from sqlalchemy import ARRAY, Text, String, Boolean, Enum
 from sqlalchemy import ForeignKey, Text, func
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 from typing_extensions import Annotated
@@ -50,7 +50,7 @@ cata_fk = Annotated[
 class Site(Base):
     id: Mapped[intpk]
     name: Mapped[str]
-    url: Mapped[url_type] = mapped_column(unique=True, nullable=False)
+    url: Mapped[list[url_type]] = mapped_column(ARRAY(String(256)),unique=True, nullable=True)
     cate_id: Mapped[cata_fk]
     category: Mapped[Category] = relationship(Category, back_populates="sites")
     pages = relationship("Page", back_populates="site")
