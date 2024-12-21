@@ -76,7 +76,12 @@ const router = createRouter({
           name: 'managesites',
           component: () => import('@/views/pages/ManageSitesPages.vue'),
           children: [page_rule('managesites')]
-        }
+        },
+        {
+          path: 'help',
+          name: 'help',
+          component: () => import('@/views/pages/HelpPage.vue'),          
+        }        
       ]
     },
     {

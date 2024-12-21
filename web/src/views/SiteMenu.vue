@@ -9,6 +9,7 @@ import UpdateSVG from '@/components/svg/UpdateSVG.vue'
 import BookmarkSvg from '@/components/svg/BookmarkSvg.vue'
 import FolderPlusSVG from '@/components/svg/FolderPlusSVG.vue'
 import LayersSVG from '@/components/svg/LayersSVG.vue'
+import HelpSVG from '@/components/svg/HelpSVG.vue'
 import { filter_subscribe_key, user_key } from '@/key'
 
 interface CateSite {
@@ -102,6 +103,10 @@ onMounted(() => {
             >{{ site.name }}</el-menu-item
           >
         </el-sub-menu>
+        <el-menu-item index="/help">
+          <HelpSVG class="menu-icon" />
+          <span class="menu-top">帮助</span>
+        </el-menu-item>
       </el-menu>
     </ElScrollbar>
     <div class="bottom-buttons">
