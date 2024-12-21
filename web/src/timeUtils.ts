@@ -21,5 +21,4 @@ export const showTime = (date: string) => {
   } else {
     return dateObj.toLocaleDateString()
   }
-   
 }

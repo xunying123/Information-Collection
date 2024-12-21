@@ -80,8 +80,8 @@ const router = createRouter({
         {
           path: 'help',
           name: 'help',
-          component: () => import('@/views/pages/HelpPage.vue'),          
-        }        
+          component: () => import('@/views/pages/HelpPage.vue')
+        }
       ]
     },
     {

@@ -1,82 +1,113 @@
 <template>
-    <div class="help-page">
-      <h1>帮助页面</h1>
-      <p>欢迎来到帮助页面，这里将为您提供有关本站的功能介绍与使用指南。</p>
-      
-      <section class="help-content section">        
-        <h2>网站功能介绍</h2>
-  
-        <h3>顶栏</h3>
-        <p>顶栏中包含了对于显示的文章的一些筛选和显示功能：</p>
-        <ul>
-          <li><span style="font-weight: bold;">类别复选框</span>：仅在“全部”页面中显示，可以点击选择显示的类别。</li>
-          <li><span style="font-weight: bold;">时间选择</span>：可以选择显示的时间范围。<strong>选择1天内时，显示的会是上一个工作日内的结果</strong>。</li>
-          <li><span style="font-weight: bold;">搜索框：</span>可以输入关键词搜索文章标题。</li>
-          <li><span style="font-weight: bold;">视图切换：</span>可以切换文章的显示方式。
-            <ul>
-              <li>在“标题”和“标题摘要”视图中，可以点击标题旁显示的网站名称跳转到对应网站页面。</li>
-            </ul>
-          </li>          
-        </ul>
-  
-        <h3>侧边栏</h3>
-        <p>侧边栏包含了网站的基本信息，可以通过点击侧边栏的链接切换页面。在对应的页面中能够看到相应的内容。</p>
-        <ul>
-          <li><span style="font-weight: bold;">首页（全部）：</span>显示所有文章。</li>
-          <li><span style="font-weight: bold;">今日更新：</span>显示今日更新的文章。</li>
-          <li><span style="font-weight: bold;">书签列表：</span>显示用户收藏的文章，支持导出为 Word 文档，支持选择导出的文章，支持分页显示。</li>
-          <li><span style="font-weight: bold;">增删网站：</span>管理员权限页面，可以增加或删除<strong>后台爬虫程序需要爬取的</strong>网站。</li>
-          <li><span style="font-weight: bold;">网站大类：</span>显示某一分类的所有网站，可以按照网站分类查看文章。<strong>此页面支持网站大卡片视图</strong>。</li>
-          <li><span style="font-weight: bold;">网站页面：</span>显示某一网站的所有文章，可以按照网站查看文章。</li>
-          <li><span style="font-weight: bold;">订阅源和关键词管理页面：</span>支持用户<strong>个人定制</strong>订阅源和关键词：
-            <ul>
-              <li>订阅源：可以订阅某些网站的文章，<strong>订阅的网站必须是后台爬虫程序会爬取的网站</strong>，订阅后可以通过开关切换显示全部网页或仅显示订阅的网页。</li>
-              <li>关键词：可以订阅某些关键词，<strong>支持自定义关键词</strong>，但建议优先选择数据库类已有的（给出提示的）关键词。</li>
-              <li>订阅源和关键词都支持<strong>导出为 JSON 文件及导入，便于新用户快速批量配置</strong>。</li>
-            </ul>
-          </li>          
-          <li><img src="/static/subscription.png" alt="订阅源和关键词管理" class="help-image" style="zoom:50%;" /></li>
-        </ul>
-  
-        <h3>文章页面</h3>
-        <p>在所有显示文章的页面中，点击文章即可查看文章的详细内容。在文章页面中有：</p>
-        <ul>
-          <li><span style="font-weight: bold;">返回：</span>可以返回到文章列表页面。</li>
-          <li><span style="font-weight: bold;">复制链接：</span>可以复制文章的链接。</li>
-          <li><span style="font-weight: bold;">加入书签：</span>可以将文章加入书签。</li>
-          <li><span style="font-weight: bold;">查看原文：</span>可以跳转到文章的原始链接。</li>
-          <li><span style="font-weight: bold;">拉伸宽度条：</span>可以调整文章显示的宽度。</li>
-          <li><span style="font-weight: bold;">文章内容：</span>
-            <ul>
-              <li>标题</li>
-              <li>关键词</li>
-              <li>发布时间</li>
-              <li>摘要</li>
-              <li>全文</li>
-            </ul>
-          </li>
-        </ul>
-  
-        <h3>注意事项</h3>
-        <ul>
-          <li>如果在使用过程中遇到问题，可以尝试清除浏览器缓存。</li>
-          <li>如果在筛选文章后显示的结果过少，可以多次尝试滚动到页面底部，触发加载更多文章。</li>
-        </ul>
-      </section>
-    </div>
-  </template>
-  
-  <script>
-  export default {
-    name: 'HelpPage'
-  }
-  </script>
-  
+  <div class="help-page">
+    <h1>帮助页面</h1>
+    <p>欢迎来到帮助页面，这里将为您提供有关本站的功能介绍与使用指南。</p>
+
+    <section class="help-content section">
+      <h2>网站功能介绍</h2>
+
+      <h3>顶栏</h3>
+      <p>顶栏中包含了对于显示的文章的一些筛选和显示功能：</p>
+      <ul>
+        <li>
+          <span style="font-weight: bold">类别复选框</span
+          >：仅在“全部”页面中显示，可以点击选择显示的类别。
+        </li>
+        <li>
+          <span style="font-weight: bold">时间选择</span
+          >：可以选择显示的时间范围。<strong>选择1天内时，显示的会是上一个工作日内的结果</strong>。
+        </li>
+        <li><span style="font-weight: bold">搜索框：</span>可以输入关键词搜索文章标题。</li>
+        <li>
+          <span style="font-weight: bold">视图切换：</span>可以切换文章的显示方式。
+          <ul>
+            <li>在“标题”和“标题摘要”视图中，可以点击标题旁显示的网站名称跳转到对应网站页面。</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>侧边栏</h3>
+      <p>
+        侧边栏包含了网站的基本信息，可以通过点击侧边栏的链接切换页面。在对应的页面中能够看到相应的内容。
+      </p>
+      <ul>
+        <li><span style="font-weight: bold">首页（全部）：</span>显示所有文章。</li>
+        <li><span style="font-weight: bold">今日更新：</span>显示今日更新的文章。</li>
+        <li>
+          <span style="font-weight: bold">书签列表：</span>显示用户收藏的文章，支持导出为 Word
+          文档，支持选择导出的文章，支持分页显示。
+        </li>
+        <li>
+          <span style="font-weight: bold">增删网站：</span
+          >管理员权限页面，可以增加或删除<strong>后台爬虫程序需要爬取的</strong>网站。
+        </li>
+        <li>
+          <span style="font-weight: bold">网站大类：</span
+          >显示某一分类的所有网站，可以按照网站分类查看文章。<strong>此页面支持网站大卡片视图</strong>。
+        </li>
+        <li>
+          <span style="font-weight: bold">网站页面：</span
+          >显示某一网站的所有文章，可以按照网站查看文章。
+        </li>
+        <li>
+          <span style="font-weight: bold">订阅源和关键词管理页面：</span
+          >支持用户<strong>个人定制</strong>订阅源和关键词：
+          <ul>
+            <li>
+              订阅源：可以订阅某些网站的文章，<strong>订阅的网站必须是后台爬虫程序会爬取的网站</strong>，订阅后可以通过开关切换显示全部网页或仅显示订阅的网页。
+            </li>
+            <li>
+              关键词：可以订阅某些关键词，<strong>支持自定义关键词</strong>，但建议优先选择数据库类已有的（给出提示的）关键词。
+            </li>
+            <li>
+              订阅源和关键词都支持<strong>导出为 JSON 文件及导入，便于新用户快速批量配置</strong>。
+            </li>
+          </ul>
+        </li>
+        <li>
+          <img
+            src="/static/subscription.png"
+            alt="订阅源和关键词管理"
+            class="help-image"
+            style="zoom: 50%"
+          />
+        </li>
+      </ul>
+
+      <h3>文章页面</h3>
+      <p>在所有显示文章的页面中，点击文章即可查看文章的详细内容。在文章页面中有：</p>
+      <ul>
+        <li><span style="font-weight: bold">返回：</span>可以返回到文章列表页面。</li>
+        <li><span style="font-weight: bold">复制链接：</span>可以复制文章的链接。</li>
+        <li><span style="font-weight: bold">加入书签：</span>可以将文章加入书签。</li>
+        <li><span style="font-weight: bold">查看原文：</span>可以跳转到文章的原始链接。</li>
+        <li><span style="font-weight: bold">拉伸宽度条：</span>可以调整文章显示的宽度。</li>
+        <li>
+          <span style="font-weight: bold">文章内容：</span>
+          <ul>
+            <li>标题</li>
+            <li>关键词</li>
+            <li>发布时间</li>
+            <li>摘要</li>
+            <li>全文</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>注意事项</h3>
+      <ul>
+        <li>如果在使用过程中遇到问题，可以尝试清除浏览器缓存。</li>
+        <li>如果在筛选文章后显示的结果过少，可以多次尝试滚动到页面底部，触发加载更多文章。</li>
+      </ul>
+    </section>
+  </div>
+</template>
+
 <style scoped>
 /* 整体容器 */
 .help-page {
   padding: 20px;
-  background: rgba(255, 255, 255, 0.6);  /* 浅灰色背景 */
+  background: rgba(255, 255, 255, 0.6); /* 浅灰色背景 */
   border-radius: 12px;
   max-width: 1200px;
   margin: 20px auto;
@@ -91,7 +122,7 @@
   font-weight: 700;
   margin-bottom: 1.5rem;
   color: rgb(0, 64, 152);
-  border-bottom: 3px solid rgb(0, 64, 152);  /* 添加底部蓝色边框 */
+  border-bottom: 3px solid rgb(0, 64, 152); /* 添加底部蓝色边框 */
   padding-bottom: 8px;
   text-align: center;
 }

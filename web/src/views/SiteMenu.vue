@@ -158,7 +158,7 @@ onMounted(() => {
 
 .scrach-height {
   flex-grow: 1;
-  overflow: auto;  
+  overflow: auto;
 }
 
 .menu-icon {
