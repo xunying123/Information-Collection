@@ -143,6 +143,7 @@ onMounted(() => {
   --el-menu-text-color: #ffffff;
   --el-menu-hover-bg-color: rgba(0, 134, 209, 1);
   --el-menu-item-font-size: 1.1em;
+  font-size: 14px;
 }
 
 .full {
@@ -152,7 +153,7 @@ onMounted(() => {
 
 .scrach-height {
   flex-grow: 1;
-  overflow: auto;
+  overflow: auto;  
 }
 
 .menu-icon {

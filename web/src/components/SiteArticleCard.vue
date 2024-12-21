@@ -69,7 +69,7 @@ const groupedPages = computed(() => {
 .site-el-card {
   height: 400px; /* 与 ArticleCard.vue 一致的高度 */
   border-radius: 15px; /* 设置圆角 */
-  background-color: rgba(255, 255, 255, 0.7); /* 设置背景颜色为半透明的白色 */
+  background-color: rgba(255, 255, 255, 0.7); /* 设置背景颜色为半透明的白色 */  
 }
 
 .site-card-header {
@@ -92,7 +92,7 @@ const groupedPages = computed(() => {
 .article-title {
   font-weight: bold;
   color: #000;
-  text-decoration: none;
+  text-decoration: none;  
 }
 
 .article-time {

@@ -28,7 +28,7 @@ function filterPages() {
     )
   }
   if (selectedTimeRange.value !== 'all') {
-    const days = parseInt(selectedTimeRange.value)
+    const days = parseInt(selectedTimeRange.value)    
     const now = new Date()
     let startTime
 

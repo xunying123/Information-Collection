@@ -2,15 +2,15 @@
 import { defineProps, computed } from 'vue'
 import type { PageItem } from '@/api_interface'
 import { is_bookmarked } from '@/bookmark'
-import { timeType } from '@/timeUtils'
+import { showTime } from '@/timeUtils'
 // defineProps<{ page: PageItem }>()
 
-import { NTime, zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
+import { zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
 import BookmarkSvg from './svg/BookmarkSvg.vue'
 
 const props = defineProps<{ page: PageItem }>()
 
-const computedTimeType = computed(() => timeType(props.page.publish_time))
+const computedShowTime = computed(() => showTime(props.page.publish_time))
 </script>
 
 <template>
@@ -32,7 +32,9 @@ const computedTimeType = computed(() => timeType(props.page.publish_time))
         <template #footer>
           <div class="small-card-footer">
             <NConfigProvider :locale="zhCN" :date-locale="dateZhCN">
-              <NTime :time="new Date(page.publish_time)" :type="computedTimeType" />
+              <!-- <NTime :time="new Date(page.publish_time)" :type="computedTimeType" /> -->
+              {{ computedShowTime }}
+              <!-- {{(new Date().getTime() - new Date(page.publish_time).getTime()) / 1000 / 60 / 60}}天前 -->
             </NConfigProvider>
           </div>
         </template>
@@ -87,6 +89,7 @@ const computedTimeType = computed(() => timeType(props.page.publish_time))
   -webkit-box-orient: vertical;
   overflow: hidden;
   font-weight: bold;
+  font-size: 15px;
 }
 
 .small-card-footer {
