@@ -1,56 +1,46 @@
 from common.models import *
+from pydantic import (
+    AfterValidator,
+    AliasPath,
+    BaseModel,
+    Field,
+)
 
+class ConfigBaseModel(BaseModel):
+    model_config = {"from_attributes": True}
 
-class ResponseSiteItem(dict):
-    def __init__(self, site: Site):
-        super().__init__()
-        self["id"] = site.id
-        self["name"] = site.name
-        self["url"] = site.url
-        self["cate_id"] = site.cate_id
-        self["category"] = site.category.name
-        self["icon"] = site.icon
+class ResCategory(ConfigBaseModel):
+    id: int
+    name: str
 
+class IncludedCategory:
+    cate_id: int
+    cate_name: str = Field(validation_alias=AliasPath("category", "name"))
 
-class ResponseCategory(dict):
-    def __init__(self, cata: Category):
-        super().__init__()
-        self["id"] = cata.id
-        self["name"] = cata.name
+class ResSiteItem(ConfigBaseModel, IncludedCategory):
+    id: int
+    name: str
+    url: str | None
+    icon: str | None
 
+class IncludeSite:
+    site_id: int
+    site: str = Field(validation_alias=AliasPath("site", "name"))
+    site_icon: str = Field(validation_alias=AliasPath("site", "icon"))
 
-class ResponsePageItem(dict):
-    def __init__(self, page: Page):
-        super().__init__()
-        self["id"] = page.id
-        self["source_url"] = page.source_url
-        self["title"] = page.title
-        self["content"] = page.content[:50]
-        self["site_id"] = page.site.id
-        self["site"] = page.site.name
-        self["site_icon"] = page.site.icon
-        self["cate_id"] = page.category.id
-        self["category"] = page.category.name
-        self["publish_time"] = page.publish_time.isoformat()
+class ResPageItem(ConfigBaseModel, IncludedCategory, IncludeSite):
+    id: int
+    source_url: str
+    title: str
+    content: str = Annotated[str, AfterValidator(lambda x: x[:50])]
+    publish_time: datetime = Field(alias="publish_time")
 
+class ResponseKeywordItem(ConfigBaseModel):
+    id: int
+    word: str
+    subject: str
 
-class ResponseSite(ResponseSiteItem):
-    def __init__(self, site: Site):
-        super().__init__(site)
-        # self["pages"] = []
-
-
-class ResponsePage(ResponsePageItem):
-    def __init__(self, page: Page):
-        super().__init__(page)
-        self["content"] = page.content
-        self["full_content"] = page.full_content
-        self["keywords"] = [ResponseKeywordItem(k) for k in page.keywords]
-
-
-class ResponseKeywordItem(dict):
-    def __init__(self, keyword: Keyword):
-        super().__init__()
-        self["id"] = keyword.id
-        self["word"] = keyword.word
-        self["subject"] = keyword.subject
+class ResponsePage(ResPageItem):
+    content: str
+    full_content: str
+    keywords: list[ResponseKeywordItem]

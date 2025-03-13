@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from server.config import AppConfig
 from datetime import datetime
-from typing import Optional
 
 
 class PageGet(BaseModel):
@@ -11,13 +10,13 @@ class PageGet(BaseModel):
     bookmarked: bool = False
     keyword: bool = False
     subscribe: bool = False
-    time_start: Optional[datetime] = None
-    time_end: Optional[datetime] = None
-    search_title: Optional[str] = None
-    search_content: Optional[str] = None
+    time_start: datetime | None = None
+    time_end: datetime | None = None
+    search_title: str | None = None
+    search_content: str | None = None
 
     count: int = AppConfig.default_paging_size
     cursor_id: int = 0  # zero should be ignored
 
 
-__all__ = [PageGet]
+__all__ = ['PageGet']
