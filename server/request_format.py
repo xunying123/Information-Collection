@@ -19,4 +19,7 @@ class PageGet(BaseModel):
     cursor_id: int = 0  # zero should be ignored
 
 
+class SitePost(BaseModel):
+    ...
+
 __all__ = ['PageGet']

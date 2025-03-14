@@ -44,3 +44,7 @@ class ResponsePage(ResPageItem):
     content: str
     full_content: str
     keywords: list[ResponseKeywordItem]
+
+class ResOperationMsg(ConfigBaseModel):
+    status: bool
+    message: str
