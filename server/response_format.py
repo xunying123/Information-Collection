@@ -6,6 +6,7 @@ from pydantic import (
     Field,
 )
 
+
 class ConfigBaseModel(BaseModel):
     model_config = {"from_attributes": True}
 
@@ -16,12 +17,6 @@ class ResCategory(ConfigBaseModel):
 class IncludedCategory:
     cate_id: int
     cate_name: str = Field(validation_alias=AliasPath("category", "name"))
-
-class ResSiteItem(ConfigBaseModel, IncludedCategory):
-    id: int
-    name: str
-    url: str | None
-    icon: str | None
 
 class IncludeSite:
     site_id: int
@@ -35,13 +30,21 @@ class ResPageItem(ConfigBaseModel, IncludedCategory, IncludeSite):
     content: str = Annotated[str, AfterValidator(lambda x: x[:50])]
     publish_time: datetime = Field(alias="publish_time")
 
+class ResSiteItem(ConfigBaseModel, IncludedCategory):
+    id: int
+    name: str
+    url: str | None
+    icon: str | None
+
+class ResSite(ResSiteItem):
+    pages: list[ResPageItem]
+
 class ResponseKeywordItem(ConfigBaseModel):
     id: int
     word: str
     subject: str
 
 class ResponsePage(ResPageItem):
-    content: str
     full_content: str
     keywords: list[ResponseKeywordItem]
 
