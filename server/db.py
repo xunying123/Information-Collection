@@ -1,24 +1,23 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-
 from server.config import DatabaseConfig
+from server.utils import GlobalContextVar
 
-from werkzeug.local import LocalProxy
-from flask import g
-
-engine = create_engine(
+_engine = create_engine(
     DatabaseConfig.url, pool_recycle=DatabaseConfig.connection_pool_recycle
 )
-SqlSession = sessionmaker(bind=engine)
+_SqlSession = sessionmaker(bind=_engine)
 
-
-def get_current_db():
+# the async is needed
+async def use_db():
     try:
-        if "db" not in g:
-            g.db = SqlSession()
-        return g.db
-    except RuntimeError:
-        return SqlSession()
+        session = _SqlSession()
+        yield session
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
 
-
-db: Session = LocalProxy(get_current_db)
+db: Session | GlobalContextVar = GlobalContextVar[Session]("db", use_db)
