@@ -90,6 +90,17 @@ def delete_keyword(word_id: int):
 def get_user():
     pass
 
+@app.post("/register", response_model=ResOperationMsg)
+def register(username: str, password: str, organization: str):
+    pass
+
+@app.post("/login", response_model=ResOperationMsg)
+def login(username: str, password: str):
+    pass
+    # 用户不存在
+    # 密码错误
+    # 登录成功
+
 @app.post("/logout", response_model=ResOperationMsg)
 def logout():
     pass
