@@ -1,13 +1,13 @@
 from fastapi import Depends, FastAPI
 import pytz
-from sqlalchemy import exists, or_, select
+from sqlalchemy import exists, or_, select, and_, delete
 from common.models import *
 from server.request_format import *
 from .response_format import *
 from .db import db
 from .login import current_user
 
-app = FastAPI(root_path="/api", dependencies=[Depends(db.app_dependency)])
+app = FastAPI(root_path="/api", dependencies=[Depends(db.app_dependency), Depends(current_user.app_dependency)])
 
 
 @app.get("/page", response_model=list[ResPageItem])
@@ -97,14 +97,21 @@ def get_category():
     return res
 
 
-@app.get("/catagory/{cate_id}", response_model=ResCategory)
+@app.get("/category/{cate_id}", response_model=ResCategory)
 def get_category(cate_id: int):
-    pass
+    stmt = select(Category).where(Category.id == cate_id)
+    res = db.scalar(stmt)
+    return res
 
 
-@app.post("/category")
-def add_category():
-    pass
+@app.post("/category", response_model=ResOperationMsg)
+def add_category(name: str):
+    if db.scalar(select(Category.id).where(Category.name == name)) is not None:
+        return {"status": 400, "message": "category already exists"}
+    cate = Category(name=name)
+    db.add(cate)
+    db.flush()
+    return {"status": 200, "message": "success"}
 
 
 @app.get("/site", response_model=list[ResSiteItem])
@@ -131,16 +138,32 @@ def get_site(site_id: int):
 
 
 @app.post("/site", response_model=ResOperationMsg)
-def add_site(name: str, url: str, category: int, icon: str): ...
+def add_site(name: str, url: str, cate_id: int, icon: str):
+    site = Site(name=name, url=url, cate_id=cate_id, icon=icon)
+    db.add(site)
+    db.flush()
+    site_id = site.id
+    # return type 需要修改
+    return {"status": 200, "message": "success", "site_id": site_id}
 
 
 @app.delete("/site{site_id}", response_model=ResOperationMsg)
-def delete_site(site_id: int): ...
+def delete_site(site_id: int):
+    site = db.scalar(select(Site).where(Site.id == site_id))
+    if site is None:
+        return {"status": 400, "message": f"site {site_id} not found"}
+    site.disabled = True
+    return {"status": 200, "message": "success"}
 
 
 @app.get("/page/{page_id}")
 def get_page(page_id: int):
-    pass
+    stmt = select(Page).where(Page.id == page_id)
+    page = db.scalar(stmt)
+    if page is None:
+        return {"status": 400, "message": f"page {page_id} not found"}
+    # todo: 返回类型需要修改    
+    return page
 
 
 @app.get("/page", response_model=list[ResPageItem])
@@ -158,54 +181,203 @@ def get_pages(
     site: int | None = None,
     category: int | list[int] | None = None,
 ):
-    pass
+    stmt = select(Page).order_by(Page.created_at.desc())
+    if today:
+        shanghai_tz = pytz.timezone("Asia/Shanghai")
+        today = datetime.now(shanghai_tz).date()
+        stmt = stmt.where(func.date(Page.publish_time) == today)
+    if bookmarked:
+        stmt = stmt.join(Bookmark).where(Bookmark.user_id == current_user.id)
+    if keyword:
+        stmt = stmt.where(
+            exists().where(
+                (UserKeywordRelation.user_id == current_user.id)
+                & (UserKeywordRelation.keyword_id == Keyword.id)
+                & (Keyword.id == PageKeywordRelation.keyword_id)
+                & (PageKeywordRelation.page_id == Page.id)
+            )
+        )
+    if subscribe:
+        stmt = stmt.where(
+            exists().where(
+                (UserSiteRelation.user_id == current_user.id)
+                & (UserSiteRelation.site_id == Site.id)
+                & (Site.id == Page.site_id)
+            )
+        )
+    if cursor_id > 0:
+        stmt = stmt.where(Page.id < cursor_id)
+    if count > 0:
+        stmt = stmt.limit(count)
+    if time_start:
+        stmt = stmt.where(Page.publish_time >= time_start)
+    if time_end:
+        stmt = stmt.where(Page.publish_time <= time_end)
+    if search_title and search_content:
+        stmt = stmt.where(
+            or_(
+                Page.title.like(f"%{search_title}%"),
+                Page.full_content.like(f"%{search_content}%"),
+            )
+        )
+    elif search_title:
+        stmt = stmt.where(Page.title.like(f"%{search_title}%"))
+    elif search_content:
+        stmt = stmt.where(Page.full_content.like(f"%{search_content}%"))
+    sites_id = None
+    if site is not None:
+        sites_id = [site]
+    elif category is not None:
+        # special logic: count is used to limit every SITE instead of total pages
+        # cursor_id should not be used in this case CURRENTLY
+        # TODO: support cursor_id in this case
+        if type(category) is int:
+            sites_id = db.scalars(select(Site.id).where(Site.cate_id == category))
+        elif type(category) is list:
+            sites_id = db.scalars(
+                select(Site.id).where(Site.cate_id.in_(category))
+            )
+        else:
+            raise ValueError("invalid category type")
+    
+    result = []
+    def get_once(stmt):
+        result.extend(db.scalars(stmt).all())
+    if sites_id is not None:
+        for site_id in sites_id:
+            get_once(stmt.where(Page.site_id == site_id))
+    else:
+        get_once(stmt)
+    new_cursor_id = min([x["id"] for x in result]) if result else None
+    # todo: 返回类型需要修改
+    return {"pages": result, "cursor_id": new_cursor_id}
 
 
 @app.get("/subscribe", response_model=list[ResSiteItem])
 def get_subscribe():
-    pass
+    stmt = select(Site).where(
+        and_(
+            exists().where(
+                (UserSiteRelation.user_id == current_user.id)
+                & (UserSiteRelation.site_id == Site.id)
+            ),
+            Site.disabled == False
+        )
+    )
+    return db.scalars(stmt).all()
 
 
 @app.post("/subscribe", response_model=ResOperationMsg)
 def subscribe(sites_id: list[int], keep_user_existed: bool):
-    pass
-
+    if not keep_user_existed:
+        db.execute(UserSiteRelation.delete().where(UserSiteRelation.user_id == current_user.id))
+    for site_id in sites_id:
+        site = db.scalar(select(Site).where(Site.id == site_id))
+        if site is None:
+            return {"status": 400, "message": f"site {site_id} not found"}
+        if (
+            db.scalar(
+                select(UserSiteRelation)
+                .where(UserSiteRelation.user_id == current_user.id)
+                .where(UserSiteRelation.site_id == site_id)
+            )
+            is not None
+        ):
+            continue
+        db.add(UserSiteRelation(user_id=current_user.id, site_id=site_id))
+    return {"status": 200, "message": "success"}
 
 @app.delete("/subscribe", response_model=ResOperationMsg)
 def unsubscribe(site_id: int):
-    pass
+    db.execute(
+        delete(UserSiteRelation).where(
+            (UserSiteRelation.user_id == current_user.id)
+            & (UserSiteRelation.site_id == site_id)
+        )
+    )
+    return {"status": 200, "message": "success"}
 
 
 @app.get("/keyword")
 def get_keyword(personal: bool):
-    pass
-
+    stmt = select(Keyword)
+    if personal:
+        stmt = stmt.where(
+            exists().where(
+                (UserKeywordRelation.user_id == current_user.id)
+                & (UserKeywordRelation.keyword_id == Keyword.id)
+            )
+        )
+    result = []
+    for kw in db.scalars(stmt):
+        info = ResponseKeywordItem(kw)
+        result.append(info)
 
 @app.post("/keyword", response_model=ResOperationMsg)
-def add_keyword(wors: list[str], add_for_user: bool, keep_user_existed: bool):
-    pass
+def add_keyword(words: list[str], add_for_user: bool, keep_user_existed: bool):
+    kw_ids = []
+    if not keep_user_existed and add_for_user:
+        db.execute(
+            delete(UserKeywordRelation).where(
+                UserKeywordRelation.user_id == current_user.id
+            )
+        )
+    for word in words:
+        kw = db.scalar(select(Keyword).where(Keyword.word == word))
+        if kw is None:
+            kw = Keyword(word=word)
+            db.add(kw)
+            db.flush()
+            kw_id = kw.id
+        else:
+            kw_id = kw.id
+        if add_for_user:
+            if (
+                db.scalar(
+                    select(UserKeywordRelation).where(
+                        (UserKeywordRelation.user_id == current_user.id)
+                        & (UserKeywordRelation.keyword_id == kw_id)
+                    )
+                )
+                is not None
+            ):
+                continue
+            db.add(UserKeywordRelation(user_id=current_user.id, keyword_id=kw_id))
+        kw_ids.append(kw_id)
+    return {"status": 200, "message": "success"}
 
 
 @app.delete("/keyword", response_model=ResOperationMsg)
-def delete_keyword(word_id: int):
+def delete_keyword(keyword_id: int):
+    stmt = delete(UserKeywordRelation).where(
+        (UserKeywordRelation.user_id == current_user.id)
+        & (UserKeywordRelation.keyword_id == keyword_id)
+    )
+    db.execute(stmt)
+
+@app.post("/group", response_model=ResOperationMsg)
+def add_group(user_id: int, group: str):
     pass
 
+@app.delete("/group", response_model=ResOperationMsg)
+def delete_group(user_id: int):
+    pass
 
 @app.get("/user/me")
 def get_user():
     pass
-
+    # ...
+    # （审核中）
 
 @app.post("/register", response_model=ResOperationMsg)
-def register(username: str, password: str, organization: str):
+def register(user_name: str, password: str, group: str):
     pass
 
 
 @app.post("/login", response_model=ResOperationMsg)
-def login(username: str, password: str):
+def login(user_name: str, password: str):
     pass
-    # 用户不存在
-    # 密码错误
+    # 用户不存在 or 密码错误
     # 登录成功
 
 
