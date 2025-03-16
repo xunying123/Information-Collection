@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from server.config import DatabaseConfig
-from server.utils import GlobalContextVar
+from server.utils.globalize import Globalize
 
 _engine = create_engine(
     DatabaseConfig.url, pool_recycle=DatabaseConfig.connection_pool_recycle
@@ -20,4 +20,4 @@ async def use_db():
     finally:
         session.close()
 
-db: Session | GlobalContextVar = GlobalContextVar[Session]("db", use_db)
+db: Session | Globalize[Session] = Globalize[Session]("db", use_db)

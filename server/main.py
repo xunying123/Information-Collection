@@ -2,20 +2,20 @@ from flask_cors import CORS
 from flask import Flask, request, url_for, redirect, g
 from flask import Blueprint
 
-from server.db import db, Session
+from server.manager.db import db, Session
 from sqlalchemy import select, delete, exists, func, not_, or_
 
 from common.models import *
-from server.response_format import *
-from server.request_format import PageGet
+from server.schema.response_format import *
+from server.schema.request_format import PageGet
 
 import requests
 from requests.auth import HTTPBasicAuth
 from server.config import JAccountAuth, AppConfig
 
 from flask_login import login_user, login_required, logout_user, current_user
-from server.login import login_manager, User4login, admin_required
-from server.utils import jsonify
+from server.manager.login import login_manager, User4login, admin_required
+from server.utils.globalize import jsonify
 from hashlib import sha256
 import pytz
 import json

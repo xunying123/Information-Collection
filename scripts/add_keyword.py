@@ -1,5 +1,5 @@
 from common.models import Keyword
-from server.db import SqlSession
+from server.manager.db import SqlSession
 
 keywords = [
     Keyword(word="班会", subject="标题"),
