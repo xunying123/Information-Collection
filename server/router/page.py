@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from http.client import NOT_FOUND, PRECONDITION_FAILED
+from fastapi import APIRouter, HTTPException
+from flask_login import login_required
 from sqlalchemy import exists, or_, select, func
 import pytz
 from ..schema import *
@@ -7,7 +9,9 @@ from ..manager.db import db
 
 router = APIRouter()
 
+
 @router.get("/page", response_model=list[ResPageItem])
+@login_required
 def get_pages(
     today: bool = False,
     keyword: bool = False,
@@ -95,6 +99,7 @@ def get_pages(
 
 
 @router.get("/category", response_model=list[ResCategory])
+@login_required
 def get_category():
     stmt = select(Category).order_by(Category.id)
     res = db.scalars(stmt).all()
@@ -102,6 +107,7 @@ def get_category():
 
 
 @router.get("/category/{cate_id}", response_model=ResCategory)
+@login_required
 def get_category(cate_id: int):
     stmt = select(Category).where(Category.id == cate_id)
     res = db.scalar(stmt)
@@ -109,18 +115,18 @@ def get_category(cate_id: int):
 
 
 @router.post("/category", response_model=OperationMsg)
+@login_required
 def add_category(name: str):
     if db.scalar(select(Category.id).where(Category.name == name)) is not None:
-        return {"status": 400, "message": "category already exists"}
+        raise HTTPException(PRECONDITION_FAILED, "category already exists")
     cate = Category(name=name)
     db.add(cate)
-    db.flush()
-    return {"status": 200, "message": "success"}
+    return {}
 
 
 @router.get("/site", response_model=list[ResSiteItem])
+@login_required
 def get_site(subscribe: bool = False, category: int | None = None):
-    result = []
     stmt = select(Site).order_by(Site.cate_id, Site.id).where(Site.disabled == False)
     if category is not None:
         stmt = stmt.where(Site.cate_id == category)
@@ -135,23 +141,27 @@ def get_site(subscribe: bool = False, category: int | None = None):
 
 
 @router.get("/site/{site_id}", response_model=ResSite)
+@login_required
 def get_site(site_id: int):
-    stmt = select(Site).filter(Site.id == site_id)
-    res = db.scalar(stmt)
-    return res
+    stmt = select(Site).where(Site.id == site_id)
+    site = db.scalar(stmt)
+    if site is None:
+        raise HTTPException(NOT_FOUND, f"site {site_id} not found")
+    return site
 
 
 @router.post("/site", response_model=OperationMsg)
+@login_required
 def add_site(name: str, url: str, cate_id: int, icon: str):
     site = Site(name=name, url=url, cate_id=cate_id, icon=icon)
     db.add(site)
     db.flush()
     site_id = site.id
-    # return type 需要修改
     return {"status": 200, "message": "success", "site_id": site_id}
 
 
 @router.delete("/site{site_id}", response_model=OperationMsg)
+@login_required
 def delete_site(site_id: int):
     site = db.scalar(select(Site).where(Site.id == site_id))
     if site is None:
@@ -160,13 +170,11 @@ def delete_site(site_id: int):
     return {"status": 200, "message": "success"}
 
 
-@router.get("/page/{page_id}")
+@router.get("/page/{page_id}", response_model=ResponsePage)
+@login_required
 def get_page(page_id: int):
     stmt = select(Page).where(Page.id == page_id)
     page = db.scalar(stmt)
     if page is None:
-        return {"status": 400, "message": f"page {page_id} not found"}
-    # todo: 返回类型需要修改
+        raise HTTPException(NOT_FOUND, f"page {page_id} not found")
     return page
-
-
