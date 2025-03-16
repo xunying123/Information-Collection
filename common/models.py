@@ -11,6 +11,12 @@ class Base(DeclarativeBase):
         str: Text,
     }
 
+    def __repr__(self):
+        values = {
+            col.name: getattr(self, col.name, None) for col in self.__table__.columns
+        }
+        return f"<{self.__class__.__name__}({values})>"
+
     def __init_subclass__(cls) -> None:
         if "__tablename__" not in cls.__dict__:
             name = ""
@@ -50,7 +56,9 @@ cata_fk = Annotated[
 class Site(Base):
     id: Mapped[intpk]
     name: Mapped[str]
-    url: Mapped[list[url_type]] = mapped_column(ARRAY(String(256)),unique=True, nullable=True)
+    url: Mapped[list[url_type]] = mapped_column(
+        ARRAY(String(256)), unique=True, nullable=True
+    )
     cate_id: Mapped[cata_fk]
     category: Mapped[Category] = relationship(Category, back_populates="sites")
     pages = relationship("Page", back_populates="site")
