@@ -101,9 +101,9 @@ router.beforeEach(async (to, from) => {
   from // eslint-disable-line
   const user = inject(user_key)!
   if (to.name != 'login' && to.name != '404' && !user.value) {
-    const data = await fetch(`${server}/user/me`).then((res) => res.json())
-    if (data.code == 0) user.value = data.user
-    else router.push({ name: 'login', query: { next: to.fullPath } })
+    const res = await fetch(`${server}/user/me`)
+    if (!res.ok) router.push({ name: 'login', query: { next: to.fullPath } });
+    else user.value = await res.json()
   } else if (to.name == 'login' && user.value) {
     if (to.query.next) router.push(to.query.next as string)
     else router.push({ name: 'home' })

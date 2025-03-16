@@ -1,10 +1,9 @@
 from http.client import NOT_FOUND, PRECONDITION_FAILED
 from fastapi import APIRouter, HTTPException
-from flask_login import login_required
 from sqlalchemy import exists, or_, select, func
 import pytz
 from ..schema import *
-from ..manager.user import current_user
+from ..manager.user import current_user, login_required
 from ..manager.db import db
 
 router = APIRouter()

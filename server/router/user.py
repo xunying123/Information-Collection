@@ -1,12 +1,14 @@
-from datetime import timedelta
-from http import client
 from http.client import NOT_FOUND, UNAUTHORIZED
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter
+from httpx import AsyncClient
 from sqlalchemy import and_, delete, exists, insert, select
 from common.models import *
+from server.config import JAccountAuth
+from requests.auth import HTTPBasicAuth
 from .. import schema
 
 # from ..schema import *
@@ -27,19 +29,7 @@ async def login(
         raise HTTPException(
             status_code=UNAUTHORIZED, detail="Incorrect username or password"
         )
-    expiration = timedelta(days=7)
-    # the sub must be a string
-    token = login_manager.create_access_token(
-        data={"sub": str(user.id)}, expires=expiration
-    )
-    response.set_cookie(
-        key=login_manager.cookie_name,
-        value=token,
-        httponly=True,
-        samesite="lax",
-        max_age=expiration,
-    )
-    return {"access_token": token, "token_type": "bearer"}
+    return UserManager.make_login_response(user, response)
 
 
 @router.post("/logout")
@@ -58,6 +48,75 @@ def get_user() -> User:
 @router.post("/register", response_model=schema.OperationMsg)
 def register(user_name: str, password: str):
     raise NotImplementedError
+
+
+@router.get("/auth")
+async def do_auth_callback(request: Request, response: Response, code: str, state: str):
+    try:
+        print(f"{str(request.url_for("do_auth_callback"))=}")
+        data = {
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": str(request.url_for("do_auth_callback")),
+            "client_id": JAccountAuth.client_id,
+            "client_secret": JAccountAuth.secretkey,
+        }
+        async with AsyncClient() as client:
+            res = await client.post(
+                "https://jaccount.sjtu.edu.cn/oauth2/token",
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                data=data,
+                auth=HTTPBasicAuth("czZCaGRSa3F0MzpnWDFmQmF0M2JW", ""),
+            )
+            if res.status_code != 200:
+                raise HTTPException(
+                    400, "Auth failed: did not get access token from jaccount"
+                )
+            res = res.json()
+            access_token: str = res.get("access_token")
+            res = await client.get(
+                "https://api.sjtu.edu.cn/v1/me/profile",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+            if res.status_code != 200:
+                raise HTTPException(
+                    400, "Auth failed: did not get profile from jaccount"
+                )
+            profile = res.json()
+        entity = profile.get("entities")[0]
+        ja_code = entity.get("code")
+        user = db.scalar(
+            select(User).where(
+                User.jaccount_code == code or User.username == entity.get("account")
+            )
+        )
+        if user is None:
+            user = User(
+                jaccount_code=ja_code,
+                username=entity.get("account"),
+                userType=entity.get("userType"),
+                name=entity.get("name"),
+                organization=entity.get("organize").get("name"),
+                is_admin=False,
+                avatars=entity.get("accountPhotoUrl"),
+            )
+            db.add(user)
+        else:
+            user.username = entity.get("account")
+            user.userType = entity.get("userType")
+            user.name = entity.get("name")
+            user.organization = entity.get("organize").get("name")
+            user.avatars = entity.get("accountPhotoUrl")
+        db.flush()
+        res = RedirectResponse(state, 302)
+        UserManager.make_login_response(user, res)
+        return res
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(f"exception: {e=}")
+        # return "Auth failed", 400
+        raise HTTPException(400, "Auth failed")
 
 
 @router.get("/subscribe", response_model=list[schema.ResSiteItem])
@@ -172,4 +231,3 @@ def delete_keyword(keyword_id: int):
 # @router.delete("/group", response_model=schema.OperationMsg)
 # def delete_group(user_id: int):
 #     pass
-
