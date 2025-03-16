@@ -48,6 +48,6 @@ class ResponsePage(ResPageItem):
     full_content: str
     keywords: list[ResponseKeywordItem]
 
-class ResOperationMsg(ConfigBaseModel):
-    status: bool
-    message: str
+class OperationMsg(ConfigBaseModel):
+    status: int = 200
+    message: str = "success"

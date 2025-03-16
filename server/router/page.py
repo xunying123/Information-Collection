@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from sqlalchemy import exists, or_, select, func
 import pytz
 from ..schema import *
-from ..manager.login import current_user
+from ..manager.user import current_user
 from ..manager.db import db
 
 router = APIRouter()
@@ -108,7 +108,7 @@ def get_category(cate_id: int):
     return res
 
 
-@router.post("/category", response_model=ResOperationMsg)
+@router.post("/category", response_model=OperationMsg)
 def add_category(name: str):
     if db.scalar(select(Category.id).where(Category.name == name)) is not None:
         return {"status": 400, "message": "category already exists"}
@@ -141,7 +141,7 @@ def get_site(site_id: int):
     return res
 
 
-@router.post("/site", response_model=ResOperationMsg)
+@router.post("/site", response_model=OperationMsg)
 def add_site(name: str, url: str, cate_id: int, icon: str):
     site = Site(name=name, url=url, cate_id=cate_id, icon=icon)
     db.add(site)
@@ -151,7 +151,7 @@ def add_site(name: str, url: str, cate_id: int, icon: str):
     return {"status": 200, "message": "success", "site_id": site_id}
 
 
-@router.delete("/site{site_id}", response_model=ResOperationMsg)
+@router.delete("/site{site_id}", response_model=OperationMsg)
 def delete_site(site_id: int):
     site = db.scalar(select(Site).where(Site.id == site_id))
     if site is None:

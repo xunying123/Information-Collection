@@ -1,11 +1,7 @@
 from fastapi import Depends, FastAPI
-import pytz
-from sqlalchemy import exists, or_, select, and_, delete
-from common.models import *
-from server.schema.request_format import *
-from .schema.response_format import *
+from fastapi.responses import RedirectResponse
 from .manager.db import db
-from .manager.login import current_user
+from .manager.user import current_user
 from .router import user_router, page_router
 
 app = FastAPI(
@@ -19,3 +15,7 @@ app = FastAPI(
 app.include_router(user_router)
 app.include_router(page_router)
 
+
+@app.get("/", include_in_schema=False)
+def redircet_to_docs():
+    return RedirectResponse(url="/docs")

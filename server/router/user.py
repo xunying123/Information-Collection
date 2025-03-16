@@ -1,10 +1,13 @@
+from datetime import timedelta
+from http.client import UNAUTHORIZED
 from typing import Annotated
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter
 from sqlalchemy import and_, delete, exists, select
+from .. import schema
 from ..schema import *
-from ..manager.login import current_user, login_manager
+from ..manager.user import UserManager, current_user, login_manager, login_required
 from ..manager.db import db
 
 router = APIRouter()
@@ -14,17 +17,31 @@ router = APIRouter()
 async def login(
     form: Annotated[OAuth2PasswordRequestForm, Depends()], response: Response
 ):
-    # username = form.username
-    # password = form.password
-    token = login_manager.create_access_token(data={"sub": f"1"})
+    username = form.username
+    password = form.password
+    user = UserManager.get_user_by_username(username)
+    if not UserManager.authorize(user, password):
+        raise HTTPException(
+            status_code=UNAUTHORIZED, detail="Incorrect username or password"
+        )
+    # the sub must be a string
+    token = login_manager.create_access_token(data={"sub": str(user.id)})
     response.set_cookie(
-        key=login_manager.cookie_name, value=token, httponly=True, samesite="lax"
+        key=login_manager.cookie_name,
+        value=token,
+        httponly=True,
+        samesite="lax",
+        max_age=timedelta(days=7),
     )
     return {"access_token": token, "token_type": "bearer"}
 
-@router.post("/logout", response_model=ResOperationMsg)
-def logout():
-    pass
+
+@router.post("/logout")
+@login_required
+def logout(response: Response) -> schema.OperationMsg:
+    response.delete_cookie(login_manager.cookie_name)
+    return {"message": f"user {current_user.username} logged out"}
+
 
 @router.get("/subscribe", response_model=list[ResSiteItem])
 def get_subscribe():
@@ -40,7 +57,7 @@ def get_subscribe():
     return db.scalars(stmt).all()
 
 
-@router.post("/subscribe", response_model=ResOperationMsg)
+@router.post("/subscribe", response_model=OperationMsg)
 def subscribe(sites_id: list[int], keep_user_existed: bool):
     if not keep_user_existed:
         db.execute(
@@ -63,7 +80,7 @@ def subscribe(sites_id: list[int], keep_user_existed: bool):
     return {"status": 200, "message": "success"}
 
 
-@router.delete("/subscribe", response_model=ResOperationMsg)
+@router.delete("/subscribe", response_model=OperationMsg)
 def unsubscribe(site_id: int):
     db.execute(
         delete(UserSiteRelation).where(
@@ -90,7 +107,7 @@ def get_keyword(personal: bool):
         result.append(info)
 
 
-@router.post("/keyword", response_model=ResOperationMsg)
+@router.post("/keyword", response_model=OperationMsg)
 def add_keyword(words: list[str], add_for_user: bool, keep_user_existed: bool):
     kw_ids = []
     if not keep_user_existed and add_for_user:
@@ -124,7 +141,7 @@ def add_keyword(words: list[str], add_for_user: bool, keep_user_existed: bool):
     return {"status": 200, "message": "success"}
 
 
-@router.delete("/keyword", response_model=ResOperationMsg)
+@router.delete("/keyword", response_model=OperationMsg)
 def delete_keyword(keyword_id: int):
     stmt = delete(UserKeywordRelation).where(
         (UserKeywordRelation.user_id == current_user.id)
@@ -133,12 +150,12 @@ def delete_keyword(keyword_id: int):
     db.execute(stmt)
 
 
-@router.post("/group", response_model=ResOperationMsg)
+@router.post("/group", response_model=OperationMsg)
 def add_group(user_id: int, group: str):
     pass
 
 
-@router.delete("/group", response_model=ResOperationMsg)
+@router.delete("/group", response_model=OperationMsg)
 def delete_group(user_id: int):
     pass
 
@@ -150,8 +167,6 @@ def get_user():
     # （审核中）
 
 
-@router.post("/register", response_model=ResOperationMsg)
+@router.post("/register", response_model=OperationMsg)
 def register(user_name: str, password: str, group: str):
     pass
-
-
