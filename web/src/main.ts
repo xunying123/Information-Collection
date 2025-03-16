@@ -13,6 +13,10 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import { user_key } from '@/key'
 import type { User } from '@/api_interface'
 
+import { client } from '@/sdk/client.gen'
+
+client.setConfig({ baseUrl: location.origin })
+
 const app = createApp(App)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)

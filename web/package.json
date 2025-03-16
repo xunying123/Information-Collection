@@ -10,7 +10,8 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "gen-api": "openapi-ts"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
@@ -27,9 +28,11 @@
     "v-clipboard": "3.0.0-next.1",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3",
-    "web": "link:"
+    "web": "link:",
+    "@hey-api/client-fetch": "^0.8.3"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "^0.64.12",
     "@rushstack/eslint-patch": "^1.8.0",
     "@tsconfig/node20": "^20.1.4",
     "@types/lodash": "^4.17.7",
