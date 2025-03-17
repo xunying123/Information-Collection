@@ -39,10 +39,12 @@ def logout(response: Response) -> schema.OperationMsg:
     return {"message": f"user {current_user.username} logged out"}
 
 
-@router.get("/user/me", response_model=schema.UserInfo)
-@login_required
-def get_user() -> User:
-    return current_user
+@router.get("/user/status")
+def get_user_status() -> schema.LoginStatus:
+    if current_user:
+        return {"is_login": True, "user": current_user}
+    else:
+        return {"is_login": False}
 
 
 @router.post("/register", response_model=schema.OperationMsg)

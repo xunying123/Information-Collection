@@ -15,7 +15,7 @@ import type { User } from '@/api_interface'
 
 import { client } from '@/sdk/client.gen'
 
-client.setConfig({ baseUrl: location.origin })
+client.setConfig({ baseUrl: `${location.origin}/api` })
 
 const app = createApp(App)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {

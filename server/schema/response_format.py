@@ -1,3 +1,4 @@
+from typing import Generic, TypeVar
 from common.models import *
 from pydantic import (
     AfterValidator,
@@ -6,6 +7,8 @@ from pydantic import (
     Field,
     field_validator,
 )
+
+_T = TypeVar("_T")
 
 
 class ConfigBaseModel(BaseModel):
@@ -28,7 +31,7 @@ class IncludeSite:
     site_icon: str = Field(validation_alias=AliasPath("site", "icon"))
 
 
-class ResPageItem(ConfigBaseModel, IncludedCategory, IncludeSite):
+class PageItem(ConfigBaseModel, IncludedCategory, IncludeSite):
     id: int
     source_url: str
     title: str
@@ -49,7 +52,7 @@ class ResSiteItem(ConfigBaseModel, IncludedCategory):
 
 
 class ResSite(ResSiteItem):
-    pages: list[ResPageItem]
+    pages: list[PageItem]
 
 
 class Keyword(ConfigBaseModel):
@@ -58,7 +61,7 @@ class Keyword(ConfigBaseModel):
     subject: str
 
 
-class ResponsePage(ResPageItem):
+class ResponsePage(PageItem):
     full_content: str
     keywords: list[Keyword]
 
@@ -68,7 +71,7 @@ class OperationMsg(ConfigBaseModel):
     message: str = "success"
 
 
-class UserInfo(ConfigBaseModel):
+class User(ConfigBaseModel):
     id: int
     name: str
     username: str
@@ -77,3 +80,14 @@ class UserInfo(ConfigBaseModel):
     organization: str
     is_admin: bool
     avatars: str
+
+
+class LoginStatus(ConfigBaseModel):
+    is_login: bool
+    user: User | None = None
+
+
+class PagedQuery(ConfigBaseModel, Generic[_T]):
+    cursor_id: int | None = None
+    has_next: bool = None
+    data: list[_T] = Field(default_factory=list)

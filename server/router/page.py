@@ -5,11 +5,11 @@ import pytz
 from ..schema import *
 from ..manager.user import current_user, login_required
 from ..manager.db import db
+from server import schema
 
 router = APIRouter()
 
-
-@router.get("/page", response_model=list[ResPageItem])
+@router.get("/page", response_model=schema.PagedQuery[schema.PageItem])
 @login_required
 def get_pages(
     today: bool = False,
@@ -94,12 +94,12 @@ def get_pages(
         get_once(stmt)
     new_cursor_id = min([x["id"] for x in result]) if result else None
     # todo: 返回类型需要修改
-    return {"pages": result, "cursor_id": new_cursor_id}
+    return {"data": result, "cursor_id": new_cursor_id}
 
 
 @router.get("/category", response_model=list[ResCategory])
 @login_required
-def get_category():
+def get_categories():
     stmt = select(Category).order_by(Category.id)
     res = db.scalars(stmt).all()
     return res
@@ -125,7 +125,7 @@ def add_category(name: str):
 
 @router.get("/site", response_model=list[ResSiteItem])
 @login_required
-def get_site(subscribe: bool = False, category: int | None = None):
+def get_sites(subscribe: bool = False, category: int | None = None):
     stmt = select(Site).order_by(Site.cate_id, Site.id).where(Site.disabled == False)
     if category is not None:
         stmt = stmt.where(Site.cate_id == category)

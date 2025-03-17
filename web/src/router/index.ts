@@ -97,13 +97,15 @@ const router = createRouter({
   ]
 })
 
+import { getUser } from '@/sdk/sdk.gen'
+
 router.beforeEach(async (to, from) => {
   from // eslint-disable-line
   const user = inject(user_key)!
   if (to.name != 'login' && to.name != '404' && !user.value) {
-    const res = await fetch(`${server}/user/me`)
-    if (!res.ok) router.push({ name: 'login', query: { next: to.fullPath } });
-    else user.value = await res.json()
+    const { data } = await getUser()
+    if (!data!.is_login) router.push({ name: 'login', query: { next: to.fullPath } })
+    else user.value = data!.user
   } else if (to.name == 'login' && user.value) {
     if (to.query.next) router.push(to.query.next as string)
     else router.push({ name: 'home' })
