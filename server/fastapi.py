@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.routing import APIRoute
 from .manager.db import db
 from .manager.user import current_user
-from .router import user_router, page_router
+from .router import *
 
 
 def custom_generate_unique_id(route: APIRoute):
@@ -35,6 +35,7 @@ def the_least_error_handler(request: Request, exc: Exception):
 
 app.include_router(user_router)
 app.include_router(page_router)
+app.include_router(subscrbie_router)
 
 
 @app.get("/", include_in_schema=False)

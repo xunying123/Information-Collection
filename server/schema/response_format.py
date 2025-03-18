@@ -1,5 +1,6 @@
-from typing import Generic, TypeVar
-from common.models import *
+from typing import Generic, Literal, TypeVar
+
+# from common.models import *
 from pydantic import (
     AfterValidator,
     AliasPath,
@@ -7,6 +8,7 @@ from pydantic import (
     Field,
     field_validator,
 )
+from datetime import datetime
 
 _T = TypeVar("_T")
 
@@ -15,20 +17,27 @@ class ConfigBaseModel(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class ResCategory(ConfigBaseModel):
-    id: int
+class SessionToken(ConfigBaseModel):
+    access_token: str
+    token_type: Literal["Bearer"]
+
+
+class Category(ConfigBaseModel):
+    id: int | None = None
     name: str
 
 
 class IncludedCategory:
     cate_id: int
-    cate_name: str = Field(validation_alias=AliasPath("category", "name"))
+    cate_name: str | None = Field(
+        validation_alias=AliasPath("category", "name"), default=None
+    )
 
 
 class IncludeSite:
     site_id: int
     site: str = Field(validation_alias=AliasPath("site", "name"))
-    site_icon: str = Field(validation_alias=AliasPath("site", "icon"))
+    site_icon: str | None = Field(validation_alias=AliasPath("site", "icon"))
 
 
 class PageItem(ConfigBaseModel, IncludedCategory, IncludeSite):
@@ -44,14 +53,14 @@ class PageItem(ConfigBaseModel, IncludedCategory, IncludeSite):
         return v[:50]
 
 
-class ResSiteItem(ConfigBaseModel, IncludedCategory):
-    id: int
+class SiteItem(ConfigBaseModel, IncludedCategory):
+    id: int | None = None
     name: str
-    url: str | None
-    icon: str | None
+    url: str | list[str] | None
+    icon: str | None = None
 
 
-class ResSite(ResSiteItem):
+class Site(SiteItem):
     pages: list[PageItem]
 
 
@@ -61,7 +70,7 @@ class Keyword(ConfigBaseModel):
     subject: str
 
 
-class ResponsePage(PageItem):
+class Page(PageItem):
     full_content: str
     keywords: list[Keyword]
 

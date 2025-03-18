@@ -6,7 +6,7 @@ from common.models import User
 from fastapi import Response
 from fastapi_decorators import depends
 from fastapi_login import LoginManager
-from server import config
+from server import config, schema
 from .db import db
 from ..utils.globalize import Globalize
 from passlib.context import CryptContext
@@ -47,7 +47,7 @@ class UserManager:
         user.password = pwd_context.hash(password)
 
     @staticmethod
-    def make_login_response(user: User, response: Response):
+    def make_login_response(user: User, response: Response) -> schema.SessionToken:
         expiration = timedelta(days=7)
         # the sub must be a string
         token = login_manager.create_access_token(
@@ -60,7 +60,7 @@ class UserManager:
             samesite="lax",
             max_age=expiration,
         )
-        return {"access_token": token, "token_type": "bearer"}
+        return {"access_token": token, "token_type": "Bearer"}
 
 
 current_user: User | Globalize[User] = Globalize[User](

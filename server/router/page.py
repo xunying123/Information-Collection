@@ -1,38 +1,28 @@
+import pytz
 from http.client import NOT_FOUND, PRECONDITION_FAILED
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import exists, or_, select, func
-import pytz
-from ..schema import *
+from common.models import *
+from server import schema
 from ..manager.user import current_user, login_required
 from ..manager.db import db
-from server import schema
 
 router = APIRouter()
 
-@router.get("/page", response_model=schema.PagedQuery[schema.PageItem])
+
+@router.post("/pages", response_model=schema.PagedQuery[schema.PageItem])
 @login_required
 def get_pages(
-    today: bool = False,
-    keyword: bool = False,
-    subscribe: bool = False,
-    bookmarked: bool = False,
-    cursor_id: int = 0,
-    count: int = 0,
-    time_start: datetime | None = None,
-    time_end: datetime | None = None,
-    search_title: str = "",
-    search_content: str = "",
-    site: int | None = None,
-    category: int | list[int] | None = None,
+    data:schema.PageGet
 ):
     stmt = select(Page).order_by(Page.created_at.desc())
-    if today:
+    if data.today:
         shanghai_tz = pytz.timezone("Asia/Shanghai")
         today = datetime.now(shanghai_tz).date()
         stmt = stmt.where(func.date(Page.publish_time) == today)
-    if bookmarked:
+    if data.bookmarked:
         stmt = stmt.join(Bookmark).where(Bookmark.user_id == current_user.id)
-    if keyword:
+    if data.keyword:
         stmt = stmt.where(
             exists().where(
                 (UserKeywordRelation.user_id == current_user.id)
@@ -41,7 +31,7 @@ def get_pages(
                 & (PageKeywordRelation.page_id == Page.id)
             )
         )
-    if subscribe:
+    if data.subscribe:
         stmt = stmt.where(
             exists().where(
                 (UserSiteRelation.user_id == current_user.id)
@@ -49,40 +39,40 @@ def get_pages(
                 & (Site.id == Page.site_id)
             )
         )
-    if cursor_id > 0:
-        stmt = stmt.where(Page.id < cursor_id)
-    if count > 0:
-        stmt = stmt.limit(count)
-    if time_start:
-        stmt = stmt.where(Page.publish_time >= time_start)
-    if time_end:
-        stmt = stmt.where(Page.publish_time <= time_end)
-    if search_title and search_content:
+    if data.cursor_id > 0:
+        stmt = stmt.where(Page.id < data.cursor_id)
+    if data.count > 0:
+        stmt = stmt.limit(data.count)
+    if data.time_start:
+        stmt = stmt.where(Page.publish_time >= data.time_start)
+    if data.time_end:
+        stmt = stmt.where(Page.publish_time <= data.time_end)
+    if data.search_title and data.search_content:
         stmt = stmt.where(
             or_(
-                Page.title.like(f"%{search_title}%"),
-                Page.full_content.like(f"%{search_content}%"),
+                Page.title.like(f"%{data.search_title}%"),
+                Page.full_content.like(f"%{data.search_content}%"),
             )
         )
-    elif search_title:
-        stmt = stmt.where(Page.title.like(f"%{search_title}%"))
-    elif search_content:
-        stmt = stmt.where(Page.full_content.like(f"%{search_content}%"))
+    elif data.search_title:
+        stmt = stmt.where(Page.title.like(f"%{data.search_title}%"))
+    elif data.search_content:
+        stmt = stmt.where(Page.full_content.like(f"%{data.search_content}%"))
     sites_id = None
-    if site is not None:
-        sites_id = [site]
-    elif category is not None:
+    if data.site is not None:
+        sites_id = [data.site]
+    elif data.category is not None:
         # special logic: count is used to limit every SITE instead of total pages
         # cursor_id should not be used in this case CURRENTLY
         # TODO: support cursor_id in this case
-        if type(category) is int:
-            sites_id = db.scalars(select(Site.id).where(Site.cate_id == category))
-        elif type(category) is list:
-            sites_id = db.scalars(select(Site.id).where(Site.cate_id.in_(category)))
+        if type(data.category) is int:
+            sites_id = db.scalars(select(Site.id).where(Site.cate_id == data.category))
+        elif type(data.category) is list:
+            sites_id = db.scalars(select(Site.id).where(Site.cate_id.in_(data.category)))
         else:
             raise ValueError("invalid category type")
 
-    result = []
+    result: list[Page] = []
 
     def get_once(stmt):
         result.extend(db.scalars(stmt).all())
@@ -92,12 +82,11 @@ def get_pages(
             get_once(stmt.where(Page.site_id == site_id))
     else:
         get_once(stmt)
-    new_cursor_id = min([x["id"] for x in result]) if result else None
-    # todo: 返回类型需要修改
+    new_cursor_id = min([x.id for x in result]) if result else None
     return {"data": result, "cursor_id": new_cursor_id}
 
 
-@router.get("/category", response_model=list[ResCategory])
+@router.get("/category", response_model=list[schema.Category])
 @login_required
 def get_categories():
     stmt = select(Category).order_by(Category.id)
@@ -105,7 +94,7 @@ def get_categories():
     return res
 
 
-@router.get("/category/{cate_id}", response_model=ResCategory)
+@router.get("/category/{cate_id}", response_model=schema.Category)
 @login_required
 def get_category(cate_id: int):
     stmt = select(Category).where(Category.id == cate_id)
@@ -113,17 +102,17 @@ def get_category(cate_id: int):
     return res
 
 
-@router.post("/category", response_model=OperationMsg)
+@router.post("/category", response_model=schema.OperationMsg)
 @login_required
-def add_category(name: str):
-    if db.scalar(select(Category.id).where(Category.name == name)) is not None:
+def add_category(category: schema.Category):
+    if db.scalar(select(Category.id).where(Category.name == category.name)) is not None:
         raise HTTPException(PRECONDITION_FAILED, "category already exists")
-    cate = Category(name=name)
+    cate = Category(name=category.name)
     db.add(cate)
     return {}
 
 
-@router.get("/site", response_model=list[ResSiteItem])
+@router.get("/site", response_model=list[schema.SiteItem])
 @login_required
 def get_sites(subscribe: bool = False, category: int | None = None):
     stmt = select(Site).order_by(Site.cate_id, Site.id).where(Site.disabled == False)
@@ -139,7 +128,7 @@ def get_sites(subscribe: bool = False, category: int | None = None):
     return db.scalars(stmt).all()
 
 
-@router.get("/site/{site_id}", response_model=ResSite)
+@router.get("/site/{site_id}", response_model=schema.Site)
 @login_required
 def get_site(site_id: int):
     stmt = select(Site).where(Site.id == site_id)
@@ -149,17 +138,17 @@ def get_site(site_id: int):
     return site
 
 
-@router.post("/site", response_model=OperationMsg)
+@router.post("/site", response_model=schema.OperationMsg)
 @login_required
-def add_site(name: str, url: str, cate_id: int, icon: str):
-    site = Site(name=name, url=url, cate_id=cate_id, icon=icon)
+def add_site(data: schema.SiteItem):
+    site = Site(name=data.name, url=data.url, cate_id=data.cate_id, icon=data.icon)
     db.add(site)
     db.flush()
     site_id = site.id
     return {"status": 200, "message": "success", "site_id": site_id}
 
 
-@router.delete("/site{site_id}", response_model=OperationMsg)
+@router.delete("/site{site_id}", response_model=schema.OperationMsg)
 @login_required
 def delete_site(site_id: int):
     site = db.scalar(select(Site).where(Site.id == site_id))
@@ -169,7 +158,7 @@ def delete_site(site_id: int):
     return {"status": 200, "message": "success"}
 
 
-@router.get("/page/{page_id}", response_model=ResponsePage)
+@router.get("/page/{page_id}", response_model=schema.Page)
 @login_required
 def get_page(page_id: int):
     stmt = select(Page).where(Page.id == page_id)
