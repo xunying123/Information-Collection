@@ -54,7 +54,7 @@
               </el-autocomplete>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="addKeyword" size="large">添加</el-button>
+              <el-button type="primary" @click="addKeyword_" size="large">添加</el-button>
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -88,9 +88,9 @@
 import { ref, reactive, inject, onMounted, type Ref } from 'vue'
 import { ElNotification } from 'element-plus'
 import { filter_keyword_key } from '@/key'
-import { server } from '@/const'
 import type { Keyword } from '@/api_interface'
 import KeywordList from '@/components/KeywordList.vue'
+import { getKeyword, addKeyword, deleteKeyword } from '@/sdk'
 
 const filter_keyword = inject(filter_keyword_key)!
 const activeKeywordTab = ref('add-keyword')
@@ -104,187 +104,137 @@ onMounted(() => {
   loadKeywords()
 })
 
-function loadAllKeywords() {
-  fetch(`${server}/keyword?personal=false`)
-    .then((r) => r.json())
-    .then((data) => {
-      allKeywords.value = data
-    })
-    .catch((error) => {
-      console.error('Error fetching keywords:', error)
-    })
+async function loadAllKeywords() {
+  const { data, error } = await getKeyword({ query: { personal: false } })
+  if (error) {
+    console.error(error)
+    return
+  }
+  allKeywords.value = data
 }
 
-function loadKeywords() {
-  fetch(`${server}/keyword?personal=true`)
-    .then((r) => r.json())
-    .then((data) => {
-      keywords.value = data
-    })
-    .catch((error) => {
-      console.error('Error fetching keywords:', error)
-    })
+async function loadKeywords() {
+  const { data, error } = await getKeyword({ query: { personal: true } })
+  if (error) {
+    console.error(error)
+    return
+  }
+  keywords.value = data
 }
 
 function saveFilter() {
   localStorage.setItem('filter_keyword', filter_keyword.value.toString())
 }
 
-function addKeyword() {
+async function addKeyword_() {
   const trimmedKeyword = newKeyword.word.trim()
   if (trimmedKeyword) {
-    fetch(`${server}/keyword`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        words: [trimmedKeyword],
-        add_for_user: true
-      })
+    const { data, error } = await addKeyword({
+      body: {
+        add_for_user: true,
+        keep_user_existed: true,
+        words: [trimmedKeyword]
+      }
     })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.code === 0) {
-          loadKeywords()
-          newKeyword.word = ''
-          ElNotification({
-            title: '成功',
-            message: '关键词添加成功',
-            type: 'success'
-          })
-        } else {
-          throw new Error(data.msg)
-        }
+    if (error || data.status !== 200) {
+      ElNotification({
+        title: '错误',
+        message: '添加关键词失败: ' + (error ? error : data.message),
+        type: 'error'
       })
-      .catch((error) => {
-        ElNotification({
-          title: '错误',
-          message: '添加关键词失败: ' + error,
-          type: 'error'
-        })
-      })
+      return
+    }
+    loadKeywords()
+    newKeyword.word = ''
+    ElNotification({
+      title: '成功',
+      message: '关键词添加成功',
+      type: 'success'
+    })
   }
 }
 
-function clearKeywords() {
-  fetch(`${server}/keyword`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      words: [],
+async function clearKeywords() {
+  const { data, error } = await addKeyword({
+    body: {
       add_for_user: true,
-      keep_user_existed: false
-    })
+      keep_user_existed: false,
+      words: []
+    }
   })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.code === 0) {
-        keywords.value = []
-        ElNotification({
-          title: '成功',
-          message: '关键词已清空',
-          type: 'success'
-        })
-      } else {
-        throw new Error(data.msg)
-      }
+  if (error || data.status !== 200) {
+    ElNotification({
+      title: '错误',
+      message: '清空关键词失败: ' + (error ? error : data.message),
+      type: 'error'
     })
-    .catch((error) => {
-      ElNotification({
-        title: '错误',
-        message: '清空关键词失败: ' + error,
-        type: 'error'
-      })
-    })
+    return
+  }
+  keywords.value = []
+  ElNotification({
+    title: '成功',
+    message: '关键词已清空',
+    type: 'success'
+  })
 }
 
-function deleteKeyword(keyword: Keyword) {
+async function deleteKeyword_(keyword: Keyword) {
   if (keyword) {
-    fetch(`${server}/keyword`, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        keyword_id: keyword.id
+    const { data, error } = await deleteKeyword({ body: { keyword_id: keyword.id } })
+    if (error || data.status !== 200) {
+      ElNotification({
+        title: '错误',
+        message: '删除关键词失败: ' + (error ? error : data.message),
+        type: 'error'
       })
+      return
+    }
+    loadKeywords()
+    ElNotification({
+      title: '成功',
+      message: '关键词删除成功',
+      type: 'success'
     })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.code === 0) {
-          loadKeywords()
-          ElNotification({
-            title: '成功',
-            message: '关键词删除成功',
-            type: 'success'
-          })
-        } else {
-          throw new Error(data.msg)
-        }
-      })
-      .catch((error) => {
-        ElNotification({
-          title: '错误',
-          message: '删除关键词失败: ' + error,
-          type: 'error'
-        })
-      })
   }
 }
 
 function handelDeleteKeyword() {
   const keyword = keywords.value.find((k) => k.word === keywordToDelete.word)
-  if (keyword) deleteKeyword(keyword)
+  if (keyword) deleteKeyword_(keyword)
 }
 
 function handleClose(keyword: Keyword) {
-  deleteKeyword(keyword)
+  deleteKeyword_(keyword)
 }
 
-function importKeywords(file: File) {
+async function importKeywords(file: File) {
   if (file) {
     const reader = new FileReader()
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const content = e.target?.result as string
       const words = JSON.parse(content)
-      fetch(`${server}/keyword`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          words: words,
+
+      const { data, error } = await addKeyword({
+        body: {
           add_for_user: true,
-          keep_user_existed: true
-        })
+          keep_user_existed: true,
+          words: words
+        }
       })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.code === 0) {
-            loadKeywords()
-            ElNotification({
-              title: '成功',
-              message: '关键词导入成功',
-              type: 'success'
-            })
-          } else {
-            throw new Error(data.msg)
-          }
+      if (error || data.status !== 200) {
+        ElNotification({
+          title: '错误',
+          message: '导入关键词失败: ' + (error ? error : data.message),
+          type: 'error'
         })
-        .catch((error) => {
-          ElNotification({
-            title: '错误',
-            message: '导入关键词失败: ' + error,
-            type: 'error'
-          })
-        })
+        return
+      }
+      loadKeywords()
+      ElNotification({
+        title: '成功',
+        message: '关键词导入成功',
+        type: 'success'
+      })
     }
     reader.readAsText(file)
   }

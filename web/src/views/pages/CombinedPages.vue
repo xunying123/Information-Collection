@@ -10,19 +10,17 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, inject, provide } from 'vue'
-import type { GetPage, PageItem, Site } from '@/api_interface'
-import { server } from '@/const'
 import ShowCards from '@/components/ShowCards.vue'
 import useScrollFetch from '@/useScrollFetch'
 import { filter_subscribe_key, filter_keyword_key, search_keyword_key } from '@/key'
-
+import { getPages, getSite, getCategory, type PageItem, type Site, type PageGet } from '@/sdk'
 const props = defineProps<{
   pageType: 'all' | 'daily' | 'site' | 'category'
   site_id?: String
   category_id?: String
 }>()
 
-const EmptySite: Site = { id: 0, name: '', url: '', category: '', cate_id: 0, pages: [], icon: '' }
+const EmptySite: Site = { id: 0, name: '', url: '', cate_id: 0, pages: [], icon: '', cate_name: '' }
 
 let searchKeyword = ref('')
 provide(search_keyword_key, searchKeyword)
@@ -43,7 +41,7 @@ const fetchPages = (count: number) => {
       loading.value = true
     }
   }, 200)
-  let body: GetPage = {
+  let body: PageGet = {
     count: count,
     keyword: filter_keyword.value,
     subscribe: filter_subscribe.value
@@ -69,36 +67,37 @@ const fetchPages = (count: number) => {
       body.category = Number(props.category_id)
       break
   }
-  let params = encodeURIComponent(JSON.stringify(body))
-  try {
-    fetch(`${server}/page?data=${params}`)
-      .then((r) => r.json())
-      .then((data) => {
-        pages.value = data.pages
-        done = true
-        loading.value = false
-      })
-  } catch (error) {
-    console.error('Error fetching data:', error)
+  getPages({ body: body })
+    .then((res) => res.data)
+    .then((data) => {
+      pages.value = data!.data!
+      done = true
+      loading.value = false
+    })
+    .catch((err) => {
+      console.error('Error fetching data:', err)
+    })
+}
+
+async function updateSite() {
+  const { data, error } = await getSite({ path: { site_id: Number(props.site_id) } })
+  if (error) {
+    console.error(error)
+    return
   }
+  console.log(data)
+  data.pages = site.value.pages
+  site.value = data
+  title.value = site.value.name
 }
 
-function updateSite() {
-  fetch(`${server}/site/${props.site_id}`)
-    .then((r) => r.json())
-    .then((data) => {
-      data.pages = site.value.pages
-      site.value = data
-      title.value = site.value.name
-    })
-}
-
-function updateCategory() {
-  fetch(`${server}/category/${props.category_id}`)
-    .then((r) => r.json())
-    .then((data) => {
-      title.value = data.name
-    })
+async function updateCategory() {
+  const { data, error } = await getCategory({ path: { cate_id: Number(props.category_id) } })
+  if (error) {
+    console.error(error)
+    return
+  }
+  title.value = data.name
 }
 
 onMounted(() => {

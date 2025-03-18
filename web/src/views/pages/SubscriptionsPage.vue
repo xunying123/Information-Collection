@@ -35,9 +35,10 @@
         @change="saveFilter"
       />
       <el-scrollbar class="source-scrollbar" height="24em" :always="true">
-        <p v-for="source in sources" :key="source.id" class="scrollbar-item">
-          <strong>{{ source.category }}</strong> - {{ source.name }} -
-          <a :href="source.url" target="_blank">{{ source.url }}</a>
+        <p v-for="source in sources" :key="source.id!" class="scrollbar-item">
+          <strong>{{ source.cate_name }}</strong
+          >-{{ source.name }}
+          <!-- <a :href="source.url" target="_blank">{{ source.url }}</a> -->
         </p>
       </el-scrollbar>
     </div>
@@ -54,7 +55,7 @@
                 clearable
               >
                 <template #default="{ item }">
-                  <div class="name">{{ item.category }} - {{ item.name }}</div>
+                  <div class="name">{{ item.cate_name }} - {{ item.name }}</div>
                 </template>
               </el-autocomplete>
             </el-form-item>
@@ -93,12 +94,12 @@
 import { ref, reactive, inject, onMounted } from 'vue'
 import { ElNotification } from 'element-plus'
 import { filter_subscribe_key } from '@/key'
-import { server } from '@/const'
 import type { SiteItem } from '@/api_interface'
+import { getSites, getSubscribe, subscribe, unsubscribe } from '@/sdk'
 
 const filter_subscribe = inject(filter_subscribe_key)!
 const activeTab = ref('add-source')
-const newSource = ref<SiteItem>({ id: 0, cate_id: 0, category: '', name: '', url: '', icon: '' })
+const newSource = ref<SiteItem>({ id: 0, cate_id: 0, cate_name: '', name: '', url: '', icon: '' })
 const sourceToDelete = reactive({ name: '' })
 const sources = ref<SiteItem[]>([])
 const allSources = ref<SiteItem[]>([])
@@ -108,157 +109,111 @@ onMounted(() => {
   loadSubscribedSources()
 })
 
-function loadSources() {
-  fetch(`${server}/site`)
-    .then((r) => r.json())
-    .then((data: SiteItem[]) => {
-      allSources.value = data
-    })
-    .catch((error) => {
-      console.error('Error fetching sources:', error)
-    })
+async function loadSources() {
+  const { data, error } = await getSites()
+  if (error) {
+    console.error(error)
+    return
+  }
+  allSources.value = data
 }
 
-function loadSubscribedSources() {
-  fetch(`${server}/subscribe`)
-    .then((r) => r.json())
-    .then((data) => {
-      sources.value = data.sites
-    })
-    .catch((error) => {
-      console.error('Error fetching subscribed sources:', error)
-    })
+async function loadSubscribedSources() {
+  const { data, error } = await getSubscribe()
+  if (error) {
+    console.error(error)
+    return
+  }
+  sources.value = data!
 }
 
 function saveFilter() {
   localStorage.setItem('filter_subscribe', filter_subscribe.value.toString())
 }
 
-function addSource() {
-  const sitesId = [newSource.value.id]
-  const keepUserExisted = true
-
+async function addSource() {
+  const sitesId = [newSource.value.id!]
   if (!Array.isArray(sitesId)) {
     console.error('invalid request: sites_id is not an array')
     return
   }
-
   for (const siteId of sitesId) {
     if (typeof siteId !== 'number') {
       console.error('invalid request: site_id is not a number')
       return
     }
   }
-  fetch(`${server}/subscribe`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
+  const { data, error } = await subscribe({
+    body: {
       sites_id: sitesId,
-      keep_user_existed: keepUserExisted
-    })
+      keep_user_existed: true
+    }
   })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.code === 0) {
-        console.log('Subscription added successfully')
-        loadSubscribedSources()
-        newSource.value = { id: 0, cate_id: 0, category: '', name: '', url: '', icon: '' }
-        ElNotification({
-          title: '成功',
-          message: '网站源添加成功',
-          type: 'success'
-        })
-      } else {
-        console.error(`Error: ${data.msg}`)
-      }
+  if (error || data.status !== 200) {
+    ElNotification({
+      title: '错误',
+      message: '添加网站源失败: ' + (error ? error : data.message),
+      type: 'error'
     })
-    .catch((error) => {
-      console.error('Error:', error)
-      ElNotification({
-        title: '错误',
-        message: '添加网站源失败: ' + error,
-        type: 'error'
-      })
-    })
+    return
+  }
+  loadSubscribedSources()
+  newSource.value = { id: 0, cate_id: 0, cate_name: '', name: '', url: '', icon: '' }
+  ElNotification({
+    title: '成功',
+    message: '网站源添加成功',
+    type: 'success'
+  })
 }
 
-function deleteSource() {
+async function deleteSource() {
   const site = sources.value.find((s) => s.name === sourceToDelete.name)
   if (site) {
-    fetch(`${server}/subscribe`, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        site_id: site.id
+    const { data, error } = await unsubscribe({ body: site.id! })
+    if (error || data.status !== 200) {
+      ElNotification({
+        title: '错误',
+        message: '删除网站源失败: ' + (error ? error : data.message),
+        type: 'error'
       })
+      return
+    }
+    loadSubscribedSources()
+    sourceToDelete.name = ''
+    ElNotification({
+      title: '成功',
+      message: '网站源删除成功',
+      type: 'success'
     })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.code === 0) {
-          loadSubscribedSources()
-          sourceToDelete.name = ''
-          ElNotification({
-            title: '成功',
-            message: '网站源删除成功',
-            type: 'success'
-          })
-        } else {
-          throw new Error(data.msg)
-        }
-      })
-      .catch((error) => {
-        ElNotification({
-          title: '错误',
-          message: '删除网站源失败: ' + error,
-          type: 'error'
-        })
-      })
   }
 }
 
-function importSources(file: File) {
+async function importSources(file: File) {
   if (file) {
     const reader = new FileReader()
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const content = e.target?.result as string
       const sites = JSON.parse(content)
-      fetch(`${server}/subscribe`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+      const { data, error } = await subscribe({
+        body: {
           sites_id: sites.map((site: any) => site.id),
           keep_user_existed: true
-        })
+        }
       })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.code === 0) {
-            loadSubscribedSources()
-            ElNotification({
-              title: '成功',
-              message: '网站源导入成功',
-              type: 'success'
-            })
-          } else {
-            throw new Error(data.msg)
-          }
+      if (error || data.status !== 200) {
+        ElNotification({
+          title: '错误',
+          message: '导入网站源失败: ' + (error ? error : data.message),
+          type: 'error'
         })
-        .catch((error) => {
-          ElNotification({
-            title: '错误',
-            message: '导入网站源失败: ' + error,
-            type: 'error'
-          })
-        })
+        return
+      }
+      loadSubscribedSources()
+      ElNotification({
+        title: '成功',
+        message: '网站源导入成功',
+        type: 'success'
+      })
     }
     reader.readAsText(file)
   }
@@ -268,7 +223,7 @@ function exportSources() {
   const content = JSON.stringify(
     sources.value.map((source) => ({
       id: source.id,
-      category: source.category,
+      category: source.cate_name,
       name: source.name,
       url: source.url
     }))
@@ -282,39 +237,27 @@ function exportSources() {
   URL.revokeObjectURL(url)
 }
 
-function clearSubscriptions() {
-  fetch(`${server}/subscribe`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
+async function clearSubscriptions() {
+  const { data, error } = await subscribe({
+    body: {
       sites_id: [],
-      add_for_user: true,
       keep_user_existed: false
-    })
+    }
   })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.code === 0) {
-        loadSubscribedSources()
-        ElNotification({
-          title: '成功',
-          message: '网站源清空成功',
-          type: 'success'
-        })
-      } else {
-        throw new Error(data.msg)
-      }
+  if (error || data.status !== 200) {
+    ElNotification({
+      title: '错误',
+      message: '清空网站源失败: ' + (error ? error : data.message),
+      type: 'error'
     })
-    .catch((error) => {
-      ElNotification({
-        title: '错误',
-        message: '清空网站源失败: ' + error,
-        type: 'error'
-      })
-    })
+    return
+  }
+  loadSubscribedSources()
+  ElNotification({
+    title: '成功',
+    message: '网站源清空成功',
+    type: 'success'
+  })
 }
 
 function createFilter(queryString: string) {

@@ -8,6 +8,7 @@ import router from './router'
 
 import 'element-plus/theme-chalk/el-notification.css'
 import 'element-plus/theme-chalk/el-message-box.css'
+import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 import { user_key } from '@/key'

@@ -8,6 +8,7 @@ export default defineConfig({
   plugins: [
     {
       name: '@hey-api/client-fetch',
+      throwOnError: false
     }
   ]
 })
