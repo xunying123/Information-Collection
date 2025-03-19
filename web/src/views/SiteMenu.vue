@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { inject, onMounted, reactive, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { server } from '@/const'
 import type { SiteItem } from '@/api_interface'
 import { ElScrollbar } from 'element-plus'
 import UserCard from '@/components/UserCard.vue'
@@ -11,6 +10,7 @@ import FolderPlusSVG from '@/components/svg/FolderPlusSVG.vue'
 import LayersSVG from '@/components/svg/LayersSVG.vue'
 import HelpSVG from '@/components/svg/HelpSVG.vue'
 import { filter_subscribe_key, user_key } from '@/key'
+import { getSites } from '@/sdk'
 
 interface CateSite {
   cate_id: number
@@ -24,26 +24,27 @@ const router = useRouter()
 
 let sites = reactive<CateSite[]>([])
 
-function loadSites() {
-  fetch(`${server}/site?subscribe=${filter_subscribe.value ? 'true' : 'false'}`)
-    .then((r) => r.json())
-    .then((data: SiteItem[]) => {
-      let tmp_sites: CateSite[] = []
-      let cateSites: CateSite = { cate_id: 0, cate_name: '', sites: [] }
-      for (let site of data) {
-        if (site.cate_id != cateSites.cate_id) {
-          if (cateSites.cate_id != 0) tmp_sites.push(cateSites)
-          cateSites = { cate_id: site.cate_id, cate_name: site.category, sites: [] }
-        }
-        if (site.name == '上海交通大学')
-          // push to the front
-          cateSites.sites.unshift(site)
-        else cateSites.sites.push(site)
-      }
-      if (cateSites.cate_id != 0) tmp_sites.unshift(cateSites)
-      sites.splice(0, sites.length)
-      sites.push(...tmp_sites)
-    })
+async function loadSites() {
+  const { data, error } = await getSites()
+  if (error) {
+    console.error(error)
+    return
+  }
+  let tmp_sites: CateSite[] = []
+  let cateSites: CateSite = { cate_id: 0, cate_name: '', sites: [] }
+  for (let site of data) {
+    if (site.cate_id != cateSites.cate_id) {
+      if (cateSites.cate_id != 0) tmp_sites.push(cateSites)
+      cateSites = { cate_id: site.cate_id, cate_name: site!.cate_name!, sites: [] }
+    }
+    if (site.name == '上海交通大学')
+      // push to the front
+      cateSites.sites.unshift(site)
+    else cateSites.sites.push(site)
+  }
+  if (cateSites.cate_id != 0) tmp_sites.unshift(cateSites)
+  sites.splice(0, sites.length)
+  sites.push(...tmp_sites)
 }
 
 function handleSubMenuClick(index: string) {
@@ -85,9 +86,9 @@ onMounted(() => {
           <BookmarkSvg fill="none" class="menu-icon" />
           <span class="menu-top">书签列表</span>
         </el-menu-item>
-        <el-menu-item index="/managesites" v-if="user?.is_admin">
+        <el-menu-item index="/manage" v-if="user?.is_admin">
           <FolderPlusSVG class="menu-icon" />
-          <span class="menu-top">增删网站</span>
+          <span class="menu-top">管理组织</span>
         </el-menu-item>
         <el-sub-menu v-for:="cate in sites" :index="`/category/` + String(cate.cate_id)">
           <template #title>

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, defineProps, ref, watch } from 'vue'
 import type { Page } from '@/api_interface'
-import { server } from '@/const'
 import { is_bookmarked, toggle_bookmark } from '@/bookmark'
 import { useClipboard } from '@vueuse/core'
 import { ElNotification } from 'element-plus'
@@ -10,6 +9,7 @@ import CloseSVG from '@/components/svg/CloseSVG.vue'
 import CopySVG from '@/components/svg/CopySVG.vue'
 import { NTime } from 'naive-ui'
 import KeywordList from '@/components/KeywordList.vue'
+import { getPage } from '@/sdk'
 
 let props = defineProps({ page_id: String })
 
@@ -22,7 +22,7 @@ const empty_article: Page = {
   site_id: 0,
   site: '',
   cate_id: 0,
-  category: '',
+  cate_name: '',
   publish_time: '',
   site_icon: '',
   keywords: []
@@ -33,14 +33,15 @@ const content_width = computed(() => 178 - slide_value.value)
 
 let article = ref<Page>(empty_article)
 
-function update(prop: typeof props) {
+async function update(prop: typeof props) {
   article.value = empty_article
   if (!prop.page_id) return
-  fetch(`${server}/page/${prop.page_id}`)
-    .then((r) => r.json())
-    .then((data) => {
-      article.value = data
-    })
+  const { data, error } = await getPage({ path: { page_id: Number(prop.page_id) } })
+  if (error) {
+    console.error(error)
+    return
+  }
+  article.value = data
 }
 
 watch(props, update)

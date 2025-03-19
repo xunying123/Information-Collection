@@ -7,18 +7,13 @@ import SearchInput from '@/components/SearchInput.vue'
 import ArticleCard from '@/components/ArticleCard.vue'
 import ArticleList from '@/components/ArticleList.vue'
 import SiteArticleCard from '@/components/SiteArticleCard.vue'
-import { server } from '@/const'
 import { search_keyword_key } from '@/key'
-
-interface Cate {
-  id: number
-  name: string
-}
+import { getCategories, type Category } from '@/sdk'
 
 const props = defineProps<{ pages: PageItem[]; title: string; loading: boolean }>()
 let searchKeyword = inject(search_keyword_key)!
 let filteredPages = ref<PageItem[]>(props.pages)
-let selectedCategories = ref<Cate[]>([])
+let selectedCategories = ref<Category[]>([])
 
 function filterPages() {
   filteredPages.value = props.pages
@@ -79,7 +74,7 @@ const selectedTimeRange = ref('all')
 watch(selectedCategories, filterPages)
 watch(selectedTimeRange, filterPages)
 
-const allCategories = ref(new Set<Cate>())
+const allCategories = ref(new Set<Category>())
 
 const showChooseCate = computed(() => route.path === '/')
 
@@ -126,15 +121,15 @@ onMounted(() => {
   if (!showSiteCard.value && view.value === 'site') {
     view.value = savedNotCateView ? savedNotCateView : 'card'
   }
-  try {
-    fetch(`${server}/category`)
-      .then((res) => res.json())
-      .then((data) => {
-        allCategories.value = new Set(data)
-      })
-  } catch (error) {
-    console.error('获取类别信息失败：', error)
+  const fetchCategories = async () => {
+    const { data, error } = await getCategories()
+    if (error) {
+      console.error('获取类别信息失败：', error)
+      return
+    }
+    allCategories.value = new Set(data)
   }
+  fetchCategories()
 })
 </script>
 

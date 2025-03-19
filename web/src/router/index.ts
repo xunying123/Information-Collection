@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AllSitePages from '@/views/pages/AllSitePages.vue'
 import MainView from '@/views/MainView.vue'
-import { server } from '@/const'
 import { inject } from 'vue'
 import { user_key } from '@/key'
+import { getUserStatus } from '@/sdk/sdk.gen'
 
 const page_rule = (name: string) => {
   return {
@@ -72,10 +72,10 @@ const router = createRouter({
           ]
         },
         {
-          path: 'managesites',
-          name: 'managesites',
-          component: () => import('@/views/pages/ManageSitesPages.vue'),
-          children: [page_rule('managesites')]
+          path: 'manage',
+          name: 'manage',
+          component: () => import('@/views/pages/ManagePages.vue'),
+          children: [page_rule('manage')]
         },
         {
           path: 'help',
@@ -93,6 +93,11 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('@/views/LoginView.vue')
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('@/views/RegisterView.vue')
     }
   ]
 })
@@ -100,10 +105,10 @@ const router = createRouter({
 router.beforeEach(async (to, from) => {
   from // eslint-disable-line
   const user = inject(user_key)!
-  if (to.name != 'login' && to.name != '404' && !user.value) {
-    const data = await fetch(`${server}/user/me`).then((res) => res.json())
-    if (data.code == 0) user.value = data.user
-    else router.push({ name: 'login', query: { next: to.fullPath } })
+  if (to.name != 'login' && to.name != 'register' && to.name != '404' && !user.value) {
+    const { data } = await getUserStatus()
+    if (!data!.is_login) router.push({ name: 'login', query: { next: to.fullPath } })
+    else user.value = data!.user!
   } else if (to.name == 'login' && user.value) {
     if (to.query.next) router.push(to.query.next as string)
     else router.push({ name: 'home' })

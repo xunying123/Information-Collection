@@ -1,70 +1,7 @@
-interface PageItem {
-  id: number
-  title: string
-  source_url: string
-  site_id: number
-  site: string
-  site_icon: string
-  cate_id: number
-  category: string
-  publish_time: string // iso8601
-  content: string
-}
-
-interface Page extends PageItem {
-  // content: string
-  full_content: string
-  keywords: Keyword[]
-}
+import type { PageItem, Page, SiteItem, Site, User, Keyword } from '@/sdk'
 
 interface BookmarkItemPage extends Page {
   mark_time: string
 }
 
-interface SiteItem {
-  id: number
-  name: string
-  url: string
-  cate_id: number
-  category: string
-  icon: string
-}
-
-interface Site extends SiteItem {
-  pages: PageItem[]
-}
-
-interface User {
-  id: number
-  jaccount_code: string
-  name: string
-  username: string
-  avatars: string
-  organization: string
-  userType: string
-  is_admin: boolean
-}
-
-interface Keyword {
-  id: number
-  word: string
-  // name: string
-  subject: string
-}
-
 export type { PageItem, Page, SiteItem, Site, User, BookmarkItemPage, Keyword }
-
-interface GetPage {
-  category?: number | number[]
-  site?: number
-  today?: boolean
-  bookmarked?: boolean
-  keyword?: boolean
-  subscribe?: boolean
-  count?: number
-  cursor_id?: number
-  search_title?: string
-  search_content?: string
-}
-
-export type { GetPage }

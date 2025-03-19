@@ -1,4 +1,4 @@
-from server.db import SqlSession
+from server.manager.db import SqlSession
 
 websites = [
     {
