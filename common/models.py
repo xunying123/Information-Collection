@@ -42,6 +42,17 @@ class UseTimestamps:
     )
 
 
+class Group(Base):
+    id: Mapped[intpk]
+    name: Mapped[str] = mapped_column(nullable=False)
+    users = relationship("User", back_populates="group_id")
+
+
+group_foreign_key = Annotated[
+    int, mapped_column(ForeignKey(Group.id), index=True, nullable=True)
+]
+
+
 class Category(Base):
     id: Mapped[intpk]
     name: Mapped[str]
@@ -100,9 +111,9 @@ class User(Base):
     jaccount_code: Mapped[str] = mapped_column(unique=True, nullable=False)
     # user data
     username: Mapped[str]
-    userType: Mapped[str]
+    userType: Mapped[str] = mapped_column(nullable=True)
     name: Mapped[str]
-    organization: Mapped[str]
+    organization: Mapped[str] = mapped_column(nullable=True)
     # privilege related fields
     is_admin: Mapped[bool] = mapped_column(Boolean, server_default="0")
     # style related fields
@@ -112,7 +123,8 @@ class User(Base):
     password: Mapped[str] = mapped_column(nullable=True)
 
     #### relationship ####
-
+    group_id: Mapped[group_foreign_key]
+    group: Mapped[Group] = relationship(Group, back_populates="users")
     # the bookmarks the user saved
     bookmarks = relationship("Bookmark", back_populates="user")
     # the keywords the user concern
