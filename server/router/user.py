@@ -1,12 +1,11 @@
-from http.client import NOT_FOUND, UNAUTHORIZED
+from http.client import UNAUTHORIZED
 from typing import Annotated
-from fastapi import APIRouter, Body, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter
 from httpx import AsyncClient
-from sqlalchemy import and_, delete, exists, select
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import select
 from common.models import *
 from server.config import JAccountAuth
 from requests.auth import HTTPBasicAuth
@@ -47,8 +46,9 @@ def get_user_status() -> schema.LoginStatus:
 
 
 @router.post("/register", response_model=schema.OperationMsg)
-def register(data: schema.RegisterForm):
-    return {"status": 501, "message": f"Not Implemented, {str(data)}"}
+def register(data: schema.RegisterForm = Form()):
+    user = UserManager.create_user(data)
+    return {"message": f"User {user.name}({user.username}) created"}
 
 
 @router.get("/auth")

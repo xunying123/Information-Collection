@@ -1,9 +1,10 @@
 # from flask_login import LoginManager, UserMixin, current_user
 from datetime import timedelta
+from http.client import PRECONDITION_FAILED
 from flask_login import login_required
-from sqlalchemy import select
-from common.models import User
-from fastapi import Response
+from sqlalchemy import exists, select
+from common.models import User, Group
+from fastapi import HTTPException, Response
 from fastapi_decorators import depends
 from fastapi_login import LoginManager
 from server import config, schema
@@ -61,6 +62,24 @@ class UserManager:
             max_age=expiration,
         )
         return {"access_token": token, "token_type": "Bearer"}
+
+    @staticmethod
+    def create_user(data: schema.RegisterForm) -> User:
+        if db.scalar(exists(select(User).where(User.username == data.username))):
+            raise HTTPException(PRECONDITION_FAILED, "User already exists")
+        user = User(
+            username=data.username,
+            password=pwd_context.hash(data.password),
+            name=data.name
+        )
+        if data.group_id:
+            group = db.get(Group, data.group_id)
+            if group is None:
+                raise HTTPException(PRECONDITION_FAILED, "Group not found")
+            user.group = group
+        db.add(user)
+        db.flush()
+        return user
 
 
 current_user: User | Globalize[User] = Globalize[User](
