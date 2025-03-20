@@ -1,10 +1,9 @@
-from utils import read_content, extract_domain
+from utils import read_content
 from perception import preception
 from post import post, get_post_websites
 import os
 from datetime import datetime
 import sys
-from concurrent.futures import ThreadPoolExecutor
 
 def do(url):
     preception(url)
@@ -32,9 +31,6 @@ def run():
         websites = read_content("/home/dic/Information-Collection/src/data/websites.json")
         f.close()
 
-    # with ThreadPoolExecutor(max_workers=4) as executor:
-    #     executor.map(do, reversed(websites))
-
     for links in reversed(websites):
         try:
             do(links)
@@ -44,8 +40,6 @@ def run():
                 f.write("           byd sb web")
                 f.write("\n")
                 f.close()
-
-
 
 def main():
     start_time = datetime.now()

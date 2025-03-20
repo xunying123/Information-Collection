@@ -1,11 +1,12 @@
 from playwright.sync_api import sync_playwright
-from datetime import datetime
+from datetime import datetime, timedelta
 from newspaper import Article
 import requests
 from bs4 import BeautifulSoup
+from dateutil import parser 
 from utils import read_content, save_content, check_page_content, headers, extract_domain
 
-url = 'http://www.jyb.cn/rmtzgjyb/202411/t20241111_2111267743.html'
+url = 'https://www.gov.cn/yaowen/liebiao/202501/content_7001817.htm'
 
 def Newspaper(url):
     try:
@@ -32,12 +33,22 @@ def Newspaper(url):
             # 重新解析清理后的 HTML 内容
             article.html = str(soup)
 
-            # 返回清理后的文章
-            return article
+            if article.publish_date:
+                publish_date = article.publish_date.strftime('%Y-%m-%d %H:%M')
+            else:
+                publish_date = None
+
+            now = datetime.now()
+            if now >= publish_date and (now - publish_date) <= timedelta(days=3):
+                return article, publish_date
+            else:
+                publish_date = None
+
+            return article, publish_date
 
     except Exception as e:
-        return None
-    return None
+        return None, None
+    return None, None
 
 def Play_Wright_new(url):
     try:
@@ -75,14 +86,25 @@ def Play_Wright_new(url):
                         element.decompose()  # 删除该元素
 
 
-            # 重新解析清理后的 HTML 内容
                 article.html = str(soup)
                 if article.title and article.text:
-                    return article.title, article.text
+
+                    if article.publish_date:
+                        publish_date = article.publish_date.strftime('%Y-%m-%d %H:%M')
+                    else:
+                        publish_date = None
+
+                    now = datetime.now()
+                    if now >= publish_date and (now - publish_date) <= timedelta(days=3):
+                        return article.title, article.text, publish_date
+                    else:
+                        publish_date = None
+
+                    return article.title, article.text, publish_date
                 
     except Exception as e:
-        return None, None
-    return None, None
+        return None, None, None
+    return None, None, None
         
 def Beautiful_Soup(url):
     try:
@@ -92,6 +114,16 @@ def Beautiful_Soup(url):
         response.encoding = 'utf-8'
 
         soup = BeautifulSoup(response.text, 'lxml')
+
+        publish_time_str = None
+
+        meta_attrs_list = [
+            {'property': 'article:published_time'},
+            {'name': 'pubdate'},
+            {'name': 'publishdate'},
+            {'name': 'timestamp'}
+        ]
+
 
         for element in soup.find_all(style=lambda value: value and 'display:none' in value):
             element.decompose()  # 删除该元素
@@ -108,11 +140,50 @@ def Beautiful_Soup(url):
         content = soup.find_all('p')
 
         article_text = "\n\n".join([p.get_text() for p in content])
+
+        for attrs in meta_attrs_list:
+            tag = soup.find('meta', attrs=attrs)
+            if tag and tag.get('content'):
+                publish_time_str = tag['content']
+                break
+
+        if not publish_time_str:
+            time_tag = soup.find('time')
+            if time_tag:
+                if time_tag.has_attr('datetime'):
+                    publish_time_str = time_tag['datetime']
+                else:
+                    publish_time_str = time_tag.get_text(strip=True)
+        
+        if not publish_time_str:
+            publish_date_str = None
+        else:
+            try:
+                publish_date = parser.parse(publish_time_str)
+        
+                publish_date_str = publish_date.strftime('%Y-%m-%d %H:%M')
+        
+                if publish_date.tzinfo:
+                    now = datetime.now(publish_date.tzinfo)
+                else:
+                    now = datetime.now()
+        
+                if now >= publish_date and (now - publish_date) <= timedelta(days=3):
+                    a = 0
+                else:
+                    publish_date_str = None
+            
+            except Exception as e:
+                print("解析发布时间错误：", e)
+
+
+
         if article_text :
-            return title, article_text
+            return title, article_text, publish_date_str
+        
     except Exception as e:
-        return None, None
-    return None, None
+        return None, None, None
+    return None, None, None
 
 def Play_Wright_bs(url):
     try:
@@ -125,6 +196,15 @@ def Play_Wright_bs(url):
             page.goto(url)
 
             page.wait_for_load_state("networkidle")
+
+            publish_time_str = None
+
+            meta_attrs_list = [
+                {'property': 'article:published_time'},
+                {'name': 'pubdate'},
+                {'name': 'publishdate'},
+                {'name': 'timestamp'}
+            ]
 
             page_content = page.content()
 
@@ -146,11 +226,47 @@ def Play_Wright_bs(url):
             content = soup.find_all('p')
 
             article_text = "\n\n".join([p.get_text() for p in content])
+
+            for attrs in meta_attrs_list:
+                tag = soup.find('meta', attrs=attrs)
+                if tag and tag.get('content'):
+                    publish_time_str = tag['content']
+                    break
+
+            if not publish_time_str:
+                time_tag = soup.find('time')
+                if time_tag:
+                    if time_tag.has_attr('datetime'):
+                        publish_time_str = time_tag['datetime']
+                    else:
+                        publish_time_str = time_tag.get_text(strip=True)
+        
+            if not publish_time_str:
+                publish_date_str = None
+            else:
+                try:
+                    publish_date = parser.parse(publish_time_str)
+        
+                    publish_date_str = publish_date.strftime('%Y-%m-%d %H:%M')
+        
+                    if publish_date.tzinfo:
+                        now = datetime.now(publish_date.tzinfo)
+                    else:
+                        now = datetime.now()
+        
+                    if now >= publish_date and (now - publish_date) <= timedelta(days=3):
+                        a = 0
+                    else:
+                        publish_date_str = None
+            
+                except Exception as e:
+                    print("解析发布时间错误：", e)
+
             if article_text :
-                return title, article_text
+                return title, article_text, publish_date_str
     except Exception as e:
-        return None, None
-    return None, None
+        return None, None, None
+    return None, None, None
 
 def crawl(url, source_url):
     #print(f"Fetching {url}")
@@ -160,7 +276,7 @@ def crawl(url, source_url):
     temp = extract_domain(source_url)
     path = f"/home/dic/Information-Collection/src/data/out/{today_date}" + "/" + temp + '.txt'
 
-    article = Newspaper(url)
+    article, time = Newspaper(url)
     with open(path, 'a') as f:
         if article :
             if article.title and article.text and len(article.text) > 10 and check_page_content(article.title) and check_page_content(article.text):
@@ -168,36 +284,36 @@ def crawl(url, source_url):
                 f.write('\n')
                 # print(article.title)
                 # print(article.text)
-                return article.title, article.text
+                return article.title, article.text, time
         
-        title, content = Beautiful_Soup(url)
+        title, content, time = Beautiful_Soup(url)
         if title and content and len(content) > 10 and check_page_content(title) and check_page_content(content):
             f.write("2")
             f.write('\n')
             # print(title)
             # print(content)
-            return title, content
+            return title, content, time
     
-        title, content = Play_Wright_new(url)
+        title, content, time = Play_Wright_new(url)
         if title and content and len(content) > 10 and check_page_content(title) and check_page_content(content):
             f.write("3")
             f.write('\n')
-            return title, content
+            return title, content, time
     
-        title, content = Play_Wright_bs(url)
+        title, content, time = Play_Wright_bs(url)
         if title and content and len(content) > 10 and check_page_content(title) and check_page_content(content):
             f.write("4")
             f.write('\n')
             # print(title)
             # print(content)
-            return title, content
+            return title, content, time
         
         f.close()
     
     wrong = read_content(wrong_path)
     wrong.append({"url": url, "source_url": source_url})
     save_content(wrong, wrong_path)
-    return None, None
+    return None, None, None
 
 def main():
     crawl(url, "http://www.sample.com/")

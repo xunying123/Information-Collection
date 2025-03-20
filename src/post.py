@@ -31,10 +31,14 @@ def post(url):
                 data = json.load(file)
         
             post_url = "http://10.119.12.91/api/site"
-            
+            t = 0
             for website in post_websites:
-                if website["url"] == url:
-                    post_url = f"{post_url}/{website['id']}"
+                for item in website["url"]:
+                    if item == url:
+                        post_url = f"{post_url}/{website['id']}"
+                        t = 1
+                        break
+                if t == 1:
                     break
             post_url = post_url + "/page"
 
@@ -69,7 +73,10 @@ def get_post_websites():
     # print(f"Status Code: {response.status_code}", flush=True)
     # print(f"Response Text: {response.text}", flush=True)
     data = response.json()
-    new_urls = [item['url'] for item in data]
+    new_urls = []
+    for item in data:
+        for i in item['url']:
+            new_urls.append(i)
     old_urls = read_content("/home/dic/Information-Collection/src/data/websites.json")
 
     new_unique_urls = [url for url in new_urls if url not in old_urls]
@@ -96,4 +103,4 @@ def main():
     print("Posting articles...", flush=True)
 
 if __name__ == "__main__":
-    main()
+   get_post_websites()

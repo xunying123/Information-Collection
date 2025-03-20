@@ -18,7 +18,6 @@ async def fetch_website_content(url):
         page = await browser.new_page()
         await page.set_extra_http_headers(headers)
         base_url = url
-
         try:
             await page.goto(base_url, wait_until='domcontentloaded', timeout=60000)     
 
@@ -94,12 +93,14 @@ def preception(url):
             for link in new_links:
                 if check_(link):
                     continue
-                title, content = crawl(link, url)
+                title, content, times = crawl(link, url)
                 if not title or not content:
                     continue
                 summary = summary_(content)
                 title = title_(title)
                 publish_time = current_date.strftime("%Y-%m-%d %H:%M")
+                if times:
+                    publish_time = times
                 if check_page_content(title) == 0 or check_page_content(content) == 0:
                     f.write(f"Page not found")
                     continue
@@ -127,7 +128,7 @@ def add_website(url):
     save_content(current_links, filename)  
 
 def main():
-    url = 'https://edu.cri.cn/'
+    url = 'http://www.xinhuanet.com/'
     preception(url)
 
 if __name__ == '__main__':
