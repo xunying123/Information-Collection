@@ -17,14 +17,16 @@
               show-password
             />
           </el-form-item>
-          <!-- 修改处：使用 Select 选择器来选择组织 -->
+          <el-form-item label="姓名" prop="name">
+            <el-input v-model="registerForm.name" placeholder="请输入姓名" />
+          </el-form-item>
           <el-form-item label="选择组织" prop="group">
-            <el-select v-model="registerForm.group" placeholder="请选择组织">
+            <el-select v-model="registerForm.group_id" placeholder="请选择组织" clearable>
               <el-option
                 v-for="group in groupList"
-                :key="group.value"
-                :label="group.label"
-                :value="group.value"
+                :key="group.id"
+                :label="group.name"
+                :value="group.id"
               />
             </el-select>
           </el-form-item>
@@ -53,24 +55,29 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref, computed } from 'vue'
+import { reactive, ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElNotification } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
-import { register } from '@/sdk/sdk.gen'
+import { register, getGroups, type Group, type RegisterForm as BackendRegisterForm } from '@/sdk'
 
-// 示例组列表，后续可改为从服务器获取
-const groupList = ref([
-  { value: 'group1', label: '组织一' },
-  { value: 'group2', label: '组织二' },
-  { value: 'group3', label: '组织三' }
-])
+const groupList = ref<Group[]>([])
 
-interface RegisterForm {
-  username: string
-  password: string
+async function fetchGroupList() {
+  const { data, error } = await getGroups()
+  if (error) {
+    ElNotification({
+      title: '获取组织列表失败',
+      message: String(error),
+      type: 'error'
+    })
+    return
+  }
+  groupList.value = data!
+}
+
+interface RegisterForm extends BackendRegisterForm {
   confirmPassword: string
-  group: string
 }
 
 const registerFormRef = ref<FormInstance>()
@@ -78,7 +85,8 @@ const registerForm = reactive<RegisterForm>({
   username: '',
   password: '',
   confirmPassword: '',
-  group: ''
+  name: '',
+  group_id: null
 })
 
 const route = useRoute()
@@ -103,17 +111,21 @@ const validateConfirmPassword = (rule: any, value: string, callback: (error?: Er
 const rules = reactive<FormRules<RegisterForm>>({
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
-    { max: maxLen, message: `用户名不能超过 ${maxLen} 个字符`, trigger: 'blur' }
+    { min: 2, max: maxLen, message: `用户名长度应为2到${maxLen}个字符`, trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { max: maxLen, message: `密码不能超过 ${maxLen} 个字符`, trigger: 'blur' }
+    { min: 6, max: maxLen, message: `密码长度至少为6位`, trigger: 'blur' }
   ],
   confirmPassword: [
     { required: true, message: '请再次输入密码', trigger: 'blur' },
     { validator: validateConfirmPassword, trigger: 'blur' }
   ],
-  group: [{ required: true, message: '请选择组织', trigger: 'change' }]
+  name: [
+    { required: true, message: '请输入姓名', trigger: 'blur' },
+    { max: maxLen, message: `姓名不能超过 ${maxLen} 个字符`, trigger: 'blur' }
+  ],
+  group_id: [{ required: true, message: '请选择组织', trigger: 'change' }]
 })
 
 const submitForm = (formEl: FormInstance | undefined) => {
@@ -121,18 +133,15 @@ const submitForm = (formEl: FormInstance | undefined) => {
   formEl.validate(async (valid, fields) => {
     if (valid) {
       const { data, error } = await register({
-        body: {
-          username: registerForm.username,
-          password: registerForm.password
-          // group: registerForm.group
-        }
+        body: registerForm
       })
       if (error || data.status !== 200) {
         ElNotification({
           title: '注册失败',
-          message: error ? String(error) : data.message,
+          message: error ? String(error.detail) : data.message,
           type: 'error'
         })
+        console.log(error)
         return
       }
       ElNotification({
@@ -155,6 +164,10 @@ const resetForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.resetFields()
 }
+
+onMounted(() => {
+  fetchGroupList()
+})
 </script>
 
 <style scoped>

@@ -82,20 +82,27 @@
       <el-form :model="newMember" label-width="120px">
         <el-form-item label="用户名" size="large">
           <el-autocomplete
-            v-model="newMember.username"
+            v-model="newMember.searchKey"
             :fetch-suggestions="queryUserSearch"
             popper-class="my-autocomplete"
-            placeholder="请输入用户名（完全匹配后才显示提示）"
+            placeholder="请输入用户名"
             @select="handleUserSelect"
             clearable
+            value-key="username"
           >
             <template #default="{ item }">
-              <div class="name">{{ item }}</div>
+              <span class="name">{{ item.username }}</span>
+              <span style="margin-left: 10px; color: #666">{{ item.name }}</span>
             </template>
           </el-autocomplete>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" size="large" @click="addMember" :disabled="!isUserValid">
+          <el-button
+            type="primary"
+            size="large"
+            @click="addMember"
+            :disabled="!newMember.selectedUser"
+          >
             添加成员
           </el-button>
           <el-button @click="resetMemberForm" size="large">重置</el-button>
@@ -106,8 +113,7 @@
       <h3>当前组织成员</h3>
       <el-table :data="membersList" stripe height="300" style="width: 50%; margin-top: 1em">
         <el-table-column prop="username" label="用户名" />
-        <el-table-column prop="joinTime" label="加入时间" />
-        <el-table-column prop="status" label="状态" />
+        <el-table-column prop="is_admin" label="状态" :formatter="formatAdminStatus" />
         <el-table-column label="操作">
           <template #default="scope">
             <el-button type="danger" size="small" @click="deleteMember(scope.row)">删除</el-button>
@@ -119,11 +125,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { ElNotification, ElMessageBox } from 'element-plus'
-import { server } from '@/const'
 import type { SiteItem } from '@/api_interface'
-import { getSites, addSite, deleteSite } from '@/sdk'
+import { getSites, addSite, deleteSite, getPendingMembers, getGroupUsers, addUserToGroup, removeUserFromGroup, getUserinfoNotInGroup, type User } from '@/sdk'
 
 // 当前激活的 Tab，从 localStorage 中读取或使用默认值
 const activeTab = ref(localStorage.getItem('activeTab') || 'add-site')
@@ -267,89 +272,129 @@ const loadAll = async (): Promise<SiteItem[]> => {
 // ----------------- 组织管理相关代码 -----------------
 
 // 当前组织成员列表
-const membersList = ref<Array<{ username: string; joinTime: string; status: string }>>([])
+const membersList = ref<User[]>([])
+
+const formatAdminStatus = (row: any, column: any, cellValue: any) => {
+  return (cellValue ? '管理员' : '普通用户') + (row.group_accepted ? '' : '（待审核）')
+}
 
 // 新增成员表单模型
 const newMember = reactive({
-  username: ''
+  searchKey: '', // 搜索关键词
+  selectedUser: null as User | null // 实际选中的用户
 })
 
-// 示例用户列表（后续可替换为接口请求数据）
-const allUsers = ref<string[]>(['用户A', '用户B', '用户C', '用户D', '用户E', '用户F'])
+// 待审核用户列表
+const allGroupPendingUsers = ref<User[]>([])
 
-// 自动补全搜索：添加成员
-// 仅当输入内容与某个用户名完全匹配时返回该结果
-const queryUserSearch = (queryString: string, cb: any) => {
-  const results = allUsers.value.filter((user) => user.toLowerCase() === queryString.toLowerCase())
+// 加载待审核成员列表
+const loadGroupPendingList = async () => {
+  const { data, error } = await getPendingMembers()
+  if (error) {
+    console.error('加载待审核成员失败:', error)
+    return
+  }
+  allGroupPendingUsers.value = data
+}
+
+// 自动补全搜索：支持待审核列表及调用 getUserinfoNotInGroup 查询
+const queryUserSearch = async (queryString: string, cb: any) => {
+  let results = queryString
+    ? allGroupPendingUsers.value.filter(user =>
+        user.username.toLowerCase().includes(queryString.toLowerCase())
+      )
+    : allGroupPendingUsers.value
+
+  if (queryString) {
+    console.log('query:', queryString)
+    const { data, error } = await getUserinfoNotInGroup({ query: { username: queryString } })
+    if (!error && data) {
+      const exists = results.some(user => user.username === data.username)
+      console.log('exists:', exists)
+      if (!exists) {
+        results.push(data)
+      }
+    }
+  }
   cb(results)
 }
 
-// 当选择自动补全结果时，确保输入框显示完整的用户名
-const handleUserSelect = (item: string) => {
-  newMember.username = item
+// 处理用户选择
+const handleUserSelect = (item: User) => {
+  console.log('selected:', item)
+  newMember.selectedUser = item
 }
 
-// computed 判断输入的用户名是否存在于 allUsers 列表中
-const isUserValid = computed(() => {
-  return allUsers.value.includes(newMember.username)
-})
-
-// 添加成员函数（示例：后续可替换为调用后端接口）
+// 添加成员函数
 const addMember = async () => {
-  if (!isUserValid.value) {
+  if (!newMember.selectedUser) {
     ElNotification({
       title: '添加失败',
-      message: '输入的用户名不存在，请检查后重试',
+      message: '请先选择有效的用户',
       type: 'error'
     })
     return
   }
-  const now = new Date().toLocaleString()
-  membersList.value.push({
-    username: newMember.username,
-    joinTime: now,
-    status: '普通用户'
+
+  const { data, error } = await addUserToGroup({
+    body: {
+      user_id: newMember.selectedUser.id
+    }
   })
+  if (error || data?.status !== 200) {
+    ElNotification({
+      title: '添加失败',
+      message: `添加失败: ${error ? error.detail : data?.message}`,
+      type: 'error'
+    })
+    return
+  }
   ElNotification({
     title: '添加成功',
-    message: `成员 ${newMember.username} 已添加`,
+    message: `成员 ${newMember.selectedUser.username} 已添加`,
     type: 'success'
   })
+
+  // 刷新成员列表和待审核列表
+  await loadMembersList()
+  await loadGroupPendingList()
   resetMemberForm()
 }
 
-// 重置新增成员表单
+// 重置表单
 const resetMemberForm = () => {
-  newMember.username = ''
+  newMember.searchKey = ''
+  newMember.selectedUser = null
 }
 
 // 删除组织成员函数
-const deleteMember = async (member: { username: string; joinTime: string; status: string }) => {
+const deleteMember = async (member: User) => {
   ElMessageBox.confirm(`确认删除成员 ${member.username} 吗？此操作不可恢复。`, '删除确认', {
     confirmButtonText: '确认',
     cancelButtonText: '取消',
     type: 'warning'
   })
     .then(async () => {
-      const response = await fetch(`${server}/group/delete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: member.username })
+      console.log('删除成员:', member)
+      const { data, error } = await removeUserFromGroup({
+        body: {
+          user_id: member.id
+        }
       })
-      if (response.ok) {
-        ElNotification({
-          title: '删除成功',
-          message: `成员 ${member.username} 删除成功！`,
-          type: 'success'
-        })
-        membersList.value = membersList.value.filter((item) => item.username !== member.username)
-      } else {
+      if (error || data?.status !== 200) {
         ElNotification({
           title: '删除失败',
-          message: '删除失败，服务器错误！',
+          message: `删除失败: ${error ? error.detail : data?.message}`,
           type: 'error'
         })
+        return
       }
+      ElNotification({
+        title: '删除成功',
+        message: `成员 ${member.username} 已删除`,
+        type: 'success'
+      })
+      await loadMembersList()
     })
     .catch(() => {
       ElNotification({
@@ -364,16 +409,16 @@ const deleteMember = async (member: { username: string; joinTime: string; status
 onMounted(async () => {
   Sites.value = await loadAll()
   await loadMembersList()
+  await loadGroupPendingList()
 })
 
-// 模拟加载当前组织成员数据（实际请替换为接口请求）
 const loadMembersList = async () => {
-  membersList.value = [
-    { username: '管理员1', joinTime: '2025-01-10 09:00', status: '管理员' },
-    { username: '用户C', joinTime: '2025-02-20 15:45', status: '普通用户' },
-    { username: '用户F', joinTime: '2025-03-01 14:20', status: '普通用户' },
-    { username: '管理员2', joinTime: '2025-03-05 10:30', status: '管理员' }
-  ]
+  const { data, error } = await getGroupUsers()
+  if (error) {
+    console.error('加载成员列表失败:', error)
+    return
+  }
+  membersList.value = data
 }
 </script>
 

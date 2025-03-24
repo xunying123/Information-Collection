@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import { inject, onMounted, reactive, watch } from 'vue'
+import { inject, onMounted, reactive, watch, ref, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import type { SiteItem } from '@/api_interface'
 import { ElScrollbar } from 'element-plus'
+import { Location } from '@element-plus/icons-vue'
 import UserCard from '@/components/UserCard.vue'
 import UpdateSVG from '@/components/svg/UpdateSVG.vue'
 import BookmarkSvg from '@/components/svg/BookmarkSvg.vue'
@@ -33,16 +34,16 @@ async function loadSites() {
   let tmp_sites: CateSite[] = []
   let cateSites: CateSite = { cate_id: 0, cate_name: '', sites: [] }
   for (let site of data) {
-    if (site.cate_id != cateSites.cate_id) {
-      if (cateSites.cate_id != 0) tmp_sites.push(cateSites)
+    if (site.cate_id !== cateSites.cate_id) {
+      if (cateSites.cate_id !== 0) tmp_sites.push(cateSites)
       cateSites = { cate_id: site.cate_id, cate_name: site!.cate_name!, sites: [] }
     }
-    if (site.name == '上海交通大学')
-      // push to the front
+    if (site.name === '上海交通大学')
+      // 放前面显示
       cateSites.sites.unshift(site)
     else cateSites.sites.push(site)
   }
-  if (cateSites.cate_id != 0) tmp_sites.unshift(cateSites)
+  if (cateSites.cate_id !== 0) tmp_sites.unshift(cateSites)
   sites.splice(0, sites.length)
   sites.push(...tmp_sites)
 }
@@ -57,10 +58,27 @@ watch(filter_subscribe, () => {
 onMounted(() => {
   loadSites()
 })
+
+// 侧边栏颜色部分：从 localStorage 读取颜色，默认为 'blue'
+const sidebarColor = ref(localStorage.getItem('sidebarColor') || 'blue')
+const sidebarClass = computed(() => `full-${sidebarColor.value}`)
+
+const updateSidebarColor = () => {
+  sidebarColor.value = localStorage.getItem('sidebarColor') || 'blue'
+}
+
+onMounted(() => {
+  window.addEventListener('sidebarColorChanged', updateSidebarColor)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('sidebarColorChanged', updateSidebarColor)
+})
 </script>
 
 <template>
-  <div class="full">
+  <!-- 绑定基础类 .full 与动态颜色类 -->
+  <div :class="['full', sidebarClass]">
+    <!-- <div class="full"> -->
     <router-link to="/">
       <img src="https://www.sjtu.edu.cn/resource/assets/img/LogoWhite.png" class="logo" />
     </router-link>
@@ -90,7 +108,7 @@ onMounted(() => {
           <FolderPlusSVG class="menu-icon" />
           <span class="menu-top">管理组织</span>
         </el-menu-item>
-        <el-sub-menu v-for:="cate in sites" :index="`/category/` + String(cate.cate_id)">
+        <el-sub-menu v-for="cate in sites" :key="cate.cate_id" :index="`/category/` + String(cate.cate_id)">
           <template #title>
             <el-icon>
               <Location />
@@ -98,11 +116,13 @@ onMounted(() => {
             <span>{{ cate.cate_name }}</span>
           </template>
           <el-menu-item
-            v-for:="site in cate.sites"
+            v-for="site in cate.sites"
+            :key="site.id"
             :index="`/site/` + site.id"
             style="margin-left: 2em"
-            >{{ site.name }}</el-menu-item
           >
+            {{ site.name }}
+          </el-menu-item>
         </el-sub-menu>
         <el-menu-item index="/help">
           <HelpSVG class="menu-icon" />
@@ -140,6 +160,7 @@ onMounted(() => {
   opacity: 0.1;
 }
 
+/* 基础侧边栏样式 */
 .full {
   width: 100%;
   height: 100%;
@@ -150,11 +171,12 @@ onMounted(() => {
   --el-menu-hover-bg-color: rgba(0, 134, 209, 1);
   --el-menu-item-font-size: 1.1em;
   font-size: 14px;
-}
-
-.full {
   display: flex;
   flex-direction: column;
+}
+
+.el-menu-item:hover {
+  color: #fff;
 }
 
 .scrach-height {
@@ -164,12 +186,6 @@ onMounted(() => {
 
 .menu-icon {
   margin-right: 4px;
-  /* 或者你需要的间隔大小 */
-}
-
-.el-menu-item:hover {
-  background-color: rgb(0, 134, 209);
-  color: #fff;
 }
 
 .logo {
@@ -183,12 +199,9 @@ onMounted(() => {
   display: flex;
   margin: 0.5em;
 }
-</style>
 
-<style>
 .el-sub-menu__title {
   font-size: 1.2em !important;
-  /* font-weight: bold !important; */
   color: #fff;
 }
 
@@ -200,5 +213,50 @@ onMounted(() => {
 
 div.full {
   color: #fff;
+}
+
+/* 各预设颜色样式 */
+
+/* 蓝色方案 */
+.full-blue {
+  --el-menu-bg-color: rgba(0,64,152,0);
+  --el-menu-active-color: #ffffff;
+  background: linear-gradient(180deg, rgb(0,0,102), rgb(0,64,152), rgb(0,104,179));
+  --el-menu-hover-bg-color: rgba(0, 134, 209, 1);
+}
+
+/* 黄色方案 */
+.full-yellow {
+  --el-menu-bg-color: rgba(253,208,0,0);
+  --el-menu-active-color: #ffffff;
+  /* 渐变背景：上方采用深黄色，下方采用中性黄色，核心色不变 */
+  background: linear-gradient(180deg, rgb(200,160,0), rgb(253,208,0), rgb(220,180,0));
+  --el-menu-text-color: #ffffff;
+  /* 悬停时采用稍深的色调 */
+  --el-menu-hover-bg-color: rgb(210,170,0);
+}
+
+/* 红色方案 */
+.full-red {
+  --el-menu-bg-color: rgba(167,32,56,0);
+  --el-menu-active-color: #ffffff;
+  background: linear-gradient(180deg, rgb(167,0,6), rgb(167,32,56), rgb(167,72,83));
+  --el-menu-hover-bg-color: rgb(167,102,113);
+}
+
+/* 绿色方案 */
+.full-green {
+  --el-menu-bg-color: rgba(51,141,39,0);
+  --el-menu-active-color: #ffffff;
+  background: linear-gradient(180deg, rgb(51,77,0), rgb(51,141,39), rgb(51,181,66));
+  --el-menu-hover-bg-color: rgb(51,211,96);
+}
+
+/* 橙色方案 */
+.full-orange {
+  --el-menu-bg-color: rgba(240,130,0,0);
+  --el-menu-active-color: #ffffff;
+  background: linear-gradient(180deg, rgb(180,90,0), rgb(240,130,0), rgb(255,170,40));
+  --el-menu-hover-bg-color: rgb(255,180,70);
 }
 </style>
