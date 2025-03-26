@@ -1,7 +1,8 @@
 from src.db import db
 from common.models import Keyword, Site, Page
 from sqlalchemy import select, delete, exists, func, not_, or_
-
+from utils import read_content, save_content
+from perception import add_website
 
 def get_keywords_from_db():
     keywords = db.query(Keyword).all()
@@ -40,3 +41,24 @@ def push_page_to_db(data):
     )
     db.add(page)
     db.flush()
+
+def get_post_websites():
+    post_websites = get_postwebsites_from_db()
+    new_urls = []
+    for item in post_websites:
+        for i in item['url']:
+            new_urls.append(i)
+    old_urls = read_content("./src/data/websites.json")
+
+    new_unique_urls = [url for url in new_urls if url not in old_urls]
+
+    for links in new_unique_urls:
+        try:
+            add_website(links)
+        except Exception as e:
+            print(f"Error: {links}", flush=True)
+            new_urls.remove(links)
+            continue
+
+    save_content(new_urls, "./src/data/websites.json")
+    save_content(post_websites, "./src/data/post_websites.json")

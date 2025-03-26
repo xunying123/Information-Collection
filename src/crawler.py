@@ -16,8 +16,7 @@ def Newspaper(url):
 
         if article.text:
             soup = BeautifulSoup(article.html, 'html.parser')
-            
-            # 删除所有 display:none 的元素
+
             for element in soup.find_all(style=lambda value: value and 'display:none' in value):
                 element.decompose()
 
@@ -29,8 +28,6 @@ def Newspaper(url):
                 if 'ICP备' in text_content or '版权所有' in text_content or '公安机关备案' in text_content:
                     element.decompose()  # 删除该元素
 
-
-            # 重新解析清理后的 HTML 内容
             article.html = str(soup)
 
             if article.publish_date:
@@ -72,8 +69,7 @@ def Play_Wright_new(url):
 
             if article:
                 soup = BeautifulSoup(article.html, 'html.parser')
-            
-            # 删除所有 display:none 的元素
+
                 for element in soup.find_all(style=lambda value: value and 'display:none' in value):
                     element.decompose()
                 
@@ -271,52 +267,74 @@ def Play_Wright_bs(url):
 def crawl(url, source_url):
     #print(f"Fetching {url}")
     today_date = datetime.today().strftime('%Y-%m-%d')
-    wrong_path = "/home/dic/Information-Collection/src/data/wrong/" + today_date + '/' + extract_domain(source_url) + '.json'
+    wrong_path = "./src/data/out/" + today_date + '/wrong.json'
 
-    temp = extract_domain(source_url)
-    path = f"/home/dic/Information-Collection/src/data/out/{today_date}" + "/" + temp + '.txt'
+    path = "./src/data/out/" + today_date + '/crawler/' + extract_domain(source_url) + '.txt'
 
     article, time = Newspaper(url)
     with open(path, 'a') as f:
+        f.write(f"Fetching {url}      ")
         if article :
-            if article.title and article.text and len(article.text) > 10 and check_page_content(article.title) and check_page_content(article.text):
-                f.write("1")
-                f.write('\n')
-                # print(article.title)
-                # print(article.text)
+            a = check_page_content(article.title)
+            b = check_page_content(article.text)
+            if a == 0 or b == 0:
+                f.write("Page Not Found")
+            elif a == 1 or b == 1:
+                f.write("The URL you requested has been blocked")
+            elif a == 2 or b == 2:
+                f.write("LLM(Large Languate Model) error")
+            elif article.title and article.text and len(article.text) > 10:
+                f.write("1\n")
                 return article.title, article.text, time
         
         title, content, time = Beautiful_Soup(url)
-        if title and content and len(content) > 10 and check_page_content(title) and check_page_content(content):
-            f.write("2")
-            f.write('\n')
-            # print(title)
-            # print(content)
+        a = check_page_content(title)
+        b = check_page_content(content)
+        if a == 0 or b == 0:
+            f.write("Page Not Found")
+        elif a == 1 or b == 1:
+            f.write("The URL you requested has been blocked")
+        elif a == 2 or b == 2:
+            f.write("LLM(Large Languate Model) error")
+        elif title and content and len(content) > 10:
+            f.write("2\n")
             return title, content, time
     
         title, content, time = Play_Wright_new(url)
-        if title and content and len(content) > 10 and check_page_content(title) and check_page_content(content):
-            f.write("3")
-            f.write('\n')
+        a = check_page_content(title)
+        b = check_page_content(content)
+        if a == 0 or b == 0:
+            f.write("Page Not Found")
+        elif a == 1 or b == 1:
+            f.write("The URL you requested has been blocked")
+        elif a == 2 or b == 2:
+            f.write("LLM(Large Languate Model) error")
+        elif title and content and len(content) > 10:
+            f.write("3\n")
             return title, content, time
+
     
         title, content, time = Play_Wright_bs(url)
-        if title and content and len(content) > 10 and check_page_content(title) and check_page_content(content):
-            f.write("4")
-            f.write('\n')
-            # print(title)
-            # print(content)
+        a = check_page_content(title)
+        b = check_page_content(content)
+        if a == 0 or b == 0:
+            f.write("Page Not Found")
+        elif a == 1 or b == 1:
+            f.write("The URL you requested has been blocked")
+        elif a == 2 or b == 2:
+            f.write("LLM(Large Languate Model) error")
+        elif title and content and len(content) > 10:
+            f.write("4\n")
             return title, content, time
-        
         f.close()
     
     wrong = read_content(wrong_path)
-    wrong.append({"url": url, "source_url": source_url})
+    wrong.append({"url": url})
     save_content(wrong, wrong_path)
     return None, None, None
 
 def main():
-    crawl(url, "http://www.sample.com/")
+    crawl(url)
     
 if __name__ == '__main__':
     main()

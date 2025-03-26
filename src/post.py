@@ -5,14 +5,6 @@ import requests
 from utils import extract_domain
 from utils import read_content, save_content, what_word
 from perception import add_website
-import asyncio
-
-log_url = "http://10.119.12.91/api/login"
-
-user = {
-            "username": "wushuo123",
-            "password": "u91dFZWwQpGvWQZC"
-}
 
 def post(url):
     post_websites = read_content("/home/dic/Information-Collection/src/data/post_websites.json")
@@ -65,42 +57,3 @@ def post(url):
                 f.write('\n')
 
         f.close()
-
-
-def get_post_websites():
-    login_cookies = requests.post(log_url, json=user)
-    response = requests.get('http://10.119.12.91/api/site', cookies=login_cookies.cookies)
-    # print(f"Status Code: {response.status_code}", flush=True)
-    # print(f"Response Text: {response.text}", flush=True)
-    data = response.json()
-    new_urls = []
-    for item in data:
-        for i in item['url']:
-            new_urls.append(i)
-    old_urls = read_content("/home/dic/Information-Collection/src/data/websites.json")
-
-    new_unique_urls = [url for url in new_urls if url not in old_urls]
-
-    for links in new_unique_urls:
-        try:
-            add_website(links)
-        except Exception as e:
-            print(f"Error: {links}", flush=True)
-            new_urls.remove(links)
-            continue
-
-    save_content(new_urls, "/home/dic/Information-Collection/src/data/websites.json")
-    save_content(data, "/home/dic/Information-Collection/src/data/post_websites.json")
-
-def get_word():
-    login_cookies = requests.post(log_url, json=user)
-    response = requests.get('http://10.119.12.91/api/keyword', cookies=login_cookies.cookies)
-    data = response.json()
-    path = "/home/dic/Information-Collection/src/data/word" + '.json'
-    save_content(data, path)
-
-def main():
-    print("Posting articles...", flush=True)
-
-if __name__ == "__main__":
-   get_post_websites()
