@@ -45,8 +45,8 @@ class UseTimestamps:
 class Group(Base):
     id: Mapped[intpk]
     name: Mapped[str] = mapped_column(nullable=False)
-    users = relationship("User", back_populates="group")
-    categories = relationship("Category", back_populates="group")
+    users: Mapped[list["User"]] = relationship("User", back_populates="group")
+    categories: Mapped[list["Category"]] = relationship("Category", back_populates="group")
 
 
 group_foreign_key = Annotated[
