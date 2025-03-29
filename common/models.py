@@ -46,6 +46,7 @@ class Group(Base):
     id: Mapped[intpk]
     name: Mapped[str] = mapped_column(nullable=False)
     users = relationship("User", back_populates="group")
+    categories = relationship("Category", back_populates="group")
 
 
 group_foreign_key = Annotated[
@@ -56,7 +57,12 @@ group_foreign_key = Annotated[
 class Category(Base):
     id: Mapped[intpk]
     name: Mapped[str]
-    sites = relationship("Site", back_populates="category")
+    sites: Mapped[list["Site"]] = relationship(
+        "Site", secondary="category_site_relation", back_populates="categories"
+    )
+    # the group who can manage this category
+    belonged_group_id: Mapped[group_foreign_key]
+    group: Mapped[Group] = relationship(Group, back_populates="categories")
 
 
 cata_fk = Annotated[
@@ -70,8 +76,9 @@ class Site(Base):
     url: Mapped[list[url_type]] = mapped_column(
         ARRAY(String(256)), unique=True, nullable=True
     )
-    cate_id: Mapped[cata_fk]
-    category: Mapped[Category] = relationship(Category, back_populates="sites")
+    categories: Mapped[list[Category]] = relationship(
+        "Category", secondary="category_site_relation", back_populates="sites"
+    )
     pages = relationship("Page", back_populates="site")
     # style related fields
     icon: Mapped[url_type] = mapped_column(nullable=True)
@@ -193,6 +200,15 @@ class PageKeywordRelation(Base):
 class UserSiteRelation(Base):
     user_id: Mapped[int] = mapped_column(
         ForeignKey("user.id"), nullable=False, primary_key=True
+    )
+    site_id: Mapped[int] = mapped_column(
+        ForeignKey("site.id"), nullable=False, primary_key=True
+    )
+
+
+class CategorySiteRelation(Base):
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("category.id"), nullable=False, primary_key=True
     )
     site_id: Mapped[int] = mapped_column(
         ForeignKey("site.id"), nullable=False, primary_key=True
