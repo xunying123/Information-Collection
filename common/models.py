@@ -94,6 +94,8 @@ class Page(Base, UseTimestamps):
     full_content = mapped_column(Text, nullable=True)
     publish_time: Mapped[datetime] = mapped_column(server_default=func.now())
 
+    score: Mapped[int] = mapped_column(nullable=True, server_default="0")
+
     site_id: Mapped[site_foreign_key]
     site: Mapped[Site] = relationship(Site, back_populates="pages")
 
