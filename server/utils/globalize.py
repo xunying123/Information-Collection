@@ -14,7 +14,7 @@ class Globalize(LocalProxy[_T]):
 
         async def setter(_val: _T = Depends(dependency)):
             cvar.set(_val)
-            yield
+            yield _val
             cvar.set(None)
 
         object.__setattr__(self, "app_dependency_", setter)
