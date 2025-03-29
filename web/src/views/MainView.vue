@@ -11,7 +11,10 @@ let filter_keyword = ref(localStorage.getItem('filter_keyword') === 'true')
 provide(filter_keyword_key, filter_keyword)
 
 // 初始化背景图片 URL，从 localStorage 获取，如果没有则使用默认值
-const bgUrl = ref(localStorage.getItem('bgUrl') || 'https://mc.sjtu.cn/wp-content/uploads/2022/10/%E5%A4%9C%E6%99%9A%E4%B8%9C%E5%A4%A7%E9%97%A8-1024x659.jpg')
+const bgUrl = ref(
+  localStorage.getItem('bgUrl') ||
+    'https://mc.sjtu.cn/wp-content/uploads/2022/10/%E5%A4%9C%E6%99%9A%E4%B8%9C%E5%A4%A7%E9%97%A8-1024x659.jpg'
+)
 
 // 监听自定义事件更新背景图片 URL
 window.addEventListener('bgUrlChanged', () => {
@@ -35,7 +38,7 @@ const bgStyle = computed(() => {
       <SiteMenu class="site-menu" />
     </NLayoutSider>
     <!-- <NLayoutContent class="content overlay"> -->
-      <NLayoutContent class="content overlay" :style="{ 'background-image': bgStyle }">
+    <NLayoutContent class="content overlay" :style="{ 'background-image': bgStyle }">
       <RouterView />
     </NLayoutContent>
   </NLayout>

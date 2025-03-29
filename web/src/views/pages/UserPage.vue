@@ -4,7 +4,12 @@
     <h2>所属组织</h2>
     <div class="org-info">
       <div>{{ userDisplayGroup }}</div>
-      <el-button type="danger" size="mini" @click="quitGroup" style="margin-left: 16px; margin-top: 8px">
+      <el-button
+        type="danger"
+        size="mini"
+        @click="quitGroup"
+        style="margin-left: 16px; margin-top: 8px"
+      >
         退出组织
       </el-button>
     </div>
@@ -30,9 +35,7 @@
         <el-button type="primary" @click="confirmUpload" :disabled="!tempImage">
           确认上传
         </el-button>
-        <el-button type="warning" @click="restoreDefault">
-          恢复默认
-        </el-button>
+        <el-button type="warning" @click="restoreDefault"> 恢复默认 </el-button>
       </div>
     </div>
 
@@ -83,12 +86,12 @@ const changeSidebarColor = (val: string) => {
       (val === 'blue'
         ? '蓝色'
         : val === 'yellow'
-        ? '黄色'
-        : val === 'red'
-        ? '红色'
-        : val === 'green'
-        ? '绿色'
-        : '橙色'),
+          ? '黄色'
+          : val === 'red'
+            ? '红色'
+            : val === 'green'
+              ? '绿色'
+              : '橙色'),
     type: 'success'
   })
 }

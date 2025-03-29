@@ -128,7 +128,17 @@
 import { ref, reactive, onMounted, watch } from 'vue'
 import { ElNotification, ElMessageBox } from 'element-plus'
 import type { SiteItem } from '@/api_interface'
-import { getSites, addSite, deleteSite, getPendingMembers, getGroupUsers, addUserToGroup, removeUserFromGroup, getUserinfoNotInGroup, type User } from '@/sdk'
+import {
+  getSites,
+  addSite,
+  deleteSite,
+  getPendingMembers,
+  getGroupUsers,
+  addUserToGroup,
+  removeUserFromGroup,
+  getUserinfoNotInGroup,
+  type User
+} from '@/sdk'
 
 // 当前激活的 Tab，从 localStorage 中读取或使用默认值
 const activeTab = ref(localStorage.getItem('activeTab') || 'add-site')
@@ -300,7 +310,7 @@ const loadGroupPendingList = async () => {
 // 自动补全搜索：支持待审核列表及调用 getUserinfoNotInGroup 查询
 const queryUserSearch = async (queryString: string, cb: any) => {
   let results = queryString
-    ? allGroupPendingUsers.value.filter(user =>
+    ? allGroupPendingUsers.value.filter((user) =>
         user.username.toLowerCase().includes(queryString.toLowerCase())
       )
     : allGroupPendingUsers.value
@@ -309,7 +319,7 @@ const queryUserSearch = async (queryString: string, cb: any) => {
     console.log('query:', queryString)
     const { data, error } = await getUserinfoNotInGroup({ query: { username: queryString } })
     if (!error && data) {
-      const exists = results.some(user => user.username === data.username)
+      const exists = results.some((user) => user.username === data.username)
       console.log('exists:', exists)
       if (!exists) {
         results.push(data)
