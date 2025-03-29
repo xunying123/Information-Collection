@@ -42,7 +42,7 @@ const rules = reactive<FormRules<typeof loginForm>>({
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
     // 示例：用户名长度在3到10个字符之间
-    { min: 3, max: 10, message: '用户名长度应为3到10个字符', trigger: 'blur' }
+    { min: 2, max: 50, message: '用户名长度应为2到50个字符', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },

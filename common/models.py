@@ -42,6 +42,17 @@ class UseTimestamps:
     )
 
 
+class Group(Base):
+    id: Mapped[intpk]
+    name: Mapped[str] = mapped_column(nullable=False)
+    users = relationship("User", back_populates="group")
+
+
+group_foreign_key = Annotated[
+    int, mapped_column(ForeignKey(Group.id), index=True, nullable=True)
+]
+
+
 class Category(Base):
     id: Mapped[intpk]
     name: Mapped[str]
@@ -83,6 +94,8 @@ class Page(Base, UseTimestamps):
     full_content = mapped_column(Text, nullable=True)
     publish_time: Mapped[datetime] = mapped_column(server_default=func.now())
 
+    score: Mapped[int] = mapped_column(nullable=True, server_default="0")
+
     site_id: Mapped[site_foreign_key]
     site: Mapped[Site] = relationship(Site, back_populates="pages")
 
@@ -97,12 +110,12 @@ class Page(Base, UseTimestamps):
 class User(Base):
     id: Mapped[intpk]
     # jaccount_code is used for login
-    jaccount_code: Mapped[str] = mapped_column(unique=True, nullable=False)
+    jaccount_code: Mapped[str] = mapped_column(unique=True, nullable=True)
     # user data
     username: Mapped[str]
-    userType: Mapped[str]
+    userType: Mapped[str] = mapped_column(nullable=True)
     name: Mapped[str]
-    organization: Mapped[str]
+    organization: Mapped[str] = mapped_column(nullable=True)
     # privilege related fields
     is_admin: Mapped[bool] = mapped_column(Boolean, server_default="0")
     # style related fields
@@ -112,7 +125,10 @@ class User(Base):
     password: Mapped[str] = mapped_column(nullable=True)
 
     #### relationship ####
-
+    group_id: Mapped[group_foreign_key]
+    group_accepted: Mapped[bool] = mapped_column(Boolean, server_default="0")
+    group_admin: Mapped[bool] = mapped_column(Boolean, server_default="0")
+    group: Mapped[Group] = relationship(Group, back_populates="users")
     # the bookmarks the user saved
     bookmarks = relationship("Bookmark", back_populates="user")
     # the keywords the user concern
