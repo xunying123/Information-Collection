@@ -1,6 +1,15 @@
-from http.client import UNAUTHORIZED
+from http.client import FORBIDDEN, NOT_FOUND, UNAUTHORIZED, PRECONDITION_FAILED
 from typing import Annotated
-from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response
+from fastapi import (
+    APIRouter,
+    Body,
+    Depends,
+    Form,
+    HTTPException,
+    Request,
+    Response,
+    Query,
+)
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter
@@ -9,8 +18,10 @@ from sqlalchemy import select
 from common.models import *
 from server.config import JAccountAuth
 from requests.auth import HTTPBasicAuth
+
 from .. import schema
 from ..manager.user import UserManager, current_user, login_manager, login_required
+from ..manager.group import GroupManager
 from ..manager.db import db
 
 router = APIRouter()
@@ -120,11 +131,122 @@ async def do_auth_callback(request: Request, response: Response, code: str, stat
         raise HTTPException(400, "Auth failed")
 
 
-# @router.post("/group", response_model=schema.OperationMsg)
-# def add_group(user_id: int, group: str):
-#     pass
+@router.get("/group")
+def get_groups() -> list[schema.Group]:
+    return db.scalars(select(Group).order_by(Group.id)).all()
 
 
-# @router.delete("/group", response_model=schema.OperationMsg)
-# def delete_group(user_id: int):
-#     pass
+@login_required
+def use_group_id(
+    group_id: int | None = Body(None, embed=True),
+) -> int | None:
+    group_id = group_id if group_id else current_user.group_id
+    if not group_id and not current_user.is_admin:
+        raise HTTPException(
+            PRECONDITION_FAILED, "No group id provided, nor user is in a group"
+        )
+    if (not current_user.is_admin) and (
+        current_user.group_id != group_id or not current_user.group_admin
+    ):
+        raise HTTPException(
+            UNAUTHORIZED, "You are not allowed to view this group's pending members"
+        )
+    return group_id
+
+
+def use_group_id_strict(group_id: int | None = Depends(use_group_id)):
+    if not group_id:
+        raise HTTPException(
+            NOT_FOUND, "does not provide group_id, or your are not in a group"
+        )
+    return group_id
+
+
+@login_required
+def use_user_id(
+    user_id: int = Body(embed=True),
+) -> User:
+    user = UserManager.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(NOT_FOUND, "user does not exist.")
+    return user
+
+
+@router.get("/group/members/pending")
+@login_required
+def get_pending_members(
+    group_id: int | None = Depends(use_group_id_strict),
+) -> list[schema.User]:
+    stmt = (
+        select(User)
+        .where(User.group_accepted == False)
+        .where(User.group_id == group_id)
+    )
+    return db.scalars(stmt).all()
+
+
+@router.get("/group/members")
+@login_required
+def get_group_users(
+    group_id: int | None = Query(None, description="only effects when user is admin.")
+) -> list[schema.User]:
+    if current_user.is_admin and group_id:
+        group = GroupManager.get_group_from_id(group_id)
+        return group.users
+    if not current_user.group_id or (
+        not current_user.group_admin and not current_user.is_admin
+    ):
+        raise HTTPException(NOT_FOUND, "You are not an admin of some group")
+    # print(f"{current_user.group}")
+    # print(f"{current_user.group.users}")
+    return current_user.group.users
+
+
+@router.post("/group/members")
+@login_required
+def add_user_to_group(
+    user: User = Depends(use_user_id), group_id: int = Depends(use_group_id_strict)
+) -> schema.OperationMsg:
+    if user.group_id and user.group_id != group_id:
+        return schema.OperationMsg(status=-1, message="user has been in another group")
+    user.group_id = group_id
+    user.group_accepted = True
+    return {}
+
+
+@router.delete("/group/members")
+@login_required
+def remove_user_from_group(user: User = Depends(use_user_id)) -> schema.OperationMsg:
+    if current_user.is_admin:
+        UserManager.leave_group(user)
+        return {}
+    if not current_user.group_admin:
+        raise HTTPException(
+            FORBIDDEN, "you do not have the permission to manage this group."
+        )
+    if current_user.group_id != user.group_id:
+        return schema.OperationMsg(
+            status=-1, message="the user does not in your group."
+        )
+    UserManager.leave_group(user)
+    return {}
+
+
+@router.post("/group/leave")
+@login_required
+def leave_group() -> schema.OperationMsg:
+    current_user.group_id = None
+    current_user.group_accepted = False
+    current_user.group_admin = False
+    return {}
+
+
+@router.get("/user/free")
+@login_required
+def get_userinfo_not_in_group(username: str) -> schema.User | None:
+    if not (current_user.is_admin or current_user.group_admin):
+        raise HTTPException(FORBIDDEN, "your are not an admin.")
+    user = UserManager.get_user_by_username(username)
+    if user and user.group_id:
+        user = None
+    return user

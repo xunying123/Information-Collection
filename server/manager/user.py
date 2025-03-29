@@ -65,7 +65,7 @@ class UserManager:
 
     @staticmethod
     def create_user(data: schema.RegisterForm) -> User:
-        if db.scalar(exists(select(User).where(User.username == data.username))):
+        if db.scalar(select(User.id).where(User.username == data.username)):
             raise HTTPException(PRECONDITION_FAILED, "User already exists")
         user = User(
             username=data.username,
@@ -80,6 +80,12 @@ class UserManager:
         db.add(user)
         db.flush()
         return user
+    
+    @staticmethod
+    def leave_group(user: User):
+        user.group_id = None
+        user.group_accepted = False
+        user.group_admin = False
 
 
 current_user: User | Globalize[User] = Globalize[User](

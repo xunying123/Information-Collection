@@ -45,7 +45,7 @@ class UseTimestamps:
 class Group(Base):
     id: Mapped[intpk]
     name: Mapped[str] = mapped_column(nullable=False)
-    users = relationship("User", back_populates="group_id")
+    users = relationship("User", back_populates="group")
 
 
 group_foreign_key = Annotated[
@@ -108,7 +108,7 @@ class Page(Base, UseTimestamps):
 class User(Base):
     id: Mapped[intpk]
     # jaccount_code is used for login
-    jaccount_code: Mapped[str] = mapped_column(unique=True, nullable=False)
+    jaccount_code: Mapped[str] = mapped_column(unique=True, nullable=True)
     # user data
     username: Mapped[str]
     userType: Mapped[str] = mapped_column(nullable=True)
@@ -124,6 +124,8 @@ class User(Base):
 
     #### relationship ####
     group_id: Mapped[group_foreign_key]
+    group_accepted: Mapped[bool] = mapped_column(Boolean, server_default="0")
+    group_admin: Mapped[bool] = mapped_column(Boolean, server_default="0")
     group: Mapped[Group] = relationship(Group, back_populates="users")
     # the bookmarks the user saved
     bookmarks = relationship("Bookmark", back_populates="user")

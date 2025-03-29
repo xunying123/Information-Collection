@@ -80,15 +80,22 @@ class OperationMsg(ConfigBaseModel):
     message: str = "success"
 
 
+class Group(ConfigBaseModel):
+    id: int
+    name: str
+
+
 class User(ConfigBaseModel):
     id: int
     name: str
     username: str
-    jaccount_code: str
-    userType: str
-    organization: str
-    is_admin: bool
-    avatars: str
+    jaccount_code: str | None = None
+    userType: str | None = None
+    organization: str | None = None
+    is_admin: bool = False
+    avatars: str | None = None
+    group: Group | None = None
+    group_accepted: bool = False
 
 
 class LoginStatus(ConfigBaseModel):
