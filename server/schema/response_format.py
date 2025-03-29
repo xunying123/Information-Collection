@@ -25,6 +25,7 @@ class SessionToken(ConfigBaseModel):
 class Category(ConfigBaseModel):
     id: int | None = None
     name: str
+    sites: list["Site"] | None = None
 
 
 class IncludedCategory:
@@ -40,7 +41,7 @@ class IncludeSite:
     site_icon: str | None = Field(validation_alias=AliasPath("site", "icon"))
 
 
-class PageItem(ConfigBaseModel, IncludedCategory, IncludeSite):
+class PageItem(ConfigBaseModel, IncludeSite):
     id: int
     source_url: str
     title: str
@@ -53,7 +54,7 @@ class PageItem(ConfigBaseModel, IncludedCategory, IncludeSite):
         return v[:50]
 
 
-class SiteItem(ConfigBaseModel, IncludedCategory):
+class SiteItem(ConfigBaseModel):
     id: int | None = None
     name: str
     url: str | list[str] | None

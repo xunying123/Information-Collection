@@ -6,15 +6,14 @@ from common.models import *
 from server import schema
 from ..manager.user import current_user, login_required
 from ..manager.db import db
+from ..manager.group import current_group, group_admin_required, group_required
 
 router = APIRouter()
 
 
 @router.post("/pages", response_model=schema.PagedQuery[schema.PageItem])
 @login_required
-def get_pages(
-    data:schema.PageGet
-):
+def get_pages(data: schema.PageGet):
     stmt = select(Page).order_by(Page.created_at.desc())
     if data.today:
         shanghai_tz = pytz.timezone("Asia/Shanghai")
@@ -68,7 +67,9 @@ def get_pages(
         if type(data.category) is int:
             sites_id = db.scalars(select(Site.id).where(Site.cate_id == data.category))
         elif type(data.category) is list:
-            sites_id = db.scalars(select(Site.id).where(Site.cate_id.in_(data.category)))
+            sites_id = db.scalars(
+                select(Site.id).where(Site.cate_id.in_(data.category))
+            )
         else:
             raise ValueError("invalid category type")
 
@@ -87,11 +88,9 @@ def get_pages(
 
 
 @router.get("/category", response_model=list[schema.Category])
-@login_required
+@group_required
 def get_categories():
-    stmt = select(Category).order_by(Category.id)
-    res = db.scalars(stmt).all()
-    return res
+    return current_group.categories
 
 
 @router.get("/category/{cate_id}", response_model=schema.Category)
@@ -103,29 +102,37 @@ def get_category(cate_id: int):
 
 
 @router.post("/category", response_model=schema.OperationMsg)
-@login_required
+@group_admin_required
 def add_category(category: schema.Category):
-    if db.scalar(select(Category.id).where(Category.name == category.name)) is not None:
+    if (
+        db.scalar(
+            select(Category.id).where(
+                Category.name == category.name
+                and Category.belonged_group_id == current_group.id
+            )
+        )
+        is not None
+    ):
         raise HTTPException(PRECONDITION_FAILED, "category already exists")
-    cate = Category(name=category.name)
+    cate = Category(name=category.name, belonged_group_id=current_group.id)
     db.add(cate)
     return {}
 
 
-@router.get("/site", response_model=list[schema.SiteItem])
-@login_required
-def get_sites(subscribe: bool = False, category: int | None = None):
-    stmt = select(Site).order_by(Site.cate_id, Site.id).where(Site.disabled == False)
-    if category is not None:
-        stmt = stmt.where(Site.cate_id == category)
-    if subscribe:
-        stmt = stmt.where(
-            exists().where(
-                (UserSiteRelation.user_id == current_user.id)
-                & (UserSiteRelation.site_id == Site.id)
-            )
-        )
-    return db.scalars(stmt).all()
+# @router.get("/site", response_model=list[schema.SiteItem])
+# @login_required
+# def get_sites(subscribe: bool = False, category: int | None = None):
+#     stmt = select(Site).order_by(Site.cate_id, Site.id).where(Site.disabled == False)
+#     if category is not None:
+#         stmt = stmt.where(Site.cate_id == category)
+#     if subscribe:
+#         stmt = stmt.where(
+#             exists().where(
+#                 (UserSiteRelation.user_id == current_user.id)
+#                 & (UserSiteRelation.site_id == Site.id)
+#             )
+#         )
+#     return db.scalars(stmt).all()
 
 
 @router.get("/site/{site_id}", response_model=schema.Site)
