@@ -22,10 +22,13 @@ class SessionToken(ConfigBaseModel):
     token_type: Literal["Bearer"]
 
 
-class Category(ConfigBaseModel):
+class CategoryItem(ConfigBaseModel):
     id: int | None = None
     name: str
-    sites: list["Site"] | None = None
+
+
+class Category(CategoryItem):
+    sites: list["SiteItem"] | None = None
 
 
 class IncludedCategory:

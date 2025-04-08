@@ -1,7 +1,7 @@
 import pytz
 from http.client import NOT_FOUND, PRECONDITION_FAILED
-from fastapi import APIRouter, HTTPException
-from sqlalchemy import exists, or_, select, func
+from fastapi import APIRouter, HTTPException, Body
+from sqlalchemy import exists, or_, select, func, delete
 from common.models import *
 from server import schema
 from ..manager.user import current_user, login_required
@@ -65,10 +65,12 @@ def get_pages(data: schema.PageGet):
         # cursor_id should not be used in this case CURRENTLY
         # TODO: support cursor_id in this case
         if type(data.category) is int:
-            sites_id = db.scalars(select(Site.id).where(Site.cate_id == data.category))
-        elif type(data.category) is list:
+            data.category = [data.category]
+        if type(data.category) is list:
             sites_id = db.scalars(
-                select(Site.id).where(Site.cate_id.in_(data.category))
+                select(Site.id)
+                .join(CategorySiteRelation)
+                .where(CategorySiteRelation.category_id.in_(data.category))
             )
         else:
             raise ValueError("invalid category type")
@@ -103,7 +105,7 @@ def get_category(cate_id: int):
 
 @router.post("/category", response_model=schema.OperationMsg)
 @group_admin_required
-def add_category(category: schema.Category):
+def add_category(category: schema.CategoryItem):
     if (
         db.scalar(
             select(Category.id).where(
@@ -119,20 +121,43 @@ def add_category(category: schema.Category):
     return {}
 
 
-# @router.get("/site", response_model=list[schema.SiteItem])
-# @login_required
-# def get_sites(subscribe: bool = False, category: int | None = None):
-#     stmt = select(Site).order_by(Site.cate_id, Site.id).where(Site.disabled == False)
-#     if category is not None:
-#         stmt = stmt.where(Site.cate_id == category)
-#     if subscribe:
-#         stmt = stmt.where(
-#             exists().where(
-#                 (UserSiteRelation.user_id == current_user.id)
-#                 & (UserSiteRelation.site_id == Site.id)
-#             )
-#         )
-#     return db.scalars(stmt).all()
+@router.post("/category/site", response_model=schema.OperationMsg)
+@group_admin_required
+def add_site_to_category(cate_id: int = Body(), site_id: int = Body()):
+    if (
+        db.scalar(select(Category.belonged_group_id).where(Category.id == cate_id))
+        != current_group.id
+    ):
+        raise HTTPException(PRECONDITION_FAILED, "category not in current group")
+    if db.scalar(
+        select(CategorySiteRelation)
+        .where(CategorySiteRelation.category_id == cate_id)
+        .where(CategorySiteRelation.site_id == site_id)
+    )  is not None:
+        return schema.OperationMsg(message="site already added into this category")
+    rel = CategorySiteRelation(site_id=site_id, category_id=cate_id)
+    db.add(rel)
+    return {}
+
+
+@router.delete("/category/site", response_model=schema.OperationMsg)
+@group_admin_required
+def remove_site_from_category(cate_id: int = Body(), site_id: int = Body()):
+    if (
+        db.scalar(select(Category.belonged_group_id).where(Category.id == cate_id))
+        != current_group.id
+    ):
+        raise HTTPException(PRECONDITION_FAILED, "category not in current group")
+    stmt = delete(CategorySiteRelation).where(CategorySiteRelation.category_id == cate_id).where(CategorySiteRelation.site_id == site_id)
+    db.execute(stmt)
+    return {}
+
+
+@router.get("/site", response_model=list[schema.SiteItem])
+@login_required
+def get_sites():
+    stmt = select(Site).order_by(Site.id).where(Site.disabled == False)
+    return db.scalars(stmt).all()
 
 
 @router.get("/site/{site_id}", response_model=schema.Site)
@@ -148,21 +173,21 @@ def get_site(site_id: int):
 @router.post("/site", response_model=schema.OperationMsg)
 @login_required
 def add_site(data: schema.SiteItem):
-    site = Site(name=data.name, url=data.url, cate_id=data.cate_id, icon=data.icon)
+    site = Site(name=data.name, url=data.url, icon=data.icon)
     db.add(site)
     db.flush()
     site_id = site.id
     return {"status": 200, "message": "success", "site_id": site_id}
 
 
-@router.delete("/site{site_id}", response_model=schema.OperationMsg)
-@login_required
-def delete_site(site_id: int):
-    site = db.scalar(select(Site).where(Site.id == site_id))
-    if site is None:
-        return {"status": 400, "message": f"site {site_id} not found"}
-    site.disabled = True
-    return {"status": 200, "message": "success"}
+# @router.delete("/site{site_id}", response_model=schema.OperationMsg)
+# @login_required
+# def delete_site(site_id: int):
+#     site = db.scalar(select(Site).where(Site.id == site_id))
+#     if site is None:
+#         return {"status": 400, "message": f"site {site_id} not found"}
+#     site.disabled = True
+#     return {"status": 200, "message": "success"}
 
 
 @router.get("/page/{page_id}", response_model=schema.Page)

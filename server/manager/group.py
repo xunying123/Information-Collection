@@ -46,7 +46,7 @@ def group_admin_required(
     user: User = Depends(login_manager),
     group: Group | None = Depends(current_group.app_dependency),
 ) -> Group:
-    if group is None or not user.group_admin:
+    if group is None or not (user.group_admin or user.is_admin):
         raise HTTPException(NOT_FOUND, "group not found or not admin")
     return group
 
