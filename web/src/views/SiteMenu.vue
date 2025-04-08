@@ -11,7 +11,7 @@ import FolderPlusSVG from '@/components/svg/FolderPlusSVG.vue'
 import LayersSVG from '@/components/svg/LayersSVG.vue'
 import HelpSVG from '@/components/svg/HelpSVG.vue'
 import { filter_subscribe_key, user_key } from '@/key'
-import { getSites } from '@/sdk'
+import { getCategories } from '@/sdk'
 
 interface CateSite {
   cate_id: number
@@ -26,26 +26,28 @@ const router = useRouter()
 let sites = reactive<CateSite[]>([])
 
 async function loadSites() {
-  const { data, error } = await getSites()
+  const { data, error } = await getCategories()
   if (error) {
     console.error(error)
     return
   }
-  let tmp_sites: CateSite[] = []
-  let cateSites: CateSite = { cate_id: 0, cate_name: '', sites: [] }
-  for (let site of data) {
-    if (site.cate_id !== cateSites.cate_id) {
-      if (cateSites.cate_id !== 0) tmp_sites.push(cateSites)
-      cateSites = { cate_id: site.cate_id, cate_name: site!.cate_name!, sites: [] }
-    }
-    if (site.name === '上海交通大学')
-      // 放前面显示
-      cateSites.sites.unshift(site)
-    else cateSites.sites.push(site)
-  }
-  if (cateSites.cate_id !== 0) tmp_sites.unshift(cateSites)
+  // data: list of categories, each category has a list of sites
+  // clear the sites array
   sites.splice(0, sites.length)
-  sites.push(...tmp_sites)
+  for (let cate of data!) {
+    let cateSites: CateSite = { cate_id: cate.id!, cate_name: cate.name, sites: [] }
+    for (let site of cate.sites!) {
+      if (site.name === '上海交通大学') {
+        // 放前面显示
+        cateSites.sites.unshift(site)
+      } else {
+        cateSites.sites.push(site)
+      }
+    }
+    // console.log(cateSites.sites)
+    sites.push(cateSites)
+  }
+
 }
 
 function handleSubMenuClick(index: string) {
@@ -85,7 +87,7 @@ onBeforeUnmount(() => {
     <router-link to="/user">
       <UserCard />
     </router-link>
-    <ElScrollbar class="scrach-height">
+    <ElScrollbar class="scratch-height">
       <el-menu
         class="el-menu-vertical-demo"
         :router="true"
@@ -183,7 +185,7 @@ onBeforeUnmount(() => {
   color: #fff;
 }
 
-.scrach-height {
+.scratch-height {
   flex-grow: 1;
   overflow: auto;
 }

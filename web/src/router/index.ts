@@ -109,6 +109,7 @@ router.beforeEach(async (to, from) => {
     const { data } = await getUserStatus()
     if (!data!.is_login) router.push({ name: 'login', query: { next: to.fullPath } })
     else user.value = data!.user!
+    if (to.name == 'manage' && !user.value!.is_admin) router.push({ name: '404' })
   } else if (to.name == 'login' && user.value) {
     if (to.query.next) router.push(to.query.next as string)
     else router.push({ name: 'home' })

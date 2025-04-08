@@ -36,8 +36,7 @@
       />
       <el-scrollbar class="source-scrollbar" height="24em" :always="true">
         <p v-for="source in sources" :key="source.id!" class="scrollbar-item">
-          <strong>{{ source.cate_name }}</strong
-          >-{{ source.name }}
+          <strong>{{ source.name }}</strong>
           <!-- <a :href="source.url" target="_blank">{{ source.url }}</a> -->
         </p>
       </el-scrollbar>
@@ -95,11 +94,11 @@ import { ref, reactive, inject, onMounted } from 'vue'
 import { ElNotification } from 'element-plus'
 import { filter_subscribe_key } from '@/key'
 import type { SiteItem } from '@/api_interface'
-import { getSites, getSubscribe, subscribe, unsubscribe } from '@/sdk'
+import { getCategories, getSubscribe, subscribe, unsubscribe } from '@/sdk'
 
 const filter_subscribe = inject(filter_subscribe_key)!
 const activeTab = ref('add-source')
-const newSource = ref<SiteItem>({ id: 0, cate_id: 0, cate_name: '', name: '', url: '', icon: '' })
+const newSource = ref<SiteItem>({ id: 0, name: '', url: '', icon: '' })
 const sourceToDelete = reactive({ name: '' })
 const sources = ref<SiteItem[]>([])
 const allSources = ref<SiteItem[]>([])
@@ -110,12 +109,17 @@ onMounted(() => {
 })
 
 async function loadSources() {
-  const { data, error } = await getSites()
+  const { data, error } = await getCategories()
   if (error) {
     console.error(error)
     return
   }
-  allSources.value = data
+  allSources.value = []
+  for (let cate of data!) {
+    for (let site of cate.sites!) {
+      allSources.value.push(site)
+    }
+  }
 }
 
 async function loadSubscribedSources() {
@@ -158,7 +162,7 @@ async function addSource() {
     return
   }
   loadSubscribedSources()
-  newSource.value = { id: 0, cate_id: 0, cate_name: '', name: '', url: '', icon: '' }
+  newSource.value = { id: 0, name: '', url: '', icon: '' }
   ElNotification({
     title: '成功',
     message: '网站源添加成功',
@@ -223,7 +227,6 @@ function exportSources() {
   const content = JSON.stringify(
     sources.value.map((source) => ({
       id: source.id,
-      category: source.cate_name,
       name: source.name,
       url: source.url
     }))

@@ -2,21 +2,9 @@
   <el-tabs v-model="activeTab" class="custom-tabs" style="--el-font-size-base: 24px">
     <!-- 增加网站 Tab -->
     <el-tab-pane label="增加网站" name="add-site" style="--el-font-size-base: initial">
+      <!-- 部分1：添加网站 -->
+      <h3>添加网站</h3>
       <el-form :model="newSite" ref="siteForm" label-width="120px">
-        <el-form-item label="网站类别" prop="category" size="large">
-          <el-autocomplete
-            v-model="newSite.category"
-            :fetch-suggestions="queryClassSearch"
-            popper-class="my-autocomplete"
-            placeholder="请输入类别"
-            @select="handleSelect"
-            clearable
-          >
-            <template #default="{ item }">
-              <div class="name">{{ item }}</div>
-            </template>
-          </el-autocomplete>
-        </el-form-item>
         <el-form-item label="网站名称" prop="name" size="large">
           <el-input v-model="newSite.name" placeholder="请输入网站名称"></el-input>
         </el-form-item>
@@ -28,10 +16,56 @@
             type="primary"
             @click="addSite_"
             size="large"
-            :disabled="!(newSite.category && newSite.name && newSite.url)"
-            >提交</el-button
-          >
+            :disabled="!(newSite.name && newSite.url)"
+          >提交</el-button>
           <el-button @click="resetForm" size="large">重置</el-button>
+        </el-form-item>
+      </el-form>
+
+      <hr style="margin: 20px 0" />
+
+      <!-- 部分2：将网站加入分类 -->
+      <h3>将网站加入分类</h3>
+      <el-form :model="siteCategoryMapping" ref="mappingForm" label-width="120px">
+        <el-form-item label="选择分类" prop="category" size="large">
+          <el-autocomplete
+            v-model="siteCategoryMapping.category"
+            :fetch-suggestions="queryClassSearch"
+            popper-class="my-autocomplete"
+            placeholder="请选择分类"
+            @select="handleCateSiteSelect"
+            value-key="name"
+            clearable
+          >
+            <template #default="{ item }">
+              <div class="name">{{ item.name }}</div>
+            </template>
+          </el-autocomplete>
+        </el-form-item>
+        <el-form-item label="选择网站" prop="site" size="large">
+          <el-autocomplete
+            v-model="siteCategoryMapping.site"
+            :fetch-suggestions="querySearch"
+            popper-class="my-autocomplete"
+            placeholder="请选择网站"
+            @select="handleCateSiteSelect"
+            value-key="name"
+            clearable
+            >
+            <template #default="{ item }">
+              <div class="name">{{ item.name }}</div>
+              <span class="link">{{ item.url }}</span>
+            </template>
+          </el-autocomplete>
+        </el-form-item>
+        <el-form-item>
+          <el-button
+            type="primary"
+            @click="assignSiteToCategory"
+            size="large"
+            :disabled="(siteCategoryMapping.cate_id == -1 || siteCategoryMapping.site_id == -1)"
+          >提交</el-button>
+          <el-button @click="resetMappingForm" size="large">重置</el-button>
         </el-form-item>
       </el-form>
     </el-tab-pane>
@@ -39,13 +73,29 @@
     <!-- 删除网站 Tab -->
     <el-tab-pane label="删除网站" name="remove-site" style="--el-font-size-base: initial">
       <el-form :model="siteToDelete" label-width="120px">
-        <el-form-item label="网站名称" size="large">
+        <el-form-item label="选择分类" prop="category" size="large">
+          <el-autocomplete
+            v-model="deleteCate.name"
+            :fetch-suggestions="queryClassSearch"
+            popper-class="my-autocomplete"
+            placeholder="请选择分类"
+            @select="handleDeleteCateSiteSelect"
+            value-key="name"
+            clearable
+          >
+            <template #default="{ item }">
+              <div class="name">{{ item.name }}</div>
+            </template>
+          </el-autocomplete>
+        </el-form-item>
+        <el-form-item label="选择网站" prop="site" size="large">
           <el-autocomplete
             v-model="siteToDelete.name"
-            :fetch-suggestions="querySearch"
+            :fetch-suggestions="querySiteForDeletion"
             popper-class="my-autocomplete"
-            placeholder="输入要删除的网站名称"
-            @select="handleSelect"
+            placeholder="请选择网站"
+            @select="handleDeleteCateSiteSelect"
+            value-key="name"
             clearable
           >
             <template #default="{ item }">
@@ -55,22 +105,14 @@
           </el-autocomplete>
         </el-form-item>
         <el-form-item>
-          <el-popconfirm
-            width="280"
-            title="确认删除该网站吗？"
-            @cancel="onCancel"
-            @confirm="deleteSite_"
+          <el-button
+            type="danger"
+            size="large"
+            @click="deleteSite_"
+            :disabled="!(deleteCate && siteToDelete)"
           >
-            <template #reference>
-              <el-button type="danger" size="large">删除</el-button>
-            </template>
-            <template #actions="{ confirm, cancel }">
-              <el-button size="small" @click="cancel">取消</el-button>
-              <el-button type="danger" size="small" :disabled="!clicked" @click="confirm">
-                确认
-              </el-button>
-            </template>
-          </el-popconfirm>
+            删除
+          </el-button>
         </el-form-item>
       </el-form>
     </el-tab-pane>
@@ -129,15 +171,19 @@ import { ref, reactive, onMounted, watch } from 'vue'
 import { ElNotification, ElMessageBox } from 'element-plus'
 import type { SiteItem } from '@/api_interface'
 import {
+  getCategories,
   getSites,
   addSite,
-  deleteSite,
+  addSiteToCategory,
+  removeSiteFromCategory,
   getPendingMembers,
   getGroupUsers,
   addUserToGroup,
   removeUserFromGroup,
   getUserinfoNotInGroup,
-  type User
+  type User,
+  type CategoryItem,
+  type Category
 } from '@/sdk'
 
 // 当前激活的 Tab，从 localStorage 中读取或使用默认值
@@ -146,29 +192,34 @@ watch(activeTab, (newVal) => {
   localStorage.setItem('activeTab', newVal)
 })
 
-// 增加网站表单模型
+// ---------------------- 新增网站相关 ----------------------
+
 const newSite = reactive({
-  category: '',
   name: '',
   url: ''
 })
 
-// 删除网站表单模型
-const siteToDelete = reactive({
-  name: ''
+// 将网站加入分类的表单模型
+const siteCategoryMapping = reactive({
+  category: '',
+  site: '',
+  cate_id: -1,
+  site_id: -1,
 })
 
 // 网站数据和类别列表
 const Sites = ref<SiteItem[]>([])
-const categories = ['科教要闻', '院校动态', '国际视野']
+const categories = ref<CategoryItem[]>([])
 
-// 自动完成搜索：网站类别
+// 自动完成搜索：网站类别（用于“加入分类”部分）
 const queryClassSearch = (queryString: string, cb: any) => {
-  const results = categories.filter((category) => category.includes(queryString))
+  // console.log('query:', queryString)
+  // console.log('categories:', categories.value)
+  const results = categories.value.filter((category) => category.name.includes(queryString))
   cb(results)
 }
 
-// 自动完成搜索：网站名称（用于删除）
+// 自动完成搜索：网站（用于“加入分类”部分）
 const querySearch = (queryString: string, cb: any) => {
   const results = queryString ? Sites.value.filter(createFilter(queryString)) : Sites.value
   cb(results)
@@ -178,22 +229,21 @@ const createFilter = (queryString: string) => {
     return site.name.toLowerCase().indexOf(queryString.toLowerCase()) === 0
   }
 }
-const handleSelect = (item: string | SiteItem) => {
-  if (typeof item === 'string') {
-    newSite.category = item
-  } else {
-    siteToDelete.name = item.name
+
+const handleCateSiteSelect = (item: CategoryItem | SiteItem) => {
+  // console.log('selected:', typeof item, item)
+  if (typeof item === 'object' && 'url' in item) {
+    siteCategoryMapping.site_id = item.id!
+    siteCategoryMapping.site = item.name
+  } else if (typeof item === 'object') {
+    siteCategoryMapping.cate_id = item.id!
+    siteCategoryMapping.category = item.name
   }
 }
 
-const clicked = ref(false)
-function onCancel() {
-  clicked.value = true
-}
-
-// 添加网站函数
+// 添加网站函数（只提交网站名称和链接）
 const addSite_ = async () => {
-  if (!newSite.category || !newSite.name || !newSite.url) {
+  if (!newSite.name || !newSite.url) {
     ElNotification({
       title: '添加失败',
       message: '请填写完整信息!',
@@ -206,14 +256,13 @@ const addSite_ = async () => {
     body: {
       name: newSite.name,
       url: newSite.url,
-      cate_id: categories.indexOf(newSite.category) + 1,
       icon: ''
     }
   })
   if (error || data?.status !== 200) {
     ElNotification({
       title: '错误',
-      message: '添加网站失败: ' + (error ? error : data?.message),
+      message: '添加网站失败: ' + (error ? error.detail : data?.message),
       type: 'error'
     })
     return
@@ -223,19 +272,28 @@ const addSite_ = async () => {
     message: '添加网站成功',
     type: 'success'
   })
+  resetForm()
 }
 
-// 删除网站函数
-const deleteSite_ = async () => {
-  if (!siteToDelete.name) {
+const assignSiteToCategory = async () => {
+  if (siteCategoryMapping.cate_id == -1 || siteCategoryMapping.site_id == -1) {
     ElNotification({
       title: '失败',
-      message: '请填写网站名称!',
+      message: '请选择分类和网站',
       type: 'error'
     })
     return
   }
-  const site = Sites.value.find((s) => s.name === siteToDelete.name)
+  const category = categories.value.find((c) => c.id === siteCategoryMapping.cate_id)
+  if (!category) {
+    ElNotification({
+      title: '失败',
+      message: '找不到分类!',
+      type: 'error'
+    })
+    return
+  }
+  const site = Sites.value.find((s) => s.id === siteCategoryMapping.site_id)
   if (!site) {
     ElNotification({
       title: '失败',
@@ -244,39 +302,112 @@ const deleteSite_ = async () => {
     })
     return
   }
-  const { data, error } = await deleteSite({ path: { site_id: Number(site.id) } })
+  const { data, error } = await addSiteToCategory({
+    body: {
+      cate_id: category.id!,
+      site_id: site.id!
+    }
+  })
   if (error || data?.status !== 200) {
     ElNotification({
       title: '失败',
-      message: '删除网站失败: ' + (error ? error : data?.message),
+      message: '加入分类失败: ' + (error ? error.detail : data?.message),
       type: 'error'
     })
     return
   }
   ElNotification({
     title: '成功',
-    message: '网站 ' + siteToDelete.name + ' 已删除!',
+    message: `网站 ${site.name} 已加入分类 ${category.name}`,
     type: 'success'
   })
-  siteToDelete.name = ''
-  location.reload()
+  resetMappingForm()
+  setTimeout(() => {
+    location.reload()
+  }, 900)
 }
 
-// 重置新增网站表单
+// 重置添加网站表单
 const resetForm = () => {
-  newSite.category = ''
   newSite.name = ''
   newSite.url = ''
 }
 
-// 加载所有网站数据
-const loadAll = async (): Promise<SiteItem[]> => {
-  const { data, error } = await getSites()
-  if (error) {
-    console.error(error)
-    return []
+// 重置加入分类表单
+const resetMappingForm = () => {
+  siteCategoryMapping.cate_id = -1
+  siteCategoryMapping.site_id = -1
+  siteCategoryMapping.category = ''
+  siteCategoryMapping.site = ''
+}
+
+// 修改后的删除网站表单模型：包含分类和网站两个字段
+const siteToDelete = ref<SiteItem>({ id: 0, name: '', url: ''})
+const deleteCate = ref<Category>({ id: 0, name: '', sites: [] })
+
+const handleDeleteCateSiteSelect = (item: Category | SiteItem) => {
+  if (typeof item === 'object' && 'url' in item) {
+    siteToDelete.value = item
+  } else if (typeof item === 'object') {
+    deleteCate.value = { ...item }
   }
-  return data
+}
+
+// 自动完成搜索：网站（用于删除网站部分），基于当前选择的分类
+const querySiteForDeletion = (queryString: string, cb: any) => {
+  let sites = deleteCate.value?.sites || []
+  if (queryString) {
+    sites = sites.filter(site =>
+      site.name.toLowerCase().includes(queryString.toLowerCase())
+    )
+  }
+  cb(sites)
+}
+
+const deleteSite_ = async () => {
+  if (!siteToDelete.value || !deleteCate.value) {
+    ElNotification({
+      title: '失败',
+      message: '请选择分类和网站!',
+      type: 'error'
+    })
+    return
+  }
+  await ElMessageBox.confirm(
+    `确认删除网站 "${siteToDelete.value.name}" 吗？此操作不可恢复。`,
+    '删除确认',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  )
+  const { data, error } = await removeSiteFromCategory({
+    body: {
+      cate_id: deleteCate.value.id!,
+      site_id: siteToDelete.value.id!
+    }
+  })
+  if (error || data?.status !== 200) {
+    ElNotification({
+      title: '失败',
+      message: '删除网站失败: ' + (error ? error.detail : data?.message),
+      type: 'error'
+    })
+    return
+  }
+  ElNotification({
+    title: '成功',
+    message: '网站 ' + siteToDelete.value.name + ' 已删除!',
+    type: 'success'
+  })
+  // 重置删除表单
+  siteToDelete.value = { id: 0, name: '', url: ''}
+  deleteCate.value = { id: 0, name: '', sites: []}
+  // 刷新网站列表
+  setTimeout(() => {
+    location.reload()
+  }, 1500)
 }
 
 // ----------------- 组织管理相关代码 -----------------
@@ -371,7 +502,7 @@ const addMember = async () => {
   resetMemberForm()
 }
 
-// 重置表单
+// 重置成员表单
 const resetMemberForm = () => {
   newMember.searchKey = ''
   newMember.selectedUser = null
@@ -417,10 +548,29 @@ const deleteMember = async (member: User) => {
 
 // 页面加载时，初始化数据
 onMounted(async () => {
-  Sites.value = await loadAll()
+  await loadAll()
   await loadMembersList()
   await loadGroupPendingList()
 })
+
+const loadAll = async () => {
+  const { data, error } = await getCategories()
+  if (error) {
+    console.error(error)
+    return
+  }  
+  categories.value = []
+  for (let cate of data!) {
+    categories.value.push(cate)
+  }
+  const { data: sitesData, error: sitesError } = await getSites()
+  if (sitesError) {
+    console.error(sitesError)
+    return
+  }
+  Sites.value = sitesData!
+  return
+}
 
 const loadMembersList = async () => {
   const { data, error } = await getGroupUsers()
