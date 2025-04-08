@@ -27,6 +27,9 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['site_id'], ['site.id'], ),
     sa.PrimaryKeyConstraint('category_id', 'site_id')
     )
+    # for every site, construct relation with new table
+    op.execute('INSERT INTO category_site_relation (category_id, site_id) SELECT cate_id, id FROM site')
+    # drop cate_id from site table
     op.drop_index('ix_site_cate_id', table_name='site')
     op.drop_constraint('site_cate_id_fkey', 'site', type_='foreignkey')
     op.drop_column('site', 'cate_id')
@@ -38,5 +41,9 @@ def downgrade() -> None:
     op.add_column('site', sa.Column('cate_id', sa.INTEGER(), autoincrement=False, nullable=False))
     op.create_foreign_key('site_cate_id_fkey', 'site', 'category', ['cate_id'], ['id'])
     op.create_index('ix_site_cate_id', 'site', ['cate_id'], unique=False)
+
+    # set the cate_id with the minimum category id who is related to the site
+    op.execute('UPDATE site SET cate_id = (SELECT MIN(category.id) FROM category_site_relation WHERE category_site_relation.site_id = site.id)')
+    # drop the relation table
     op.drop_table('category_site_relation')
     # ### end Alembic commands ###
