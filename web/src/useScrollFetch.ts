@@ -24,7 +24,7 @@ export default function useScrollFetch(
         scrollEventTriggered = false
       })
       wheelTimeout = null
-    }, 500) // 节流的时间间隔可以根据需要调整
+    }, 10) // 节流的时间间隔可以根据需要调整
   }
 
   return { handleScroll, handleWheel }

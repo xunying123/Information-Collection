@@ -20,7 +20,7 @@ const props = defineProps<{
   category_id?: String
 }>()
 
-const EmptySite: Site = { id: 0, name: '', url: '', cate_id: 0, pages: [], icon: '', cate_name: '' }
+const EmptySite: Site = { id: 0, name: '', url: '',  pages: [], icon: '' }
 
 let searchKeyword = ref('')
 provide(search_keyword_key, searchKeyword)
@@ -125,5 +125,5 @@ watch([() => props.site_id, () => props.category_id], ([newSiteId, newCategoryId
     }
   }
 })
-const { handleScroll, handleWheel } = useScrollFetch(fetchPages)
+const { handleScroll, handleWheel } = useScrollFetch(fetchPages, count.value)
 </script>
