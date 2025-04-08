@@ -106,9 +106,6 @@ class Page(Base, UseTimestamps):
     site_id: Mapped[site_foreign_key]
     site: Mapped[Site] = relationship(Site, back_populates="pages")
 
-    cate_id: Mapped[cata_fk]
-    category = relationship(Category)
-
     keywords = relationship(
         "Keyword", secondary="page_keyword_relation", back_populates="pages"
     )
