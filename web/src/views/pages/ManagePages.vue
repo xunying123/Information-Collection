@@ -17,7 +17,8 @@
             @click="addSite_"
             size="large"
             :disabled="!(newSite.name && newSite.url)"
-          >提交</el-button>
+            >提交</el-button
+          >
           <el-button @click="resetForm" size="large">重置</el-button>
         </el-form-item>
       </el-form>
@@ -51,7 +52,7 @@
             @select="handleCateSiteSelect"
             value-key="name"
             clearable
-            >
+          >
             <template #default="{ item }">
               <div class="name">{{ item.name }}</div>
               <span class="link">{{ item.url }}</span>
@@ -63,8 +64,9 @@
             type="primary"
             @click="assignSiteToCategory"
             size="large"
-            :disabled="(siteCategoryMapping.cate_id == -1 || siteCategoryMapping.site_id == -1)"
-          >提交</el-button>
+            :disabled="siteCategoryMapping.cate_id == -1 || siteCategoryMapping.site_id == -1"
+            >提交</el-button
+          >
           <el-button @click="resetMappingForm" size="large">重置</el-button>
         </el-form-item>
       </el-form>
@@ -204,7 +206,7 @@ const siteCategoryMapping = reactive({
   category: '',
   site: '',
   cate_id: -1,
-  site_id: -1,
+  site_id: -1
 })
 
 // 网站数据和类别列表
@@ -342,7 +344,7 @@ const resetMappingForm = () => {
 }
 
 // 修改后的删除网站表单模型：包含分类和网站两个字段
-const siteToDelete = ref<SiteItem>({ id: 0, name: '', url: ''})
+const siteToDelete = ref<SiteItem>({ id: 0, name: '', url: '' })
 const deleteCate = ref<Category>({ id: 0, name: '', sites: [] })
 
 const handleDeleteCateSiteSelect = (item: Category | SiteItem) => {
@@ -357,9 +359,7 @@ const handleDeleteCateSiteSelect = (item: Category | SiteItem) => {
 const querySiteForDeletion = (queryString: string, cb: any) => {
   let sites = deleteCate.value?.sites || []
   if (queryString) {
-    sites = sites.filter(site =>
-      site.name.toLowerCase().includes(queryString.toLowerCase())
-    )
+    sites = sites.filter((site) => site.name.toLowerCase().includes(queryString.toLowerCase()))
   }
   cb(sites)
 }
@@ -402,8 +402,8 @@ const deleteSite_ = async () => {
     type: 'success'
   })
   // 重置删除表单
-  siteToDelete.value = { id: 0, name: '', url: ''}
-  deleteCate.value = { id: 0, name: '', sites: []}
+  siteToDelete.value = { id: 0, name: '', url: '' }
+  deleteCate.value = { id: 0, name: '', sites: [] }
   // 刷新网站列表
   setTimeout(() => {
     location.reload()
@@ -558,7 +558,7 @@ const loadAll = async () => {
   if (error) {
     console.error(error)
     return
-  }  
+  }
   categories.value = []
   for (let cate of data!) {
     categories.value.push(cate)

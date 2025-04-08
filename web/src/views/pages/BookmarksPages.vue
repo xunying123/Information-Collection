@@ -162,7 +162,7 @@ async function exportWord(selectedBookmarks: BookmarkItemPage[]) {
   const articles = categories
     .map((category) => {
       const categoryBookmarks = selectedBookmarks
-        .filter((bookmark) => bookmark.cate_name === category)
+        // .filter((bookmark) => bookmark.cate_name === category)
         .map((bookmark) => ({
           title: bookmark.title,
           content: bookmark.content,

@@ -18,9 +18,9 @@ let selectedCategories = ref<Category[]>([])
 function filterPages() {
   filteredPages.value = props.pages
   if (selectedCategories.value.length > 0) {
-    filteredPages.value = filteredPages.value.filter((page) =>
-      selectedCategories.value.some((category) => category.id === page.cate_id)
-    )
+    // filteredPages.value = filteredPages.value.filter((page) =>
+    //   selectedCategories.value.some((category) => category.id === page.cate_id)
+    // )
   }
   if (selectedTimeRange.value !== 'all') {
     const days = parseInt(selectedTimeRange.value)

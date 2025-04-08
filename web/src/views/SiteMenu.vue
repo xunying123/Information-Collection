@@ -47,7 +47,6 @@ async function loadSites() {
     // console.log(cateSites.sites)
     sites.push(cateSites)
   }
-
 }
 
 function handleSubMenuClick(index: string) {

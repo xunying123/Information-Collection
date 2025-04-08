@@ -20,7 +20,7 @@ const props = defineProps<{
   category_id?: String
 }>()
 
-const EmptySite: Site = { id: 0, name: '', url: '',  pages: [], icon: '' }
+const EmptySite: Site = { id: 0, name: '', url: '', pages: [], icon: '' }
 
 let searchKeyword = ref('')
 provide(search_keyword_key, searchKeyword)

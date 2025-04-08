@@ -21,8 +21,6 @@ const empty_article: Page = {
   source_url: '',
   site_id: 0,
   site: '',
-  cate_id: 0,
-  cate_name: '',
   publish_time: '',
   site_icon: '',
   keywords: []
