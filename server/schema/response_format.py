@@ -49,12 +49,12 @@ class PageItem(ConfigBaseModel, IncludeSite):
     source_url: str
     title: str
     content: str
-    publish_time: datetime = Field(alias="publish_time")
+    publish_time: datetime
 
     @field_validator("content", mode="after")
     @classmethod
     def truncate(cls, v: str):
-        return v[:50]
+        return v[:50] if cls is PageItem else v
 
 
 class SiteItem(ConfigBaseModel):
