@@ -1,39 +1,44 @@
 <script setup lang="ts">
-import { ref, defineProps, watch, onMounted, computed, inject } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, watch, onMounted, computed, inject } from 'vue'
+import { useRoute, RouterView } from 'vue-router'
 import type { PageItem } from '@/api_interface'
 import SearchInput from '@/components/SearchInput.vue'
-
 import ArticleCard from '@/components/ArticleCard.vue'
 import ArticleList from '@/components/ArticleList.vue'
 import SiteArticleCard from '@/components/SiteArticleCard.vue'
+import FilterSidebar from '@/components/FilterSidebar.vue'
 import { search_keyword_key, all_categories_key } from '@/key'
 import { getCategories } from '@/sdk'
 
 const props = defineProps<{ pages: PageItem[]; title: string; loading: boolean }>()
-let searchKeyword = inject(search_keyword_key)!
-let filteredPages = ref<PageItem[]>(props.pages)
-let selectedCategories = ref<number[]>([])
-const selectedSortOption = ref('time') // 默认按时间排序
+const searchKeyword = inject(search_keyword_key)!
+const allCategories = inject(all_categories_key)!
+const route = useRoute()
+
+const filterOptions = ref({
+  selectedCategories: [] as number[],
+  selectedTimeRange: 'all',
+  selectedSortOption: 'time'
+})
+
+const filteredPages = ref<PageItem[]>(props.pages)
 
 function filterPages() {
-  filteredPages.value = props.pages
-  if (selectedTimeRange.value !== 'all') {
-    const days = parseInt(selectedTimeRange.value)
-    const now = new Date()
-    let startTime
-
+  filteredPages.value = [...props.pages]
+  const now = new Date()
+  
+  if (filterOptions.value.selectedTimeRange !== 'all') {
+    const days = parseInt(filterOptions.value.selectedTimeRange)
+    let startTime: Date
     if (days === 1) {
       const yesterday = new Date(now)
       const day = now.getDay()
       if (day === 1) {
-        // 如果今天是周一
-        yesterday.setDate(now.getDate() - 3) // 上一个工作日是周五
+        yesterday.setDate(now.getDate() - 3)
       } else if (day === 0) {
-        // 如果今天是周日
-        yesterday.setDate(now.getDate() - 2) // 上一个工作日是周五
+        yesterday.setDate(now.getDate() - 2)
       } else {
-        yesterday.setDate(now.getDate() - 1) // 其他情况，上一个工作日是昨天
+        yesterday.setDate(now.getDate() - 1)
       }
       yesterday.setHours(0, 0, 0, 0)
       startTime = yesterday
@@ -42,153 +47,107 @@ function filterPages() {
       startTime.setDate(now.getDate() - days)
       startTime.setHours(0, 0, 0, 0)
     }
-
-    filteredPages.value = filteredPages.value.filter((page) => {
+    filteredPages.value = filteredPages.value.filter(page => {
       const publishTime = new Date(page.publish_time)
       return publishTime >= startTime && publishTime <= now
     })
   }
 
-  // 根据排序选项排序
-  if (selectedSortOption.value === 'score') {
-    filteredPages.value.sort((a, b) => b.score - a.score) // 按重要度从高到低排序
+  if (filterOptions.value.selectedSortOption === 'score') {
+    filteredPages.value.sort((a, b) => b.score - a.score)
   } else {
     filteredPages.value.sort(
       (a, b) => new Date(b.publish_time).getTime() - new Date(a.publish_time).getTime()
-    ) // 按时间从新到旧排序
+    )
   }
 }
 
-watch(
-  () => props.pages,
-  (newPages) => {
-    filteredPages.value = newPages
-    filterPages()
-  }
-)
+watch(() => props.pages, newPages => {
+  filteredPages.value = newPages
+  filterPages()
+})
 
-const timeOptions = [
-  { label: '全部', value: 'all' },
-  { label: '1天内', value: '1' },
-  { label: '7天内', value: '7' },
-  { label: '30天内', value: '30' },
-  { label: '一年内', value: '365' }
-]
-
-const selectedTimeRange = ref('all')
-
-// 监听排序选项的变化并保存到 localStorage
-watch(selectedSortOption, (newSortOption) => {
+watch(() => filterOptions.value.selectedTimeRange, filterPages)
+watch(() => filterOptions.value.selectedSortOption, newSortOption => {
   localStorage.setItem('selectedSortOption', newSortOption)
   filterPages()
 })
 
-watch(selectedCategories, filterPages)
-watch(selectedTimeRange, filterPages)
-
-let allCategories = inject(all_categories_key)!
-
-const showChooseCate = computed(() => route.path === '/')
-
-const view = ref('card')
-const showSiteCard = computed(
-  () =>
-    route.path.includes('category') ||
-    route.path.includes('daliyupdate') ||
-    route.path.includes('bookmarks')
-)
-
-let options = computed(() => {
-  if (showSiteCard.value)
-    return [
-      { label: '网站卡片', value: 'site' },
-      { label: '卡片', value: 'card' },
-      { label: '标题列表', value: 'list' },
-      { label: '摘要列表', value: 'excerpt' }
-    ]
-  else
-    return [
-      { label: '卡片', value: 'card' },
-      { label: '标题列表', value: 'list' },
-      { label: '摘要列表', value: 'excerpt' }
-    ]
-})
-
-const route = useRoute()
-
-watch(view, (newView) => {
-  localStorage.setItem('viewMode', newView)
-  if (!showSiteCard.value) {
-    localStorage.setItem('notCateView', newView)
-  }
-})
-
-watch(selectedCategories, (newCategories) => {
+watch(() => filterOptions.value.selectedCategories, newCategories => {
   localStorage.setItem('selectedCategories', JSON.stringify(newCategories))
   window.dispatchEvent(new Event('selectedCategoriesUpdated'))
+}, { deep: true })
+
+const view = ref('card')
+const options = computed(() => {
+  const showSiteCard = route.path.includes('category') || 
+                      route.path.includes('daliyupdate') || 
+                      route.path.includes('bookmarks')
+  return showSiteCard ? [
+    { label: '网站卡片', value: 'site' },
+    { label: '卡片', value: 'card' },
+    { label: '标题列表', value: 'list' },
+    { label: '摘要列表', value: 'excerpt' }
+  ] : [
+    { label: '卡片', value: 'card' },
+    { label: '标题列表', value: 'list' },
+    { label: '摘要列表', value: 'excerpt' }
+  ]
+})
+
+watch(view, newView => {
+  localStorage.setItem('viewMode', newView)
+  if (!(route.path.includes('category') || 
+       route.path.includes('daliyupdate') || 
+       route.path.includes('bookmarks'))) {
+    localStorage.setItem('notCateView', newView)
+  }
 })
 
 onMounted(() => {
   const savedView = localStorage.getItem('viewMode')
   const savedNotCateView = localStorage.getItem('notCateView')
   const savedSortOption = localStorage.getItem('selectedSortOption')
-
-  if (savedView) {
-    view.value = savedView
-  }
-  if (!showSiteCard.value && view.value === 'site') {
+  if (savedView) view.value = savedView
+  if (!(route.path.includes('category') || 
+      route.path.includes('daliyupdate') || 
+      route.path.includes('bookmarks')) &&
+      view.value === 'site') {
     view.value = savedNotCateView ? savedNotCateView : 'card'
   }
-  if (savedSortOption) {
-    selectedSortOption.value = savedSortOption
-  }
-
+  if (savedSortOption) filterOptions.value.selectedSortOption = savedSortOption
   const fetchCategories = async () => {
     const { data, error } = await getCategories()
-    if (error) {
-      console.error('获取类别信息失败：', error)
-      return
-    }
+    if (error) console.error('获取类别信息失败：', error)
     allCategories.value = data!
   }
   const storedCategories = localStorage.getItem('selectedCategories')
-  if (storedCategories) {
-    selectedCategories.value = JSON.parse(storedCategories)
-  }
+  if (storedCategories) filterOptions.value.selectedCategories = JSON.parse(storedCategories)
   fetchCategories()
 })
+
+const filterSidebarRef = ref<any>(null)
+const openFilter = () => filterSidebarRef.value?.openDrawer?.()
 </script>
 
 <template>
   <el-container class="full-height">
+    <FilterSidebar ref="filterSidebarRef" v-model:filterOptions="filterOptions" :allCategories="allCategories" />
     <el-main class="full-height top-down">
       <div class="header">
         <h1>{{ props.title }}</h1>
-        <el-checkbox-group
-          v-model="selectedCategories"
-          v-if="showChooseCate"
-          style="margin-right: 20px"
-        >
-          <el-checkbox-button v-for="cate in allCategories" :key="cate.id" :value="cate.id">
-            {{ cate.name }}
-          </el-checkbox-button>
-        </el-checkbox-group>
-        <el-segmented
-          v-model="selectedTimeRange"
-          :options="timeOptions"
-          style="margin-right: 20px"
-        />
-        <el-radio-group v-model="selectedSortOption" style="margin-right: 20px">
-          <el-radio-button label="time">按时间排序</el-radio-button>
-          <el-radio-button label="score">按重要度排序</el-radio-button>
-        </el-radio-group>
-        <SearchInput @update:searchQuery="searchKeyword = $event" />
-        <el-segmented v-model="view" :options="options" block class="spaced-segmented" />
-        <slot></slot>
+        <div class="header-right">
+          <el-button type="primary" @click="openFilter" style="margin-right:10px; line-height:normal;">
+            <el-icon><Filter /></el-icon>
+            <span>筛选</span>
+          </el-button>
+          <SearchInput @update:searchQuery="searchKeyword = $event" />
+          <el-segmented v-model="view" :options="options" block class="spaced-segmented" />
+        </div>
       </div>
       <el-scrollbar
-        v-if="pages && pages.length"
-        v-loading="loading"
+        v-if="props.pages && props.pages.length"
+        v-loading="props.loading"
         @scroll="$emit('scroll', $event)"
       >
         <div v-if="view === 'card'" class="container-grid">
@@ -205,6 +164,11 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* 恢复原有样式 */
+.full-height {
+  height: 100vh;
+}
+
 .container-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, 20em);
@@ -250,5 +214,20 @@ h1 {
 
 .header > h1 {
   margin: 0.2em;
+}
+
+/* 新增调整 */
+.el-main {
+  padding: 0 !important;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.el-scrollbar {
+  height: calc(100vh - 120px); /* 保持原有滚动区域高度 */
 }
 </style>
