@@ -201,6 +201,10 @@ class UserSiteRelation(Base):
     site_id: Mapped[int] = mapped_column(
         ForeignKey("site.id"), nullable=False, primary_key=True
     )
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("category.id"), nullable=True, primary_key=True
+    ) # allow NULL for independent subscribe
+    negative: Mapped[bool] = mapped_column(Boolean, server_default="0")
 
 
 class CategorySiteRelation(Base):
