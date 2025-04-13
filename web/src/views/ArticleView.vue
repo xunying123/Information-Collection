@@ -23,7 +23,8 @@ const empty_article: Page = {
   site: '',
   publish_time: '',
   site_icon: '',
-  keywords: []
+  keywords: [],
+  score: 0
 }
 
 const slide_value = ref(128)
@@ -39,6 +40,7 @@ async function update(prop: typeof props) {
     console.error(error)
     return
   }
+  console.log(data)
   article.value = data
 }
 

@@ -12,7 +12,12 @@
 import { ref, onMounted, watch, inject, provide } from 'vue'
 import ShowCards from '@/components/ShowCards.vue'
 import useScrollFetch from '@/useScrollFetch'
-import { filter_subscribe_key, filter_keyword_key, search_keyword_key } from '@/key'
+import {
+  // filter_subscribe_key,
+  filter_keyword_key,
+  search_keyword_key,
+  all_categories_key
+} from '@/key'
 import { getPages, getSite, getCategory, type PageItem, type Site, type PageGet } from '@/sdk'
 const props = defineProps<{
   pageType: 'all' | 'daily' | 'site' | 'category'
@@ -25,13 +30,15 @@ const EmptySite: Site = { id: 0, name: '', url: '', pages: [], icon: '' }
 let searchKeyword = ref('')
 provide(search_keyword_key, searchKeyword)
 
+let allCategories = inject(all_categories_key)!
+
 let pages = ref<PageItem[]>([])
 let loading = ref(true)
 let title = ref('')
 let site = ref<Site>(EmptySite)
 let count = ref(props.pageType === 'all' || props.pageType === 'site' ? 50 : 10)
 
-let filter_subscribe = inject(filter_subscribe_key)!
+// let filter_subscribe = inject(filter_subscribe_key)!
 let filter_keyword = inject(filter_keyword_key)!
 
 const fetchPages = (count: number) => {
@@ -44,11 +51,14 @@ const fetchPages = (count: number) => {
   let body: PageGet = {
     count: count,
     keyword: filter_keyword.value,
-    subscribe: filter_subscribe.value
+    subscribe: 0
   }
   if (searchKeyword.value) {
     body.search_title = searchKeyword.value
     body.search_content = searchKeyword.value
+  }
+  if (selectedCategories.value && selectedCategories.value.length > 0) {
+    body.category = selectedCategories.value
   }
   switch (props.pageType) {
     case 'all':
@@ -100,6 +110,29 @@ async function updateCategory() {
   title.value = data.name
 }
 
+const selectedCategories = ref<number[]>([])
+
+const updateSelectedCategories = () => {
+  const storedCategories = localStorage.getItem('selectedCategories')
+  if (storedCategories) {
+    selectedCategories.value = JSON.parse(storedCategories)
+  }
+  let siteSum = 0
+  for (let cate of allCategories.value) {
+    if (selectedCategories.value.length > 0 && !selectedCategories.value.includes(cate.id!)) {
+      continue
+    }
+    siteSum += cate!.sites!.length
+  }
+  if (!siteSum) {
+    siteSum = 1
+  }
+  console.log('siteSum:', siteSum)
+  siteSum = Math.ceil(count.value / siteSum)
+  console.log('siteSum:', siteSum)
+  fetchPages(siteSum)
+}
+
 onMounted(() => {
   fetchPages(count.value)
   if (props.pageType === 'site' && props.site_id) {
@@ -108,6 +141,9 @@ onMounted(() => {
   if (props.pageType === 'category' && props.category_id) {
     updateCategory()
   }
+
+  updateSelectedCategories()
+  window.addEventListener('selectedCategoriesUpdated', updateSelectedCategories)
 })
 
 watch(searchKeyword, () => {

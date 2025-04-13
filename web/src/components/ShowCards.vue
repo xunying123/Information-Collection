@@ -7,21 +7,17 @@ import SearchInput from '@/components/SearchInput.vue'
 import ArticleCard from '@/components/ArticleCard.vue'
 import ArticleList from '@/components/ArticleList.vue'
 import SiteArticleCard from '@/components/SiteArticleCard.vue'
-import { search_keyword_key } from '@/key'
-import { getCategories, type Category } from '@/sdk'
+import { search_keyword_key, all_categories_key } from '@/key'
+import { getCategories } from '@/sdk'
 
 const props = defineProps<{ pages: PageItem[]; title: string; loading: boolean }>()
 let searchKeyword = inject(search_keyword_key)!
 let filteredPages = ref<PageItem[]>(props.pages)
-let selectedCategories = ref<Category[]>([])
+let selectedCategories = ref<number[]>([])
+const selectedSortOption = ref('time') // 默认按时间排序
 
 function filterPages() {
   filteredPages.value = props.pages
-  if (selectedCategories.value.length > 0) {
-    // filteredPages.value = filteredPages.value.filter((page) =>
-    //   selectedCategories.value.some((category) => category.id === page.cate_id)
-    // )
-  }
   if (selectedTimeRange.value !== 'all') {
     const days = parseInt(selectedTimeRange.value)
     const now = new Date()
@@ -52,6 +48,15 @@ function filterPages() {
       return publishTime >= startTime && publishTime <= now
     })
   }
+
+  // 根据排序选项排序
+  if (selectedSortOption.value === 'score') {
+    filteredPages.value.sort((a, b) => b.score - a.score) // 按重要度从高到低排序
+  } else {
+    filteredPages.value.sort(
+      (a, b) => new Date(b.publish_time).getTime() - new Date(a.publish_time).getTime()
+    ) // 按时间从新到旧排序
+  }
 }
 
 watch(
@@ -69,12 +74,19 @@ const timeOptions = [
   { label: '30天内', value: '30' },
   { label: '一年内', value: '365' }
 ]
+
 const selectedTimeRange = ref('all')
+
+// 监听排序选项的变化并保存到 localStorage
+watch(selectedSortOption, (newSortOption) => {
+  localStorage.setItem('selectedSortOption', newSortOption)
+  filterPages()
+})
 
 watch(selectedCategories, filterPages)
 watch(selectedTimeRange, filterPages)
 
-const allCategories = ref(new Set<Category>())
+let allCategories = inject(all_categories_key)!
 
 const showChooseCate = computed(() => route.path === '/')
 
@@ -85,7 +97,6 @@ const showSiteCard = computed(
     route.path.includes('daliyupdate') ||
     route.path.includes('bookmarks')
 )
-// const showSiteCard = computed(() => !route.path.includes('site'))
 
 let options = computed(() => {
   if (showSiteCard.value)
@@ -112,22 +123,37 @@ watch(view, (newView) => {
   }
 })
 
+watch(selectedCategories, (newCategories) => {
+  localStorage.setItem('selectedCategories', JSON.stringify(newCategories))
+  window.dispatchEvent(new Event('selectedCategoriesUpdated'))
+})
+
 onMounted(() => {
   const savedView = localStorage.getItem('viewMode')
   const savedNotCateView = localStorage.getItem('notCateView')
+  const savedSortOption = localStorage.getItem('selectedSortOption')
+
   if (savedView) {
     view.value = savedView
   }
   if (!showSiteCard.value && view.value === 'site') {
     view.value = savedNotCateView ? savedNotCateView : 'card'
   }
+  if (savedSortOption) {
+    selectedSortOption.value = savedSortOption
+  }
+
   const fetchCategories = async () => {
     const { data, error } = await getCategories()
     if (error) {
       console.error('获取类别信息失败：', error)
       return
     }
-    allCategories.value = new Set(data)
+    allCategories.value = data!
+  }
+  const storedCategories = localStorage.getItem('selectedCategories')
+  if (storedCategories) {
+    selectedCategories.value = JSON.parse(storedCategories)
   }
   fetchCategories()
 })
@@ -143,7 +169,7 @@ onMounted(() => {
           v-if="showChooseCate"
           style="margin-right: 20px"
         >
-          <el-checkbox-button v-for="cate in allCategories" :key="cate" :value="cate">
+          <el-checkbox-button v-for="cate in allCategories" :key="cate.id" :value="cate.id">
             {{ cate.name }}
           </el-checkbox-button>
         </el-checkbox-group>
@@ -152,6 +178,10 @@ onMounted(() => {
           :options="timeOptions"
           style="margin-right: 20px"
         />
+        <el-radio-group v-model="selectedSortOption" style="margin-right: 20px">
+          <el-radio-button label="time">按时间排序</el-radio-button>
+          <el-radio-button label="score">按重要度排序</el-radio-button>
+        </el-radio-group>
         <SearchInput @update:searchQuery="searchKeyword = $event" />
         <el-segmented v-model="view" :options="options" block class="spaced-segmented" />
         <slot></slot>

@@ -73,11 +73,9 @@ const userDisplayGroup = computed(() => {
     : '未属于任何组织'
 })
 
-// 侧边栏颜色设置：从 localStorage 获取当前值，默认为 "blue"
 const sidebarColor = ref(localStorage.getItem('sidebarColor') || 'blue')
 const changeSidebarColor = (val: string) => {
   localStorage.setItem('sidebarColor', val)
-  // 触发全局事件，让侧边栏组件更新颜色
   window.dispatchEvent(new Event('sidebarColorChanged'))
   ElNotification({
     title: '成功',

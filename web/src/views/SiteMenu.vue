@@ -44,7 +44,6 @@ async function loadSites() {
         cateSites.sites.push(site)
       }
     }
-    // console.log(cateSites.sites)
     sites.push(cateSites)
   }
 }
@@ -56,8 +55,10 @@ function handleSubMenuClick(index: string) {
 watch(filter_subscribe, () => {
   loadSites()
 })
+
 onMounted(() => {
   loadSites()
+  window.addEventListener('sidebarColorChanged', updateSidebarColor)
 })
 
 // 侧边栏颜色部分：从 localStorage 读取颜色，默认为 'blue'
@@ -68,9 +69,6 @@ const updateSidebarColor = () => {
   sidebarColor.value = localStorage.getItem('sidebarColor') || 'blue'
 }
 
-onMounted(() => {
-  window.addEventListener('sidebarColorChanged', updateSidebarColor)
-})
 onBeforeUnmount(() => {
   window.removeEventListener('sidebarColorChanged', updateSidebarColor)
 })

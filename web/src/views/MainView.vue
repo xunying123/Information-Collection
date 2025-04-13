@@ -1,14 +1,18 @@
 <script lang="ts" setup>
-import { filter_subscribe_key, filter_keyword_key } from '@/key'
+import { filter_subscribe_key, filter_keyword_key, all_categories_key } from '@/key'
 import SiteMenu from '@/views/SiteMenu.vue'
 import { NLayout, NLayoutSider, NLayoutContent } from 'naive-ui'
 import { provide, ref, computed } from 'vue'
+import type { Category } from '@/sdk'
 
 let filter_subscribe = ref(localStorage.getItem('filter_subscribe') === 'true')
 provide(filter_subscribe_key, filter_subscribe)
 
 let filter_keyword = ref(localStorage.getItem('filter_keyword') === 'true')
 provide(filter_keyword_key, filter_keyword)
+
+let allCategories = ref<Category[]>([])
+provide(all_categories_key, allCategories)
 
 // 初始化背景图片 URL，从 localStorage 获取，如果没有则使用默认值
 const bgUrl = ref(

@@ -9,7 +9,6 @@ import router from '@/router'
 
 const route = useRoute()
 
-// 跳转地址计算
 const next = computed(() => {
   return typeof route.query.next === 'string' ? route.query.next : '/'
 })
@@ -41,17 +40,14 @@ const loginFormRef = ref<FormInstance | null>(null)
 const rules = reactive<FormRules<typeof loginForm>>({
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
-    // 示例：用户名长度在3到10个字符之间
     { min: 2, max: 50, message: '用户名长度应为2到50个字符', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    // 示例：密码长度不少于6位
     { min: 6, message: '密码长度至少为6位', trigger: 'blur' }
   ]
 })
 
-// 使用凭证登录
 const loginWithCredentials = async () => {
   if (loginFormRef.value) {
     loginFormRef.value.validate(async (valid: boolean) => {
