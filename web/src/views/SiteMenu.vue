@@ -78,7 +78,7 @@ onBeforeUnmount(() => {
   <!-- 绑定基础类 .full 与动态颜色类 -->
   <div :class="['full', sidebarClass]">
     <router-link to="/">
-      <img src="https://www.sjtu.edu.cn/resource/assets/img/LogoWhite.png" class="logo" />
+      <img :src="user!.group!.logo!" class="logo" />
     </router-link>
     <router-link to="/user">
       <UserCard />

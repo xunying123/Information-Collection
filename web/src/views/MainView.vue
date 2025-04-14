@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { filter_subscribe_key, filter_keyword_key, all_categories_key } from '@/key'
+import { user_key, filter_subscribe_key, filter_keyword_key, all_categories_key } from '@/key'
 import SiteMenu from '@/views/SiteMenu.vue'
 import { NLayout, NLayoutSider, NLayoutContent } from 'naive-ui'
-import { provide, ref, computed } from 'vue'
+import { provide, ref, computed, inject } from 'vue'
 import type { Category } from '@/sdk'
 
 let filter_subscribe = ref(localStorage.getItem('filter_subscribe') === 'true')
@@ -14,10 +14,12 @@ provide(filter_keyword_key, filter_keyword)
 let allCategories = ref<Category[]>([])
 provide(all_categories_key, allCategories)
 
+const user = inject(user_key)!
 // 初始化背景图片 URL，从 localStorage 获取，如果没有则使用默认值
 const bgUrl = ref(
   localStorage.getItem('bgUrl') ||
-    'https://mc.sjtu.cn/wp-content/uploads/2022/10/%E5%A4%9C%E6%99%9A%E4%B8%9C%E5%A4%A7%E9%97%A8-1024x659.jpg'
+  user.value!.group!.background ||  
+  'https://mc.sjtu.cn/wp-content/uploads/2022/10/%E5%A4%9C%E6%99%9A%E4%B8%9C%E5%A4%A7%E9%97%A8.jpg'
 )
 
 // 监听自定义事件更新背景图片 URL
@@ -26,7 +28,7 @@ window.addEventListener('bgUrlChanged', () => {
 })
 
 const bgStyle = computed(() => {
-  return `linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)), url('${bgUrl.value}')`
+  return `linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('${bgUrl.value}')`
 })
 </script>
 <template>
@@ -62,8 +64,6 @@ const bgStyle = computed(() => {
 }
 
 .content.overlay {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)),
-    url('https://mc.sjtu.cn/wp-content/uploads/2022/10/%E5%A4%9C%E6%99%9A%E4%B8%9C%E5%A4%A7%E9%97%A8-1024x659.jpg');
   background-size: cover;
   background-position: center;
 }
