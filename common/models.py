@@ -163,7 +163,7 @@ class Subject(Base):
     id: Mapped[intpk]
     name: Mapped[str]
     group_id: Mapped[group_foreign_key]
-    group: Mapped[Group] = relationship(Group, back_populates="categories")
+    group: Mapped[Group] = relationship(Group, back_populates="subjects")
     keywords = relationship(
         "Keyword", secondary="subject_keyword_relation", back_populates="subject"
     )
