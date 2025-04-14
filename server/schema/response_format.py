@@ -88,8 +88,8 @@ class OperationMsg(ConfigBaseModel):
 class Group(ConfigBaseModel):
     id: int
     name: str
-    logo: Url
-    background: Url
+    logo: Url | None = None
+    background: Url | None = None
 
 
 class User(ConfigBaseModel):
