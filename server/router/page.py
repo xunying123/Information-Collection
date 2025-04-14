@@ -13,7 +13,37 @@ router = APIRouter()
 @router.post("/pages", response_model=schema.PagedQuery[schema.PageItem])
 @login_required
 def get_pages(data: schema.PageGet):
-    stmt = select(Page).order_by(Page.created_at.desc())
+    stmt = select(Page).distinct()
+
+    match data.sort:
+        case schema.SortType.time:
+            stmt = stmt.order_by(Page.publish_time.desc())
+        case schema.SortType.score:
+            stmt = stmt.order_by(Page.score.desc())
+
+    # restrict to current user
+    if current_user.group_id:
+        stmt = (
+            stmt.outerjoin(
+                UserSiteRelation,
+                (UserSiteRelation.site_id == Page.site_id)
+                & (UserSiteRelation.user_id == current_user.id),
+            )
+            .outerjoin(Category, Category.belonged_group_id == current_user.group_id)
+            .outerjoin(
+                CategorySiteRelation,
+                (CategorySiteRelation.category_id == Category.id)
+                & (CategorySiteRelation.site_id == Page.site_id),
+            )
+            .where(
+                (
+                    (CategorySiteRelation.site_id != None)
+                    & UserSiteRelation.negative.isnot(True)  # not exist or false
+                )
+                | (UserSiteRelation.negative.is_(False))  # exist and false
+            )
+        )
+
     if data.today:
         shanghai_tz = pytz.timezone("Asia/Shanghai")
         today = datetime.now(shanghai_tz).date()

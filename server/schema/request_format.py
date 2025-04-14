@@ -1,6 +1,12 @@
 from pydantic import BaseModel, Field
 from server.config import AppConfig
 from datetime import datetime
+from enum import StrEnum
+
+
+class SortType(StrEnum):
+    time = "time"
+    score = "score"
 
 
 class PageGet(BaseModel):
@@ -20,6 +26,8 @@ class PageGet(BaseModel):
 
     count: int = AppConfig.default_paging_size
     cursor_id: int = 0  # zero should be ignored
+
+    sort: SortType = SortType.time
 
 
 class SitePost(BaseModel): ...
