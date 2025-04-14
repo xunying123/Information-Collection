@@ -46,7 +46,10 @@ class Group(Base):
     id: Mapped[intpk]
     name: Mapped[str] = mapped_column(nullable=False)
     users: Mapped[list["User"]] = relationship("User", back_populates="group")
-    categories: Mapped[list["Category"]] = relationship("Category", back_populates="group")
+    categories: Mapped[list["Category"]] = relationship(
+        "Category", back_populates="group"
+    )
+    subjects: Mapped[list["Subject"]] = relationship("Subject", back_populates="group")
     # style related fields
     logo: Mapped[url_type] = mapped_column(nullable=True)
     background: Mapped[url_type] = mapped_column(nullable=True)
@@ -156,26 +159,36 @@ class Bookmark(Base, UseTimestamps):
     page = relationship(Page)
 
 
-class KeywordSubject(enum.Enum):
-    UNSPECIFIED = "unspecified"
-    TITLE = "标题"
-    ORGANIZER = "主办单位"
-    THEME = "活动主题"
-    PARTICIPANT = "参与对象"
+class Subject(Base):
+    id: Mapped[intpk]
+    name: Mapped[str]
+    group_id: Mapped[group_foreign_key]
+    group: Mapped[Group] = relationship(Group, back_populates="categories")
+    keywords = relationship(
+        "Keyword", secondary="subject_keyword_relation", back_populates="subject"
+    )
 
 
 class Keyword(Base):
     id: Mapped[intpk]
     word: Mapped[str] = mapped_column(unique=True, nullable=False)
-    subject: Mapped[str] = mapped_column(
-        nullable=False,
-        server_default=KeywordSubject.UNSPECIFIED.value,
+    subject = relationship(
+        Subject, secondary="subject_keyword_relation", back_populates="keywords"
     )
     pages = relationship(
         Page, secondary="page_keyword_relation", back_populates="keywords"
     )
     users = relationship(
         User, secondary="user_keyword_relation", back_populates="keywords"
+    )
+
+
+class SubjectKeywordRelation(Base):
+    subject_id: Mapped[int] = mapped_column(
+        ForeignKey("subject.id"), nullable=False, primary_key=True
+    )
+    keyword_id: Mapped[int] = mapped_column(
+        ForeignKey("keyword.id"), nullable=False, primary_key=True
     )
 
 
@@ -206,7 +219,7 @@ class UserSiteRelation(Base):
     )
     category_id: Mapped[int] = mapped_column(
         ForeignKey("category.id"), nullable=True, primary_key=True
-    ) # allow NULL for independent subscribe
+    )  # allow NULL for independent subscribe
     negative: Mapped[bool] = mapped_column(Boolean, server_default="0")
 
 
