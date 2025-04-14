@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, Body
 from sqlalchemy import exists, or_, select, func, delete
 from common.models import *
 from server import schema
+from server.manager.category import CategoryManager
 from ..manager.user import current_user, login_required
 from ..manager.db import db
 from ..manager.group import current_group, group_admin_required, group_required
@@ -30,11 +31,21 @@ def get_pages(data: schema.PageGet):
                 & (PageKeywordRelation.page_id == Page.id)
             )
         )
-    if data.subscribe:
+    if data.subscribe > 0:
         stmt = stmt.where(
             exists().where(
                 (UserSiteRelation.user_id == current_user.id)
                 & (UserSiteRelation.site_id == Site.id)
+                & (UserSiteRelation.negative == False)
+                & (Site.id == Page.site_id)
+            )
+        )
+    elif data.subscribe < 0:
+        stmt = stmt.where(
+            ~exists().where(
+                (UserSiteRelation.user_id == current_user.id)
+                & (UserSiteRelation.site_id == Site.id)
+                & (UserSiteRelation.negative == True)
                 & (Site.id == Page.site_id)
             )
         )
@@ -89,18 +100,19 @@ def get_pages(data: schema.PageGet):
     return {"data": result, "cursor_id": new_cursor_id}
 
 
-@router.get("/category", response_model=list[schema.Category])
+@router.get("/category")
 @group_required
-def get_categories():
-    return current_group.categories
+def get_categories() -> list[schema.Category]:
+    res = list(current_group.categories)
+    res.append(CategoryManager.get_subscribe_category())
+    return res
 
 
+# TODO: test this API with filter_unsubscribed = True
 @router.get("/category/{cate_id}", response_model=schema.Category)
 @login_required
 def get_category(cate_id: int):
-    stmt = select(Category).where(Category.id == cate_id)
-    res = db.scalar(stmt)
-    return res
+    return CategoryManager.get_category_by_id(cate_id)
 
 
 @router.post("/category", response_model=schema.OperationMsg)
@@ -129,11 +141,14 @@ def add_site_to_category(cate_id: int = Body(), site_id: int = Body()):
         != current_group.id
     ):
         raise HTTPException(PRECONDITION_FAILED, "category not in current group")
-    if db.scalar(
-        select(CategorySiteRelation)
-        .where(CategorySiteRelation.category_id == cate_id)
-        .where(CategorySiteRelation.site_id == site_id)
-    )  is not None:
+    if (
+        db.scalar(
+            select(CategorySiteRelation)
+            .where(CategorySiteRelation.category_id == cate_id)
+            .where(CategorySiteRelation.site_id == site_id)
+        )
+        is not None
+    ):
         return schema.OperationMsg(message="site already added into this category")
     rel = CategorySiteRelation(site_id=site_id, category_id=cate_id)
     db.add(rel)
@@ -148,7 +163,11 @@ def remove_site_from_category(cate_id: int = Body(), site_id: int = Body()):
         != current_group.id
     ):
         raise HTTPException(PRECONDITION_FAILED, "category not in current group")
-    stmt = delete(CategorySiteRelation).where(CategorySiteRelation.category_id == cate_id).where(CategorySiteRelation.site_id == site_id)
+    stmt = (
+        delete(CategorySiteRelation)
+        .where(CategorySiteRelation.category_id == cate_id)
+        .where(CategorySiteRelation.site_id == site_id)
+    )
     db.execute(stmt)
     return {}
 

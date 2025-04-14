@@ -1,4 +1,4 @@
-from sqlalchemy import ARRAY, Text, String, Boolean, Enum
+from sqlalchemy import ARRAY, Text, String, Boolean
 from sqlalchemy import ForeignKey, Text, func
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 from typing_extensions import Annotated

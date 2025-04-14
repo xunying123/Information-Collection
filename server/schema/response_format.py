@@ -2,13 +2,14 @@ from typing import Generic, Literal, TypeVar
 
 # from common.models import *
 from pydantic import (
-    AfterValidator,
     AliasPath,
     BaseModel,
     Field,
+    computed_field,
     field_validator,
 )
 from datetime import datetime
+from server.manager.category import CategoryManager
 
 _T = TypeVar("_T")
 
@@ -17,9 +18,6 @@ class ConfigBaseModel(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class SessionToken(ConfigBaseModel):
-    access_token: str
-    token_type: Literal["Bearer"]
 
 
 class CategoryItem(ConfigBaseModel):
@@ -28,7 +26,10 @@ class CategoryItem(ConfigBaseModel):
 
 
 class Category(CategoryItem):
-    sites: list["SiteItem"] | None = None
+    @computed_field
+    @property
+    def sites(self) -> list["SiteItem"]:
+        return CategoryManager.get_category_sites(self.id)
 
 
 class IncludedCategory:
@@ -43,6 +44,10 @@ class IncludeSite:
     site: str = Field(validation_alias=AliasPath("site", "name"))
     site_icon: str | None = Field(validation_alias=AliasPath("site", "icon"))
 
+class Keyword(ConfigBaseModel):
+    id: int
+    word: str
+    subject: str
 
 class PageItem(ConfigBaseModel, IncludeSite):
     id: int
@@ -50,6 +55,8 @@ class PageItem(ConfigBaseModel, IncludeSite):
     title: str
     content: str
     publish_time: datetime
+    score: int
+    keywords: list[Keyword]
 
     @field_validator("content", mode="after")
     @classmethod
@@ -67,16 +74,8 @@ class SiteItem(ConfigBaseModel):
 class Site(SiteItem):
     pages: list[PageItem]
 
-
-class Keyword(ConfigBaseModel):
-    id: int
-    word: str
-    subject: str
-
-
 class Page(PageItem):
     full_content: str
-    keywords: list[Keyword]
 
 
 class OperationMsg(ConfigBaseModel):
