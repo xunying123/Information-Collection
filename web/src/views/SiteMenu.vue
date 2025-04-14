@@ -77,7 +77,6 @@ onBeforeUnmount(() => {
 <template>
   <!-- 绑定基础类 .full 与动态颜色类 -->
   <div :class="['full', sidebarClass]">
-    <!-- <div class="full"> -->
     <router-link to="/">
       <img src="https://www.sjtu.edu.cn/resource/assets/img/LogoWhite.png" class="logo" />
     </router-link>
@@ -133,14 +132,6 @@ onBeforeUnmount(() => {
         </el-menu-item>
       </el-menu>
     </ElScrollbar>
-    <div class="bottom-buttons">
-      <router-link to="/user/subscriptions">
-        <el-button plain type="primary">管理订阅源</el-button>
-      </router-link>
-      <router-link to="/user/keywords">
-        <el-button plain type="primary">管理关键词</el-button>
-      </router-link>
-    </div>
     <div class="overlay">
       <img src="/static/image_21_1-1.png" class="overlay-image" />
     </div>
@@ -198,11 +189,6 @@ onBeforeUnmount(() => {
   margin-top: 0.2em;
 }
 
-.bottom-buttons {
-  display: flex;
-  margin: 0.5em;
-}
-
 .el-sub-menu__title {
   font-size: 1.2em !important;
   color: #fff;
@@ -216,50 +202,5 @@ onBeforeUnmount(() => {
 
 div.full {
   color: #fff;
-}
-
-/* 各预设颜色样式 */
-
-/* 蓝色方案 */
-.full-blue {
-  --el-menu-bg-color: rgba(0, 64, 152, 0);
-  --el-menu-active-color: #ffffff;
-  background: linear-gradient(180deg, rgb(0, 0, 102), rgb(0, 64, 152), rgb(0, 104, 179));
-  --el-menu-hover-bg-color: rgba(0, 134, 209, 1);
-}
-
-/* 黄色方案 */
-.full-yellow {
-  --el-menu-bg-color: rgba(253, 208, 0, 0);
-  --el-menu-active-color: #ffffff;
-  /* 渐变背景：上方采用深黄色，下方采用中性黄色，核心色不变 */
-  background: linear-gradient(180deg, rgb(200, 160, 0), rgb(253, 208, 0), rgb(220, 180, 0));
-  --el-menu-text-color: #ffffff;
-  /* 悬停时采用稍深的色调 */
-  --el-menu-hover-bg-color: rgb(210, 170, 0);
-}
-
-/* 红色方案 */
-.full-red {
-  --el-menu-bg-color: rgba(167, 32, 56, 0);
-  --el-menu-active-color: #ffffff;
-  background: linear-gradient(180deg, rgb(167, 0, 6), rgb(167, 32, 56), rgb(167, 72, 83));
-  --el-menu-hover-bg-color: rgb(167, 102, 113);
-}
-
-/* 绿色方案 */
-.full-green {
-  --el-menu-bg-color: rgba(51, 141, 39, 0);
-  --el-menu-active-color: #ffffff;
-  background: linear-gradient(180deg, rgb(51, 77, 0), rgb(51, 141, 39), rgb(51, 181, 66));
-  --el-menu-hover-bg-color: rgb(51, 211, 96);
-}
-
-/* 橙色方案 */
-.full-orange {
-  --el-menu-bg-color: rgba(240, 130, 0, 0);
-  --el-menu-active-color: #ffffff;
-  background: linear-gradient(180deg, rgb(180, 90, 0), rgb(240, 130, 0), rgb(255, 170, 40));
-  --el-menu-hover-bg-color: rgb(255, 180, 70);
 }
 </style>

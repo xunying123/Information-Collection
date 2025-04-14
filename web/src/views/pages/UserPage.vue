@@ -14,6 +14,36 @@
       </el-button>
     </div>
 
+    <h2>定制管理</h2>
+    <div class="custom-management">
+      <el-button plain type="primary" @click="openSubDrawer">管理订阅源</el-button>
+      <el-button plain type="primary" @click="openKeyDrawer">管理关键词</el-button>
+    </div>
+
+    <!-- 管理订阅源 Drawer -->
+    <el-drawer
+      title="管理订阅源"
+      v-model="showSubDrawer"
+      direction="rtl"
+      size="40%"
+      @close="handleDrawerClose"
+    >
+      <!-- 引入管理订阅源组件 -->
+      <SubscriptionsPage />
+    </el-drawer>
+
+    <!-- 管理关键词 Drawer -->
+    <el-drawer
+      title="管理关键词"
+      v-model="showKeyDrawer"
+      direction="rtl"
+      size="40%"
+      @close="handleDrawerClose"
+    >
+      <!-- 引入管理关键词组件 -->
+      <KeywordsPage />
+    </el-drawer>
+
     <router-view></router-view>
     <h2>背景设置</h2>
     <div class="bg-setting">
@@ -35,11 +65,10 @@
         <el-button type="primary" @click="confirmUpload" :disabled="!tempImage">
           确认上传
         </el-button>
-        <el-button type="warning" @click="restoreDefault"> 恢复默认 </el-button>
+        <el-button type="warning" @click="restoreDefault">恢复默认</el-button>
       </div>
     </div>
 
-    <!-- 新增侧边栏颜色设置项 -->
     <h2>侧边栏颜色</h2>
     <div class="sidebar-setting">
       <el-radio-group v-model="sidebarColor" @change="changeSidebarColor">
@@ -53,7 +82,7 @@
 
     <div class="section">
       <div class="button-container">
-        <el-button size="large" type="danger" @click="confirmLogout">退出登录</el-button>
+        <el-button size="large" type="danger" @click="confirmLogout"> 退出登录 </el-button>
       </div>
     </div>
   </div>
@@ -64,6 +93,10 @@ import { inject, ref, computed } from 'vue'
 import { ElNotification, ElMessageBox } from 'element-plus'
 import { user_key } from '@/key'
 import { logout, leaveGroup } from '@/sdk'
+
+// 引入原有的管理组件
+import SubscriptionsPage from '@/views/pages/SubscriptionsPage.vue'
+import KeywordsPage from '@/views/pages/KeywordsPage.vue'
 
 const user = inject(user_key)!
 
@@ -206,6 +239,25 @@ const quitGroup = async () => {
     console.log('退出组织操作已取消', error)
   }
 }
+
+// 控制抽屉显示的变量
+const showSubDrawer = ref(false)
+const showKeyDrawer = ref(false)
+
+// 打开订阅源管理抽屉
+const openSubDrawer = () => {
+  showSubDrawer.value = true
+}
+
+// 打开关键词管理抽屉
+const openKeyDrawer = () => {
+  showKeyDrawer.value = true
+}
+
+function handleDrawerClose() {
+  // 触发网页的 reload
+  window.location.reload()
+}
 </script>
 
 <style scoped>
@@ -257,7 +309,14 @@ const quitGroup = async () => {
   width: 300px;
 }
 
-/* 侧边栏颜色设置区域 */
+/* 定制管理部分样式 */
+.custom-management {
+  display: flex;
+  gap: 16px;
+  margin: 20px 0;
+  margin-left: 1em;
+}
+
 .sidebar-setting {
   margin: 20px;
 }
