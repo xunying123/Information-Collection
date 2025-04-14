@@ -55,6 +55,9 @@ class Group(Base):
     # style related fields
     logo: Mapped[url_type] = mapped_column(nullable=True)
     background: Mapped[url_type] = mapped_column(nullable=True)
+    sidebar_show_mode: Mapped[str] = mapped_column(
+        nullable=True, server_default="category"
+    )  # category or subject
 
 
 group_foreign_key = Annotated[

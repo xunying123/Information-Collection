@@ -90,6 +90,7 @@ class Group(ConfigBaseModel):
     name: str
     logo: Url | None = None
     background: Url | None = None
+    sidebar_show_mode: Literal["category", "subject"] = "category"
 
 
 class User(ConfigBaseModel):
