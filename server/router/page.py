@@ -131,8 +131,11 @@ def get_pages(data: schema.PageGet):
         result.extend(db.scalars(stmt).all())
 
     if sites_id is not None:
-        for site_id in sites_id:
-            get_once(stmt.where(Page.site_id == site_id))
+        if data.count_for_each_site:
+            for site_id in sites_id:
+                get_once(stmt.where(Page.site_id == site_id))
+        else:
+            get_once(stmt.where(Page.site_id.in_(sites_id)))
     else:
         get_once(stmt)
     new_cursor_id = min([x.id for x in result]) if result else None

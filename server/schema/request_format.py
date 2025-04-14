@@ -26,6 +26,10 @@ class PageGet(BaseModel):
 
     count: int = AppConfig.default_paging_size
     cursor_id: int = 0  # zero should be ignored
+    count_for_each_site: bool = Field(
+        False,
+        description="get count pages for each site and concat without further sort",
+    )
 
     sort: SortType = SortType.time
 
@@ -33,4 +37,4 @@ class PageGet(BaseModel):
 class SitePost(BaseModel): ...
 
 
-__all__ = ["PageGet"]
+__all__ = ["PageGet", "SortType"]
