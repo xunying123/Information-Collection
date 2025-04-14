@@ -20,8 +20,6 @@ class ConfigBaseModel(BaseModel):
     model_config = {"from_attributes": True}
 
 
-
-
 class CategoryItem(ConfigBaseModel):
     id: int | None = None
     name: str
@@ -46,10 +44,11 @@ class IncludeSite:
     site: str = Field(validation_alias=AliasPath("site", "name"))
     site_icon: str | None = Field(validation_alias=AliasPath("site", "icon"))
 
+
 class Keyword(ConfigBaseModel):
     id: int
     word: str
-    subject: str
+
 
 class PageItem(ConfigBaseModel, IncludeSite):
     id: int
@@ -75,6 +74,7 @@ class SiteItem(ConfigBaseModel):
 
 class Site(SiteItem):
     pages: list[PageItem]
+
 
 class Page(PageItem):
     full_content: str
@@ -114,3 +114,9 @@ class PagedQuery(ConfigBaseModel, Generic[_T]):
     cursor_id: int | None = None
     has_next: bool = None
     data: list[_T] = Field(default_factory=list)
+
+
+class Subject(ConfigBaseModel):
+    id: int
+    name: str
+    keywords: list[Keyword]

@@ -36,6 +36,8 @@ def the_least_error_handler(request: Request, exc: Exception):
 app.include_router(user_router)
 app.include_router(page_router)
 app.include_router(subscrbie_router)
+app.include_router(category_router)
+app.include_router(subject_router)
 
 
 @app.get("/", include_in_schema=False)

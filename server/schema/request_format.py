@@ -4,14 +4,17 @@ from datetime import datetime
 
 
 class PageGet(BaseModel):
-    category: int | list[int] | None = None
     site: int | None = None
     today: bool = False
     bookmarked: bool = False
-    keyword: bool = False
-    subscribe: int = Field(0, description="0: ignored, 1: only subscribed, -1: remove unsubscribed")
+    filter_user_keyword: bool = False
+    subscribe: int = 0  # 0: all, 1: subscribe, -1: unsubscribe
+    category: int | list[int] | None = None
+    subject: int | list[int] | None = None
+
     time_start: datetime | None = None
     time_end: datetime | None = None
+
     search_title: str | None = None
     search_content: str | None = None
 
@@ -19,10 +22,7 @@ class PageGet(BaseModel):
     cursor_id: int = 0  # zero should be ignored
 
 
-class SitePost(BaseModel):
-    ...
+class SitePost(BaseModel): ...
 
 
-
-
-__all__ = ['PageGet']
+__all__ = ["PageGet"]
