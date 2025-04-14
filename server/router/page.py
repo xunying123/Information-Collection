@@ -17,9 +17,19 @@ def get_pages(data: schema.PageGet):
 
     match data.sort:
         case schema.SortType.time:
-            stmt = stmt.order_by(Page.publish_time.desc())
+            stmt = stmt.order_by(Page.id.desc())
+            if data.cursor_id:
+                stmt = stmt.where(Page.id < data.cursor_id)
         case schema.SortType.score:
-            stmt = stmt.order_by(Page.score.desc())
+            stmt = stmt.order_by(Page.score.desc(), Page.id.desc())
+            if data.cursor_id:
+                cursor_score = db.scalar(
+                    select(Page.score).where(Page.id == data.cursor_id)
+                )
+                stmt = stmt.where(
+                    (Page.score < cursor_score)
+                    | (Page.score == cursor_score) & (Page.id < data.cursor_id)
+                )
 
     # restrict to current user
     if current_user.group_id:
@@ -77,8 +87,6 @@ def get_pages(data: schema.PageGet):
                 & (Site.id == Page.site_id)
             )
         )
-    if data.cursor_id > 0:
-        stmt = stmt.where(Page.id < data.cursor_id)
     if data.count > 0:
         stmt = stmt.limit(data.count)
     if data.time_start:

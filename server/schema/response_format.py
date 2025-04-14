@@ -89,7 +89,7 @@ class Group(ConfigBaseModel):
     id: int
     name: str
     logo: Url | None = None
-    background: Url | None = None
+    background: str | None = None
     sidebar_show_mode: Literal["category", "subject"] = "category"
 
 
