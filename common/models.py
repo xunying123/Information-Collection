@@ -1,4 +1,4 @@
-from sqlalchemy import ARRAY, Text, String, Boolean
+from sqlalchemy import ARRAY, Column, Text, String, Boolean, DateTime
 from sqlalchemy import ForeignKey, Text, func
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 from typing_extensions import Annotated
@@ -36,9 +36,11 @@ url_type = Annotated[str, mapped_column(String(2048))]
 
 
 class UseTimestamps:
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(
-        server_default=func.now(), onupdate=func.now()
+    created_at: Mapped[datetime] = Column(DateTime(True), server_default=func.now())
+    updated_at: Mapped[datetime] = Column(
+        DateTime(True),
+        server_default=func.now(),
+        onupdate=func.now(),
     )
 
 
