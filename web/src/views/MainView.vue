@@ -1,9 +1,15 @@
 <script lang="ts" setup>
-import { user_key, filter_subscribe_key, filter_keyword_key, all_categories_key } from '@/key'
+import {
+  user_key,
+  filter_subscribe_key,
+  filter_keyword_key,
+  all_categories_key,
+  all_subjects_key
+} from '@/key'
 import SiteMenu from '@/views/SiteMenu.vue'
 import { NLayout, NLayoutSider, NLayoutContent } from 'naive-ui'
 import { provide, ref, computed, inject } from 'vue'
-import type { Category } from '@/sdk'
+import type { Category, Subject } from '@/sdk'
 
 let filter_subscribe = ref(localStorage.getItem('filter_subscribe') === 'true')
 provide(filter_subscribe_key, filter_subscribe)
@@ -14,15 +20,16 @@ provide(filter_keyword_key, filter_keyword)
 let allCategories = ref<Category[]>([])
 provide(all_categories_key, allCategories)
 
+let subjects = ref<Subject[]>([])
+provide(all_subjects_key, subjects)
+
 const user = inject(user_key)!
-// 初始化背景图片 URL，从 localStorage 获取，如果没有则使用默认值
 const bgUrl = ref(
   localStorage.getItem('bgUrl') ||
-  user.value!.group!.background ||  
-  'https://mc.sjtu.cn/wp-content/uploads/2022/10/%E5%A4%9C%E6%99%9A%E4%B8%9C%E5%A4%A7%E9%97%A8.jpg'
+    user.value!.group!.background ||
+    'https://mc.sjtu.cn/wp-content/uploads/2022/10/%E5%A4%9C%E6%99%9A%E4%B8%9C%E5%A4%A7%E9%97%A8.jpg'
 )
 
-// 监听自定义事件更新背景图片 URL
 window.addEventListener('bgUrlChanged', () => {
   bgUrl.value = localStorage.getItem('bgUrl') || bgUrl.value
 })

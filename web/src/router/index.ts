@@ -42,6 +42,13 @@ const router = createRouter({
           children: [page_rule('category')]
         },
         {
+          path: 'subject/:subject_id(\\d+)',
+          name: 'subject',
+          props: true,
+          component: () => import('@/views/pages/SubjectPages.vue'),
+          children: [page_rule('subject')]
+        },
+        {
           path: 'site/:site_id(\\d+)',
           name: 'site',
           props: true,

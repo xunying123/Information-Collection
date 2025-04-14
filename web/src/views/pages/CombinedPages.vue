@@ -10,6 +10,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, inject, provide } from 'vue'
+import { all_subjects_key } from '@/key'
 import ShowCards from '@/components/ShowCards.vue'
 import useScrollFetch from '@/useScrollFetch'
 import {
@@ -23,6 +24,7 @@ const props = defineProps<{
   pageType: 'all' | 'daily' | 'site' | 'category'
   site_id?: String
   category_id?: String
+  subject_id?: String
 }>()
 
 const EmptySite: Site = { id: 0, name: '', url: '', pages: [], icon: '' }
@@ -31,6 +33,7 @@ let searchKeyword = ref('')
 provide(search_keyword_key, searchKeyword)
 
 let allCategories = inject(all_categories_key)!
+let subjects = inject(all_subjects_key)!
 
 let pages = ref<PageItem[]>([])
 let loading = ref(true)
@@ -50,7 +53,7 @@ const fetchPages = (count: number) => {
   }, 200)
   let body: PageGet = {
     count: count,
-    keyword: filter_keyword.value,
+    filter_user_keyword: filter_keyword.value,
     subscribe: 0
   }
   if (searchKeyword.value) {
@@ -60,9 +63,20 @@ const fetchPages = (count: number) => {
   if (selectedCategories.value && selectedCategories.value.length > 0) {
     body.category = selectedCategories.value
   }
+  if (props.subject_id) {
+    body.subject = Number(props.subject_id)
+  }
   switch (props.pageType) {
     case 'all':
       title.value = '全部文章'
+      if (props.subject_id) {
+        console.log('subjects:', subjects.value)
+        const subject = subjects.value.find((subject) => subject.id === Number(props.subject_id))
+        console.log('subject:', subject)
+        if (subject) {
+          title.value = subject.name
+        }
+      }
       break
     case 'daily':
       body.today = true
@@ -127,9 +141,9 @@ const updateSelectedCategories = () => {
   if (!siteSum) {
     siteSum = 1
   }
-  console.log('siteSum:', siteSum)
+  // console.log('siteSum:', siteSum)
   siteSum = Math.ceil(count.value / siteSum)
-  console.log('siteSum:', siteSum)
+  // console.log('siteSum:', siteSum)
   fetchPages(siteSum)
 }
 
@@ -150,16 +164,19 @@ watch(searchKeyword, () => {
   fetchPages(count.value)
 })
 
-watch([() => props.site_id, () => props.category_id], ([newSiteId, newCategoryId]) => {
-  if (newSiteId || newCategoryId) {
-    fetchPages(count.value)
-    if (props.pageType === 'site' && newSiteId) {
-      updateSite()
-    }
-    if (props.pageType === 'category' && newCategoryId) {
-      updateCategory()
+watch(
+  [() => props.site_id, () => props.category_id, () => props.subject_id],
+  ([newSiteId, newCategoryId, newSubjectId]) => {
+    if (newSiteId || newCategoryId || newSubjectId) {
+      fetchPages(count.value)
+      if (props.pageType === 'site' && newSiteId) {
+        updateSite()
+      }
+      if (props.pageType === 'category' && newCategoryId) {
+        updateCategory()
+      }
     }
   }
-})
+)
 const { handleScroll, handleWheel } = useScrollFetch(fetchPages, count.value)
 </script>

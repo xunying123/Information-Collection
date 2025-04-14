@@ -44,7 +44,16 @@
       <KeywordsPage />
     </el-drawer>
 
-    <router-view></router-view>
+    <!-- <router-view></router-view> -->
+
+    <h2>侧边栏显示模式</h2>
+    <div class="sidebar-mode-setting">
+      <el-radio-group v-model="sidebarMode" @change="changeSidebarMode">
+        <el-radio label="sites" border>按照网站分类</el-radio>
+        <el-radio label="subjects" border>按照文章分类</el-radio>
+      </el-radio-group>
+    </div>
+
     <h2>背景设置</h2>
     <div class="bg-setting">
       <el-upload
@@ -89,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import { inject, ref, computed } from 'vue'
+import { inject, ref, computed, onMounted } from 'vue'
 import { ElNotification, ElMessageBox } from 'element-plus'
 import { user_key } from '@/key'
 import { logout, leaveGroup } from '@/sdk'
@@ -106,6 +115,7 @@ const userDisplayGroup = computed(() => {
     : '未属于任何组织'
 })
 
+// 侧边栏颜色设置
 const sidebarColor = ref(localStorage.getItem('sidebarColor') || 'blue')
 const changeSidebarColor = (val: string) => {
   localStorage.setItem('sidebarColor', val)
@@ -126,6 +136,25 @@ const changeSidebarColor = (val: string) => {
     type: 'success'
   })
 }
+
+// 侧边栏显示模式设置
+const sidebarMode = ref(localStorage.getItem('sidebarMode') || 'sites')
+const changeSidebarMode = (val: string) => {
+  localStorage.setItem('sidebarMode', val)
+  window.dispatchEvent(new Event('sidebarModeChanged'))
+  ElNotification({
+    title: '成功',
+    message: '侧边栏显示模式已切换为 ' + (val === 'sites' ? '按照网站分类' : '按照文章分类'),
+    type: 'success'
+  })
+}
+
+onMounted(() => {
+  // 确保初始化时设置默认值
+  if (!localStorage.getItem('sidebarMode')) {
+    localStorage.setItem('sidebarMode', 'sites')
+  }
+})
 
 const confirmLogout = async () => {
   try {
@@ -283,7 +312,7 @@ function handleDrawerClose() {
 
 .section {
   margin-bottom: 24px;
-  height: 1em;
+  height: 0.5em;
 }
 
 .button-container {
@@ -295,7 +324,7 @@ function handleDrawerClose() {
 .button-group {
   display: flex;
   gap: 16px;
-  margin-top: 16px;
+  /* margin-top: 6px; */
 }
 
 .bg-setting {
@@ -318,6 +347,10 @@ function handleDrawerClose() {
 }
 
 .sidebar-setting {
+  margin: 20px;
+}
+
+.sidebar-mode-setting {
   margin: 20px;
 }
 </style>

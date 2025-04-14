@@ -10,8 +10,8 @@ import BookmarkSvg from '@/components/svg/BookmarkSvg.vue'
 import FolderPlusSVG from '@/components/svg/FolderPlusSVG.vue'
 import LayersSVG from '@/components/svg/LayersSVG.vue'
 import HelpSVG from '@/components/svg/HelpSVG.vue'
-import { filter_subscribe_key, user_key } from '@/key'
-import { getCategories } from '@/sdk'
+import { filter_subscribe_key, user_key, all_subjects_key } from '@/key'
+import { getCategories, getSubjects } from '@/sdk'
 
 interface CateSite {
   cate_id: number
@@ -24,6 +24,10 @@ const user = inject(user_key)!
 const router = useRouter()
 
 let sites = reactive<CateSite[]>([])
+let subjects = inject(all_subjects_key)!
+
+// 侧边栏显示模式
+const sidebarMode = ref(localStorage.getItem('sidebarMode') || 'sites')
 
 async function loadSites() {
   const { data, error } = await getCategories()
@@ -48,17 +52,56 @@ async function loadSites() {
   }
 }
 
+async function loadSubjects() {
+  try {
+    const { data, error } = await getSubjects()
+    if (error) {
+      console.error(error)
+      return
+    }
+    // 清空主题数组
+    subjects.value.splice(0, subjects.value.length)
+    // 添加新的主题数据
+    if (data) {
+      for (let subject of data) {
+        subjects.value.push(subject)
+      }
+    }
+    // console.log('主题数据:', subjects.value)
+  } catch (error) {
+    console.error('加载主题失败:', error)
+  }
+}
+
+function loadSidebarData() {
+  if (sidebarMode.value === 'sites') {
+    loadSites()
+  } else {
+    loadSubjects()
+  }
+}
+
 function handleSubMenuClick(index: string) {
   router.push(index)
 }
 
 watch(filter_subscribe, () => {
-  loadSites()
+  loadSidebarData()
 })
 
+watch(sidebarMode, () => {
+  loadSidebarData()
+})
+
+// 侧边栏显示模式变更监听
+const updateSidebarMode = () => {
+  sidebarMode.value = localStorage.getItem('sidebarMode') || 'sites'
+}
+
 onMounted(() => {
-  loadSites()
+  loadSidebarData()
   window.addEventListener('sidebarColorChanged', updateSidebarColor)
+  window.addEventListener('sidebarModeChanged', updateSidebarMode)
 })
 
 // 侧边栏颜色部分：从 localStorage 读取颜色，默认为 'blue'
@@ -71,6 +114,7 @@ const updateSidebarColor = () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('sidebarColorChanged', updateSidebarColor)
+  window.removeEventListener('sidebarModeChanged', updateSidebarMode)
 })
 </script>
 
@@ -106,26 +150,45 @@ onBeforeUnmount(() => {
           <FolderPlusSVG class="menu-icon" />
           <span class="menu-top">管理组织</span>
         </el-menu-item>
-        <el-sub-menu
-          v-for="cate in sites"
-          :key="cate.cate_id"
-          :index="`/category/` + String(cate.cate_id)"
-        >
-          <template #title>
+
+        <!-- 按网站分类显示 -->
+        <template v-if="sidebarMode === 'sites'">
+          <el-sub-menu
+            v-for="cate in sites"
+            :key="cate.cate_id"
+            :index="`/category/` + String(cate.cate_id)"
+          >
+            <template #title>
+              <el-icon>
+                <Location />
+              </el-icon>
+              <span>{{ cate.cate_name }}</span>
+            </template>
+            <el-menu-item
+              v-for="site in cate.sites"
+              :key="site.id"
+              :index="`/site/` + site.id"
+              style="margin-left: 2em"
+            >
+              {{ site.name }}
+            </el-menu-item>
+          </el-sub-menu>
+        </template>
+
+        <!-- 按文章分类显示 -->
+        <template v-else>
+          <el-menu-item
+            v-for="subject in subjects"
+            :key="subject.id"
+            :index="`/subject/` + subject.id"
+          >
             <el-icon>
               <Location />
             </el-icon>
-            <span>{{ cate.cate_name }}</span>
-          </template>
-          <el-menu-item
-            v-for="site in cate.sites"
-            :key="site.id"
-            :index="`/site/` + site.id"
-            style="margin-left: 2em"
-          >
-            {{ site.name }}
+            <span>{{ subject.name }}</span>
           </el-menu-item>
-        </el-sub-menu>
+        </template>
+
         <el-menu-item index="/help">
           <HelpSVG class="menu-icon" />
           <span class="menu-top">帮助</span>
