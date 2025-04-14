@@ -47,6 +47,9 @@ class Group(Base):
     name: Mapped[str] = mapped_column(nullable=False)
     users: Mapped[list["User"]] = relationship("User", back_populates="group")
     categories: Mapped[list["Category"]] = relationship("Category", back_populates="group")
+    # style related fields
+    logo: Mapped[url_type] = mapped_column(nullable=True)
+    background: Mapped[url_type] = mapped_column(nullable=True)
 
 
 group_foreign_key = Annotated[
