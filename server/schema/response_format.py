@@ -9,6 +9,8 @@ from pydantic import (
     field_validator,
 )
 from datetime import datetime
+
+from pydantic_core import Url
 from server.manager.category import CategoryManager
 
 _T = TypeVar("_T")
@@ -86,6 +88,8 @@ class OperationMsg(ConfigBaseModel):
 class Group(ConfigBaseModel):
     id: int
     name: str
+    logo: Url
+    background: Url
 
 
 class User(ConfigBaseModel):
