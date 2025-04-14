@@ -87,7 +87,13 @@ def get_pages(data: schema.PageGet):
     if type(data.subject) is int:
         data.subject = [data.subject]
     if type(data.subject) is list:
-        pass  # TODO
+        stmt = stmt.join(
+            SubjectKeywordRelation, SubjectKeywordRelation.subject_id.in_(data.subject)
+        ).join(
+            PageKeywordRelation,
+            (PageKeywordRelation.keyword_id == SubjectKeywordRelation.keyword_id)
+            & (PageKeywordRelation.page_id == Page.id),
+        )
 
     result: list[Page] = []
 
