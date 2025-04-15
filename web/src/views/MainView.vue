@@ -8,7 +8,7 @@ import {
 } from '@/key'
 import SiteMenu from '@/views/SiteMenu.vue'
 import { NLayout, NLayoutSider, NLayoutContent } from 'naive-ui'
-import { provide, ref, computed, inject } from 'vue'
+import { provide, ref, inject } from 'vue'
 import type { Category, Subject } from '@/sdk'
 
 let filter_subscribe = ref(localStorage.getItem('filter_subscribe') === 'true')
@@ -33,10 +33,6 @@ const bgUrl = ref(
 window.addEventListener('bgUrlChanged', () => {
   bgUrl.value = localStorage.getItem('bgUrl') || bgUrl.value
 })
-
-// const bgStyle = computed(() => {
-//   return `linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('${bgUrl.value}')`
-// })
 </script>
 <template>
   <NLayout has-sider class="full-height">

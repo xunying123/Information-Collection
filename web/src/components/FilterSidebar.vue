@@ -45,8 +45,8 @@ defineExpose({
       <!-- 关键词分类筛选 -->
       <div class="filter-group">
         <h3>关键词分类</h3>
-        <el-checkbox-group 
-          :model-value="selectedSubjects" 
+        <el-checkbox-group
+          :model-value="selectedSubjects"
           @update:model-value="emit('update:selectedSubjects', $event)"
         >
           <el-checkbox-button v-for="cat in subjects" :key="cat.id" :value="cat.id">
@@ -58,8 +58,8 @@ defineExpose({
       <!-- 原有类别筛选 -->
       <div class="filter-group">
         <h3>网站类别</h3>
-        <el-checkbox-group 
-          :model-value="selectedCategories" 
+        <el-checkbox-group
+          :model-value="selectedCategories"
           @update:model-value="emit('update:selectedCategories', $event)"
         >
           <el-checkbox-button v-for="cate in allCategories" :key="cate.id" :value="cate.id">
@@ -71,18 +71,18 @@ defineExpose({
       <!-- 时间范围筛选 -->
       <div class="filter-group">
         <h3>时间范围</h3>
-        <el-segmented 
-          :model-value="selectedTimeRange" 
-          @update:model-value="emit('update:selectedTimeRange', $event)" 
-          :options="timeOptions" 
+        <el-segmented
+          :model-value="selectedTimeRange"
+          @update:model-value="emit('update:selectedTimeRange', $event)"
+          :options="timeOptions"
         />
       </div>
 
       <!-- 排序方式 -->
       <div class="filter-group">
         <h3>排序方式</h3>
-        <el-radio-group 
-          :model-value="selectedSortOption" 
+        <el-radio-group
+          :model-value="selectedSortOption"
           @update:model-value="emit('update:selectedSortOption', $event)"
         >
           <el-radio-button value="time">按时间排序</el-radio-button>

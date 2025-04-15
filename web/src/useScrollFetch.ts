@@ -17,7 +17,7 @@ export async function executeWithLock<T>(requestFn: () => Promise<T>): Promise<T
     console.log('请求已在进行中，忽略新请求')
     throw new Error('请求已在进行中')
   }
-  
+
   try {
     lockRequest()
     return await requestFn()

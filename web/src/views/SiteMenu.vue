@@ -28,7 +28,9 @@ let sites = reactive<CateSite[]>([])
 let subjects = inject(all_subjects_key)!
 
 // 侧边栏显示模式
-const sidebarMode = ref(localStorage.getItem('sidebarMode') || user!.value!.group!.sidebar_show_mode || 'category')
+const sidebarMode = ref(
+  localStorage.getItem('sidebarMode') || user!.value!.group!.sidebar_show_mode || 'category'
+)
 
 async function loadSites() {
   const { data, error } = await getCategories()

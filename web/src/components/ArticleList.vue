@@ -23,7 +23,7 @@
                   </NConfigProvider>
                 </div>
                 <router-link :to="`/site/` + page.site_id">
-                  <el-button plain type="info" size="default" style="float: right;">{{
+                  <el-button plain type="info" size="default" style="float: right">{{
                     page.site
                   }}</el-button>
                 </router-link>

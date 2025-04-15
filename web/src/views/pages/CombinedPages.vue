@@ -20,7 +20,15 @@ import {
   filter_keyword_key,
   search_keyword_key
 } from '@/key'
-import { getPages, getSite, getCategory, type PageItem, type Site, type PageGet, type SortType } from '@/sdk'
+import {
+  getPages,
+  getSite,
+  getCategory,
+  type PageItem,
+  type Site,
+  type PageGet,
+  type SortType
+} from '@/sdk'
 import { isRequesting, lockRequest, unlockRequest } from '@/useScrollFetch'
 // import { tr } from 'element-plus/es/locales.mjs'
 const props = defineProps<{
@@ -64,13 +72,13 @@ const fetchPages = (count: number) => {
     count: count,
     filter_user_keyword: filter_keyword.value,
     subscribe: 0,
-    sort: currentSortOption.value,
+    sort: currentSortOption.value
   }
-  
+
   if (timeStart.value) {
     body.time_start = timeStart.value
   }
-  
+
   if (searchKeyword.value) {
     body.search_title = searchKeyword.value
     body.search_content = searchKeyword.value
@@ -177,13 +185,13 @@ onMounted(() => {
   if (savedSortOption) {
     currentSortOption.value = savedSortOption as SortType
   }
-  
+
   const savedTimeRange = localStorage.getItem('selectedTimeRange')
   if (savedTimeRange && savedTimeRange !== 'all') {
     const now = new Date()
     let start: Date
     const days = parseInt(savedTimeRange)
-    
+
     if (days === 1) {
       // 昨天的特殊处理
       start = new Date(now)
@@ -201,10 +209,10 @@ onMounted(() => {
       start.setDate(now.getDate() - days)
       start.setHours(0, 0, 0, 0)
     }
-    
+
     timeStart.value = start.toISOString()
   }
-  
+
   fetchPages(count.value)
   if (props.pageType === 'site' && props.site_id) {
     updateSite()

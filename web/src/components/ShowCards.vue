@@ -27,11 +27,11 @@ const emit = defineEmits(['sortOptionChanged', 'scroll', 'timeRangeChanged'])
 
 watch(selectedTimeRange, (newTimeRange) => {
   localStorage.setItem('selectedTimeRange', newTimeRange)
-  
+
   // 计算时间范围并发送到后端
   const now = new Date()
   let timeStart: string | null = null
-  
+
   if (newTimeRange !== 'all') {
     const days = parseInt(newTimeRange)
     if (days === 1) {
@@ -55,7 +55,7 @@ watch(selectedTimeRange, (newTimeRange) => {
       timeStart = startTime.toISOString()
     }
   }
-  
+
   emit('timeRangeChanged', timeStart)
 })
 
@@ -112,7 +112,7 @@ onMounted(() => {
   const savedNotCateView = localStorage.getItem('notCateView')
   const savedSortOption = localStorage.getItem('selectedSortOption')
   const savedTimeRange = localStorage.getItem('selectedTimeRange')
-  
+
   if (savedView) view.value = savedView
   if (
     !(
@@ -128,14 +128,14 @@ onMounted(() => {
     selectedSortOption.value = savedSortOption
     emit('sortOptionChanged', savedSortOption)
   }
-  
+
   if (savedTimeRange) {
     selectedTimeRange.value = savedTimeRange
-    
+
     // 初始化时也触发时间范围变更事件
     const now = new Date()
     let timeStart: string | null = null
-    
+
     if (savedTimeRange !== 'all') {
       const days = parseInt(savedTimeRange)
       if (days === 1) {
@@ -157,7 +157,7 @@ onMounted(() => {
         timeStart = startTime.toISOString()
       }
     }
-    
+
     emit('timeRangeChanged', timeStart)
   }
 
