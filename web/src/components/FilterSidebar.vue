@@ -1,51 +1,21 @@
 <script setup lang="ts">
-import { ref, computed, defineExpose } from 'vue'
+import { ref, defineExpose } from 'vue'
 
-const props = defineProps<{
-  filterOptions: {
-    selectedCategories: number[]
-    selectedTimeRange: string
-    selectedSortOption: string
-    selectedKeywordCategories: number[]
-  }
+defineProps<{
+  selectedCategories: number[]
+  selectedTimeRange: string
+  selectedSortOption: string
+  selectedSubjects: number[]
   allCategories: any[]
-  keywordCategories: any[]
+  subjects: any[]
 }>()
+
 const emit = defineEmits<{
-  (
-    e: 'update:filterOptions',
-    value: {
-      selectedCategories: number[]
-      selectedTimeRange: string
-      selectedSortOption: string
-      selectedKeywordCategories: number[]
-    }
-  ): void
+  (e: 'update:selectedCategories', value: number[]): void
+  (e: 'update:selectedTimeRange', value: string): void
+  (e: 'update:selectedSortOption', value: string): void
+  (e: 'update:selectedSubjects', value: number[]): void
 }>()
-
-// 计算属性实现双向绑定
-const selectedCategories = computed<number[]>({
-  get: () => props.filterOptions.selectedCategories,
-  set: (val) => emit('update:filterOptions', { ...props.filterOptions, selectedCategories: val })
-})
-const selectedTimeRange = computed<string>({
-  get: () => props.filterOptions.selectedTimeRange,
-  set: (val) => emit('update:filterOptions', { ...props.filterOptions, selectedTimeRange: val })
-})
-const selectedSortOption = computed<string>({
-  get: () => props.filterOptions.selectedSortOption,
-  set: (val) => emit('update:filterOptions', { ...props.filterOptions, selectedSortOption: val })
-})
-
-// 新增关键词分类双向绑定
-const selectedKeywordCategories = computed<number[]>({
-  get: () => props.filterOptions.selectedKeywordCategories,
-  set: (val) =>
-    emit('update:filterOptions', {
-      ...props.filterOptions,
-      selectedKeywordCategories: val
-    })
-})
 
 const timeOptions = [
   { label: '全部', value: 'all' },
@@ -72,11 +42,14 @@ defineExpose({
 <template>
   <el-drawer v-model="drawerVisible" title="筛选" size="40em">
     <div class="filter-content">
-      <!-- 新增关键词分类筛选 -->
+      <!-- 关键词分类筛选 -->
       <div class="filter-group">
         <h3>关键词分类</h3>
-        <el-checkbox-group v-model="selectedKeywordCategories">
-          <el-checkbox-button v-for="cat in keywordCategories" :key="cat.id" :label="cat.id">
+        <el-checkbox-group 
+          :model-value="selectedSubjects" 
+          @update:model-value="emit('update:selectedSubjects', $event)"
+        >
+          <el-checkbox-button v-for="cat in subjects" :key="cat.id" :value="cat.id">
             {{ cat.name }}
           </el-checkbox-button>
         </el-checkbox-group>
@@ -85,8 +58,11 @@ defineExpose({
       <!-- 原有类别筛选 -->
       <div class="filter-group">
         <h3>网站类别</h3>
-        <el-checkbox-group v-model="selectedCategories">
-          <el-checkbox-button v-for="cate in allCategories" :key="cate.id" :label="cate.id">
+        <el-checkbox-group 
+          :model-value="selectedCategories" 
+          @update:model-value="emit('update:selectedCategories', $event)"
+        >
+          <el-checkbox-button v-for="cate in allCategories" :key="cate.id" :value="cate.id">
             {{ cate.name }}
           </el-checkbox-button>
         </el-checkbox-group>
@@ -95,15 +71,22 @@ defineExpose({
       <!-- 时间范围筛选 -->
       <div class="filter-group">
         <h3>时间范围</h3>
-        <el-segmented v-model="selectedTimeRange" :options="timeOptions" />
+        <el-segmented 
+          :model-value="selectedTimeRange" 
+          @update:model-value="emit('update:selectedTimeRange', $event)" 
+          :options="timeOptions" 
+        />
       </div>
 
       <!-- 排序方式 -->
       <div class="filter-group">
         <h3>排序方式</h3>
-        <el-radio-group v-model="selectedSortOption">
-          <el-radio-button label="time">按时间排序</el-radio-button>
-          <el-radio-button label="score">按重要度排序</el-radio-button>
+        <el-radio-group 
+          :model-value="selectedSortOption" 
+          @update:model-value="emit('update:selectedSortOption', $event)"
+        >
+          <el-radio-button value="time">按时间排序</el-radio-button>
+          <el-radio-button value="score">按重要度排序</el-radio-button>
         </el-radio-group>
       </div>
     </div>
