@@ -12,6 +12,7 @@ import LayersSVG from '@/components/svg/LayersSVG.vue'
 import HelpSVG from '@/components/svg/HelpSVG.vue'
 import { filter_subscribe_key, user_key, all_subjects_key } from '@/key'
 import { getCategories, getSubjects } from '@/sdk'
+import SettingSVG from '@/components/svg/SettingSVG.vue'
 
 interface CateSite {
   cate_id: number
@@ -27,7 +28,7 @@ let sites = reactive<CateSite[]>([])
 let subjects = inject(all_subjects_key)!
 
 // 侧边栏显示模式
-const sidebarMode = ref(localStorage.getItem('sidebarMode') || 'sites')
+const sidebarMode = ref(localStorage.getItem('sidebarMode') || user!.value!.group!.sidebar_show_mode || 'category')
 
 async function loadSites() {
   const { data, error } = await getCategories()
@@ -74,11 +75,8 @@ async function loadSubjects() {
 }
 
 function loadSidebarData() {
-  if (sidebarMode.value === 'sites') {
-    loadSites()
-  } else {
-    loadSubjects()
-  }
+  loadSites()
+  loadSubjects()
 }
 
 function handleSubMenuClick(index: string) {
@@ -95,7 +93,7 @@ watch(sidebarMode, () => {
 
 // 侧边栏显示模式变更监听
 const updateSidebarMode = () => {
-  sidebarMode.value = localStorage.getItem('sidebarMode') || 'sites'
+  sidebarMode.value = localStorage.getItem('sidebarMode') || 'category'
 }
 
 onMounted(() => {
@@ -152,7 +150,7 @@ onBeforeUnmount(() => {
         </el-menu-item>
 
         <!-- 按网站分类显示 -->
-        <template v-if="sidebarMode === 'sites'">
+        <template v-if="sidebarMode === 'category'">
           <el-sub-menu
             v-for="cate in sites"
             :key="cate.cate_id"
@@ -188,7 +186,10 @@ onBeforeUnmount(() => {
             <span>{{ subject.name }}</span>
           </el-menu-item>
         </template>
-
+        <el-menu-item index="/user">
+          <SettingSVG class="menu-icon" />
+          <span class="menu-top">设置</span>
+        </el-menu-item>
         <el-menu-item index="/help">
           <HelpSVG class="menu-icon" />
           <span class="menu-top">帮助</span>

@@ -49,8 +49,8 @@
     <h2>侧边栏显示模式</h2>
     <div class="sidebar-mode-setting">
       <el-radio-group v-model="sidebarMode" @change="changeSidebarMode">
-        <el-radio label="sites" border>按照网站分类</el-radio>
-        <el-radio label="subjects" border>按照文章分类</el-radio>
+        <el-radio label="category" border>按照网站分类</el-radio>
+        <el-radio label="subject" border>按照文章分类</el-radio>
       </el-radio-group>
     </div>
 
@@ -138,13 +138,13 @@ const changeSidebarColor = (val: string) => {
 }
 
 // 侧边栏显示模式设置
-const sidebarMode = ref(localStorage.getItem('sidebarMode') || 'sites')
+const sidebarMode = ref(localStorage.getItem('sidebarMode') || 'category')
 const changeSidebarMode = (val: string) => {
   localStorage.setItem('sidebarMode', val)
   window.dispatchEvent(new Event('sidebarModeChanged'))
   ElNotification({
     title: '成功',
-    message: '侧边栏显示模式已切换为 ' + (val === 'sites' ? '按照网站分类' : '按照文章分类'),
+    message: '侧边栏显示模式已切换为 ' + (val === 'category' ? '按照网站分类' : '按照文章分类'),
     type: 'success'
   })
 }
@@ -152,7 +152,7 @@ const changeSidebarMode = (val: string) => {
 onMounted(() => {
   // 确保初始化时设置默认值
   if (!localStorage.getItem('sidebarMode')) {
-    localStorage.setItem('sidebarMode', 'sites')
+    localStorage.setItem('sidebarMode', 'category')
   }
 })
 

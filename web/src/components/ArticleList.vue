@@ -13,11 +13,6 @@
           <div class="list-item-card">
             <div class="list-item-content">
               <div class="article-header">
-                <router-link :to="`/site/` + page.site_id">
-                  <el-button plain type="info" size="default" style="margin-right: 1em">{{
-                    page.site
-                  }}</el-button>
-                </router-link>
                 <span class="list-title">{{ page.title }}</span>
                 <div class="article-time">
                   <NConfigProvider :locale="zhCN" :date-locale="dateZhCN">
@@ -27,6 +22,11 @@
                     />
                   </NConfigProvider>
                 </div>
+                <router-link :to="`/site/` + page.site_id">
+                  <el-button plain type="info" size="default" style="float: right;">{{
+                    page.site
+                  }}</el-button>
+                </router-link>
               </div>
               <p
                 v-if="props.showExcerpt"
@@ -83,8 +83,8 @@ function formatExcerpt(content: string): string {
 }
 
 .list-item {
-  margin-bottom: 1em;
-  padding: 4px 0;
+  margin-bottom: 0em;
+  padding: 0px 0;
   width: 100%;
 }
 

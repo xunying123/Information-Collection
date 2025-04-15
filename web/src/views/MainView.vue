@@ -34,9 +34,9 @@ window.addEventListener('bgUrlChanged', () => {
   bgUrl.value = localStorage.getItem('bgUrl') || bgUrl.value
 })
 
-const bgStyle = computed(() => {
-  return `linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('${bgUrl.value}')`
-})
+// const bgStyle = computed(() => {
+//   return `linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('${bgUrl.value}')`
+// })
 </script>
 <template>
   <NLayout has-sider class="full-height">
@@ -51,7 +51,7 @@ const bgStyle = computed(() => {
       <SiteMenu class="site-menu" />
     </NLayoutSider>
     <!-- <NLayoutContent class="content overlay"> -->
-    <NLayoutContent class="content overlay" :style="{ 'background-image': bgStyle }">
+    <NLayoutContent class="content overlay" :style="{ 'background-image': bgUrl }">
       <RouterView />
     </NLayoutContent>
   </NLayout>
