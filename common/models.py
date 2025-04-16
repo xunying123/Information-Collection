@@ -1,15 +1,20 @@
-from sqlalchemy import ARRAY, Column, Text, String, Boolean, DateTime
+from sqlalchemy import ARRAY, Column, MetaData, Text, String, Boolean, DateTime
 from sqlalchemy import ForeignKey, Text, func
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 from typing_extensions import Annotated
 from datetime import datetime
-import enum
 
 
 class Base(DeclarativeBase):
     type_annotation_map = {
         str: Text,
     }
+    metadata = MetaData(
+        naming_convention={
+            "ix": "ix_%(column_0_label)s",
+            "uq": "%(table_name)s_%(column_0_name)s_key",
+        }
+    )
 
     def __repr__(self):
         values = {
@@ -126,6 +131,8 @@ class User(Base):
     id: Mapped[intpk]
     # jaccount_code is used for login
     jaccount_code: Mapped[str] = mapped_column(unique=True, nullable=True)
+    # cnaes code
+    cnaes_code: Mapped[str] = mapped_column(unique=True, nullable=True)
     # user data
     username: Mapped[str]
     userType: Mapped[str] = mapped_column(nullable=True)
