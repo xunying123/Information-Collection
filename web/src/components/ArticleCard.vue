@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, computed } from 'vue'
+import { computed } from 'vue'
 import type { PageItem } from '@/api_interface'
 import { is_bookmarked } from '@/bookmark'
 import { showTime } from '@/timeUtils'

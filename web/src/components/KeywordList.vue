@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
 import type { Keyword } from '@/api_interface'
 
 defineProps<{

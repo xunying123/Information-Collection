@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Search } from '@element-plus/icons-vue' // 引入图标
-import { watch, defineEmits } from 'vue'
+import { watch } from 'vue'
 
 let emit = defineEmits(['update:searchQuery'])
 let searchQuery = ref('')

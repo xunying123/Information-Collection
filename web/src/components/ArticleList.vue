@@ -49,7 +49,6 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue'
 import type { PageItem } from '@/api_interface'
 import { is_bookmarked } from '@/bookmark'
 import { timeType } from '@/timeUtils'

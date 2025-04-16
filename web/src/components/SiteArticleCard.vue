@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, computed } from 'vue'
+import { computed } from 'vue'
 import { NTime, zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
 import { ElAvatar, ElCard, ElScrollbar } from 'element-plus'
 import type { PageItem } from '@/api_interface'
