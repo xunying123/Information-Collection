@@ -70,7 +70,7 @@ class UserManager:
         user = User(
             username=data.username,
             password=pwd_context.hash(data.password),
-            name=data.name
+            name=data.name,
         )
         if data.group_id:
             group = db.get(Group, data.group_id)
@@ -80,12 +80,22 @@ class UserManager:
         db.add(user)
         db.flush()
         return user
-    
+
     @staticmethod
     def leave_group(user: User):
         user.group_id = None
         user.group_accepted = False
         user.group_admin = False
+
+    @staticmethod
+    def get_user_by_jaccount_code(code: str) -> User | None:
+        stmt = select(User).where(User.jaccount_code == code)
+        return db.scalar(stmt)
+    
+    @staticmethod
+    def get_user_by_cnaes_code(code: str) -> User | None:
+        stmt = select(User).where(User.cnaes_code == code)
+        return db.scalar(stmt)
 
 
 current_user: User | Globalize[User] = Globalize[User](

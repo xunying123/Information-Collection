@@ -3,27 +3,18 @@ import { ref, reactive, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElNotification } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
-import { jaccount_client_id, jaccount_oauth, server } from '@/const'
 import { login } from '@/sdk'
 import router from '@/router'
 
 const route = useRoute()
-
 const next = computed(() => {
   return typeof route.query.next === 'string' ? route.query.next : '/'
 })
 
-const auth_redirect_url = computed(() => {
-  const url = new URL(jaccount_oauth)
-  url.searchParams.append('client_id', jaccount_client_id)
-  url.searchParams.append('response_type', 'code')
-  url.searchParams.append('redirect_uri', `${server}/auth`)
-  url.searchParams.append('state', `${location.origin}${next.value}`)
-  return url.toString()
-})
-
-const redirectToAuth = () => {
-  window.location.href = auth_redirect_url.value
+function redirectToAuth(provider: string) {
+  const url = new URL(`${location.origin}/api/login/oauth/${provider}`)
+  url.searchParams.append('state', next.value)
+  window.location.href = url.toString()
 }
 
 const loginForm = reactive({
@@ -115,7 +106,7 @@ const loginWithCredentials = async () => {
         <!-- jAccount 登录按钮 -->
         <el-button
           link
-          @click="redirectToAuth"
+          @click="() => redirectToAuth('jaccount')"
           style="
             width: 100%;
             background-color: #fff;
@@ -134,6 +125,31 @@ const loginWithCredentials = async () => {
             />
             <div style="display: block; width: 100%; text-align: center; margin-bottom: 8px">
               通过jAccount登录
+            </div>
+          </div>
+        </el-button>
+        <!-- CNAES 登录按钮 -->
+        <el-button
+          link
+          @click="() => redirectToAuth('cnaes')"
+          style="
+            width: 100%;
+            background-color: #fff;
+            color: #aaa;
+            font-size: 16px;
+            padding: 12px 0;
+            border: none;
+            box-shadow: none;
+          "
+        >
+          <div style="display: block; width: 100%; text-align: center">
+            <img
+              src="https://passport.cnaes.edu.cn/sso/resources/kJUVDCyn1O/static/img/pcc-logo.17660c4.png"
+              alt="CNAES"
+              style="height: 48px"
+            />
+            <div style="display: block; width: 100%; text-align: center; margin-bottom: 8px">
+              通过 CNAES 登录
             </div>
           </div>
         </el-button>

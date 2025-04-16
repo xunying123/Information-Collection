@@ -1,5 +1,14 @@
-from http.client import FORBIDDEN, NOT_FOUND, UNAUTHORIZED, PRECONDITION_FAILED
+from http.client import (
+    FORBIDDEN,
+    FOUND,
+    INTERNAL_SERVER_ERROR,
+    NOT_FOUND,
+    TEMPORARY_REDIRECT,
+    UNAUTHORIZED,
+    PRECONDITION_FAILED,
+)
 from typing import Annotated
+from urllib.parse import urlencode
 from fastapi import (
     APIRouter,
     Body,
@@ -16,8 +25,11 @@ from fastapi import APIRouter
 from httpx import AsyncClient
 from sqlalchemy import select
 from common.models import *
-from server.config import JAccountAuth
+from server import config
+from server.config import OAUTH_MAP, AuthCNAES, JAccountAuth
 from requests.auth import HTTPBasicAuth
+
+from server.manager.oauth import cnaes_from_token, jaccount_from_token
 
 from .. import schema
 from ..manager.user import UserManager, current_user, login_manager, login_required
@@ -62,73 +74,74 @@ def register(data: schema.RegisterForm = Form()):
     return {"message": f"User {user.name}({user.username}) created"}
 
 
-@router.get("/auth")
-async def do_auth_callback(request: Request, response: Response, code: str, state: str):
-    try:
-        print(f"{str(request.url_for("do_auth_callback"))=}")
-        data = {
-            "grant_type": "authorization_code",
-            "code": code,
-            "redirect_uri": str(request.url_for("do_auth_callback")),
-            "client_id": JAccountAuth.client_id,
-            "client_secret": JAccountAuth.secretkey,
+def oauth_callback_url(request: Request, provider: str) -> str:
+    return str(request.url_for("do_auth_callback", provider=provider)).replace(":80/", "/")
+
+
+@router.get("/login/oauth/{provider}")
+async def redirect2oauth(provider: str, state: str, cb_url=Depends(oauth_callback_url)):
+    auth_config = OAUTH_MAP[provider]
+    if not auth_config:
+        raise HTTPException(400, "Auth failed: unknown provider")
+    query = urlencode(
+        {
+            "client_id": auth_config.client_id,
+            "response_type": "code",
+            "redirect_uri": cb_url,
+            "state": state,
         }
-        async with AsyncClient() as client:
-            res = await client.post(
-                "https://jaccount.sjtu.edu.cn/oauth2/token",
-                headers={"Content-Type": "application/x-www-form-urlencoded"},
-                data=data,
-                auth=HTTPBasicAuth("czZCaGRSa3F0MzpnWDFmQmF0M2JW", ""),
-            )
-            if res.status_code != 200:
-                raise HTTPException(
-                    400, "Auth failed: did not get access token from jaccount"
-                )
-            res = res.json()
-            access_token: str = res.get("access_token")
-            res = await client.get(
-                "https://api.sjtu.edu.cn/v1/me/profile",
-                headers={"Authorization": f"Bearer {access_token}"},
-            )
-            if res.status_code != 200:
-                raise HTTPException(
-                    400, "Auth failed: did not get profile from jaccount"
-                )
-            profile = res.json()
-        entity = profile.get("entities")[0]
-        ja_code = entity.get("code")
-        user = db.scalar(
-            select(User).where(
-                User.jaccount_code == code or User.username == entity.get("account")
-            )
+    )
+    redirect_uri = f"{auth_config.auth_url}?{query}"
+    return RedirectResponse(redirect_uri, TEMPORARY_REDIRECT)
+
+async def get_access_token(code: str, redirect_uri: str, auth_config: config.OauthConfig) -> dict:
+    data = {
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": redirect_uri,
+        "client_id": auth_config.client_id,
+        "client_secret": auth_config.secret_key,
+    }
+    async with AsyncClient() as client:
+        res = await client.post(
+            auth_config.token_url,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            data=data,
+            auth=HTTPBasicAuth("czZCaGRSa3F0MzpnWDFmQmF0M2JW", ""),
         )
-        if user is None:
-            user = User(
-                jaccount_code=ja_code,
-                username=entity.get("account"),
-                userType=entity.get("userType"),
-                name=entity.get("name"),
-                organization=entity.get("organize").get("name"),
-                is_admin=False,
-                avatars=entity.get("accountPhotoUrl"),
+        print(res.json())
+        if res.status_code != 200:
+            raise HTTPException(
+                400, "Auth failed: did not get access token from jaccount"
             )
-            db.add(user)
-        else:
-            user.username = entity.get("account")
-            user.userType = entity.get("userType")
-            user.name = entity.get("name")
-            user.organization = entity.get("organize").get("name")
-            user.avatars = entity.get("accountPhotoUrl")
-        db.flush()
-        res = RedirectResponse(state, 302)
+        res = res.json()
+    return res
+
+@router.get("/auth/{provider}")
+async def do_auth_callback(
+    request: Request,
+    provider: str,
+    code: str,
+    state: str,
+    cb_url=Depends(oauth_callback_url),
+):
+    auth_config = OAUTH_MAP[provider]
+    if not auth_config:
+        raise HTTPException(400, "Auth failed: unknown provider")
+    try:
+        res = await get_access_token(code, cb_url, auth_config)
+        match provider:
+            case JAccountAuth.name:
+                user = await jaccount_from_token(res)
+            case AuthCNAES.name:
+                user = cnaes_from_token(res)
+        res = RedirectResponse(state, FOUND)
         UserManager.make_login_response(user, res)
         return res
     except HTTPException as e:
         raise e
     except Exception as e:
-        print(f"exception: {e=}")
-        # return "Auth failed", 400
-        raise HTTPException(400, "Auth failed")
+        raise HTTPException(INTERNAL_SERVER_ERROR, "Auth failed")
 
 
 @router.get("/group")
