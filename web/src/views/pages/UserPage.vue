@@ -53,28 +53,29 @@
         <el-radio label="subject" border>按照文章分类</el-radio>
       </el-radio-group>
     </div>
-
-    <h2>背景设置</h2>
-    <div class="bg-setting">
-      <el-upload
-        class="upload-demo"
-        drag
-        action=""
-        :auto-upload="false"
-        accept="image/*"
-        :file-list="fileList"
-        :http-request="dummyRequest"
-        :on-change="handleFileChange"
-        list-type="picture"
-      >
-        <i class="el-icon-upload"></i>
-        <div class="el-upload__text">拖拽文件到此处，或<em>点击上传</em></div>
-      </el-upload>
-      <div class="button-group">
-        <el-button type="primary" @click="confirmUpload" :disabled="!tempImage">
-          确认上传
-        </el-button>
-        <el-button type="warning" @click="restoreDefault">恢复默认</el-button>
+    <div v-if="false">
+      <h2>背景设置</h2>
+      <div class="bg-setting">
+        <el-upload
+          class="upload-demo"
+          drag
+          action=""
+          :auto-upload="false"
+          accept="image/*"
+          :file-list="fileList"
+          :http-request="dummyRequest"
+          :on-change="handleFileChange"
+          list-type="picture"
+        >
+          <i class="el-icon-upload"></i>
+          <div class="el-upload__text">拖拽文件到此处，或<em>点击上传</em></div>
+        </el-upload>
+        <div class="button-group">
+          <el-button type="primary" @click="confirmUpload" :disabled="!tempImage">
+            确认上传
+          </el-button>
+          <el-button type="warning" @click="restoreDefault">恢复默认</el-button>
+        </div>
       </div>
     </div>
 

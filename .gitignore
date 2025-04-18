@@ -8,5 +8,5 @@ node_modules
 .mypy_cache
 server/config.py
 web/src/const.ts
-web/src/sdk
+# web/src/sdk
 *.sql
