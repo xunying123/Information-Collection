@@ -94,7 +94,7 @@ class UserManager:
     
     @staticmethod
     def get_user_by_cnaes_code(code: str) -> User | None:
-        stmt = select(User).where(User.cnaes_code == code)
+        stmt = select(User).where((User.cnaes_code == code) | (User.username == code))
         return db.scalar(stmt)
 
 
