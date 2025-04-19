@@ -85,12 +85,12 @@ const options = computed(() => {
         { label: '网站卡片', value: 'site' },
         { label: '卡片', value: 'card' },
         { label: '标题列表', value: 'list' },
-        { label: '摘要列表', value: 'excerpt' }
+        // { label: '摘要列表', value: 'excerpt' }
       ]
     : [
         { label: '卡片', value: 'card' },
         { label: '标题列表', value: 'list' },
-        { label: '摘要列表', value: 'excerpt' }
+        // { label: '摘要列表', value: 'excerpt' }
       ]
 })
 
@@ -197,12 +197,12 @@ const openFilter = () => filterSidebarRef.value?.openDrawer?.()
         <el-button
           type="primary"
           @click="openFilter"
-          style="margin-right: 10px; line-height: normal"
+          style="margin-right: 0.8em; line-height: normal"
         >
           <el-icon><Filter /></el-icon>
           <span>筛选</span>
         </el-button>
-        <SearchInput @update:searchQuery="searchKeyword = $event" />
+        <SearchInput @update:searchQuery="searchKeyword = $event" style="width: 16em;" />
         <el-segmented v-model="view" :options="options" block class="spaced-segmented" />
       </div>
       <el-scrollbar
@@ -268,8 +268,10 @@ h1 {
 }
 
 .spaced-segmented {
-  margin-left: 1em;
-  width: 23em;
+  margin-left: 0.8em;
+  width: 12em;
+  --el-segmented-item-selected-bg-color: #79bbff;
+  --el-border-radius-base: 16px;
 }
 
 .header > h1 {

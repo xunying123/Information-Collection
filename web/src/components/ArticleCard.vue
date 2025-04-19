@@ -66,7 +66,7 @@ const computedShowTime = computed(() => showTime(props.page.publish_time))
   box-sizing: border-box;
   /* 确保padding不会影响卡片的实际尺寸 */
   border-radius: 15px; /* 添加这一行，你可以根据需要调整这个值 */
-  background-color: rgba(255, 255, 255, 0.6); /* 设置背景颜色为半透明的白色 */
+  background-color: rgba(255, 255, 255, 1); /* 设置背景颜色为半透明的白色 */
 }
 
 .small-card-header {

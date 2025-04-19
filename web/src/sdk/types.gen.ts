@@ -156,7 +156,6 @@ export type Site = {
     name: string;
     url: string | Array<string> | null;
     icon?: string | null;
-    pages: Array<PageItem>;
 };
 
 export type SiteItem = {

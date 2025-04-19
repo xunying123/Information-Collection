@@ -38,7 +38,7 @@ const props = defineProps<{
   subject_id?: String
 }>()
 
-const EmptySite: Site = { id: 0, name: '', url: '', pages: [], icon: '' }
+const EmptySite: Site = { id: 0, name: '', url: '', icon: '' }
 
 let searchKeyword = ref('')
 provide(search_keyword_key, searchKeyword)
@@ -137,9 +137,11 @@ async function updateSite() {
     console.error(error)
     return
   }
-  data.pages = site.value.pages
+  title.value = data.name
+  console.log('site:', data)
+  // data.pages = site.value.pages
   site.value = data
-  title.value = site.value.name
+  
 }
 
 async function updateCategory() {

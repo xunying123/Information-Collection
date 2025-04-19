@@ -3,167 +3,176 @@
     <!-- 增加网站 Tab -->
     <el-tab-pane label="增加网站" name="add-site" style="--el-font-size-base: initial">
       <!-- 部分1：添加网站 -->
-      <h3>添加网站</h3>
-      <el-form :model="newSite" ref="siteForm" label-width="120px">
-        <el-form-item label="网站名称" prop="name" size="large">
-          <el-input v-model="newSite.name" placeholder="请输入网站名称"></el-input>
-        </el-form-item>
-        <el-form-item label="网站链接" prop="url" size="large">
-          <el-input v-model="newSite.url" placeholder="请输入链接"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button
-            type="primary"
-            @click="addSite_"
-            size="large"
-            :disabled="!(newSite.name && newSite.url)"
-            >提交</el-button
-          >
-          <el-button @click="resetForm" size="large">重置</el-button>
-        </el-form-item>
-      </el-form>
-
-      <hr style="margin: 20px 0" />
+      <div class="feature-card">
+        <h3>添加网站</h3>
+        <el-form :model="newSite" ref="siteForm" label-width="120px">
+          <el-form-item label="网站名称" prop="name" size="large">
+            <el-input v-model="newSite.name" placeholder="请输入网站名称"></el-input>
+          </el-form-item>
+          <el-form-item label="网站链接" prop="url" size="large">
+            <el-input v-model="newSite.url" placeholder="请输入链接"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              type="primary"
+              @click="addSite_"
+              size="large"
+              :disabled="!(newSite.name && newSite.url)"
+              >提交</el-button
+            >
+            <el-button @click="resetForm" size="large">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
 
       <!-- 部分2：将网站加入分类 -->
-      <h3>将网站加入分类</h3>
-      <el-form :model="siteCategoryMapping" ref="mappingForm" label-width="120px">
-        <el-form-item label="选择分类" prop="category" size="large">
-          <el-autocomplete
-            v-model="siteCategoryMapping.category"
-            :fetch-suggestions="queryClassSearch"
-            popper-class="my-autocomplete"
-            placeholder="请选择分类"
-            @select="handleCateSiteSelect"
-            value-key="name"
-            clearable
-          >
-            <template #default="{ item }">
-              <div class="name">{{ item.name }}</div>
-            </template>
-          </el-autocomplete>
-        </el-form-item>
-        <el-form-item label="选择网站" prop="site" size="large">
-          <el-autocomplete
-            v-model="siteCategoryMapping.site"
-            :fetch-suggestions="querySearch"
-            popper-class="my-autocomplete"
-            placeholder="请选择网站"
-            @select="handleCateSiteSelect"
-            value-key="name"
-            clearable
-          >
-            <template #default="{ item }">
-              <div class="name">{{ item.name }}</div>
-              <span class="link">{{ item.url }}</span>
-            </template>
-          </el-autocomplete>
-        </el-form-item>
-        <el-form-item>
-          <el-button
-            type="primary"
-            @click="assignSiteToCategory"
-            size="large"
-            :disabled="siteCategoryMapping.cate_id == -1 || siteCategoryMapping.site_id == -1"
-            >提交</el-button
-          >
-          <el-button @click="resetMappingForm" size="large">重置</el-button>
-        </el-form-item>
-      </el-form>
+      <div class="feature-card">
+        <h3>将网站加入分类</h3>
+        <el-form :model="siteCategoryMapping" ref="mappingForm" label-width="120px">
+          <el-form-item label="选择分类" prop="category" size="large">
+            <el-autocomplete
+              v-model="siteCategoryMapping.category"
+              :fetch-suggestions="queryClassSearch"
+              popper-class="my-autocomplete"
+              placeholder="请选择分类"
+              @select="handleCateSiteSelect"
+              value-key="name"
+              clearable
+            >
+              <template #default="{ item }">
+                <div class="name">{{ item.name }}</div>
+              </template>
+            </el-autocomplete>
+          </el-form-item>
+          <el-form-item label="选择网站" prop="site" size="large">
+            <el-autocomplete
+              v-model="siteCategoryMapping.site"
+              :fetch-suggestions="querySearch"
+              popper-class="my-autocomplete"
+              placeholder="请选择网站"
+              @select="handleCateSiteSelect"
+              value-key="name"
+              clearable
+            >
+              <template #default="{ item }">
+                <div class="name">{{ item.name }}</div>
+                <span class="link">{{ item.url }}</span>
+              </template>
+            </el-autocomplete>
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              type="primary"
+              @click="assignSiteToCategory"
+              size="large"
+              :disabled="siteCategoryMapping.cate_id == -1 || siteCategoryMapping.site_id == -1"
+              >提交</el-button
+            >
+            <el-button @click="resetMappingForm" size="large">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
     </el-tab-pane>
 
     <!-- 删除网站 Tab -->
     <el-tab-pane label="删除网站" name="remove-site" style="--el-font-size-base: initial">
-      <el-form :model="siteToDelete" label-width="120px">
-        <el-form-item label="选择分类" prop="category" size="large">
-          <el-autocomplete
-            v-model="deleteCate.name"
-            :fetch-suggestions="queryClassSearch"
-            popper-class="my-autocomplete"
-            placeholder="请选择分类"
-            @select="handleDeleteCateSiteSelect"
-            value-key="name"
-            clearable
-          >
-            <template #default="{ item }">
-              <div class="name">{{ item.name }}</div>
-            </template>
-          </el-autocomplete>
-        </el-form-item>
-        <el-form-item label="选择网站" prop="site" size="large">
-          <el-autocomplete
-            v-model="siteToDelete.name"
-            :fetch-suggestions="querySiteForDeletion"
-            popper-class="my-autocomplete"
-            placeholder="请选择网站"
-            @select="handleDeleteCateSiteSelect"
-            value-key="name"
-            clearable
-          >
-            <template #default="{ item }">
-              <div class="name">{{ item.name }}</div>
-              <span class="link">{{ item.url }}</span>
-            </template>
-          </el-autocomplete>
-        </el-form-item>
-        <el-form-item>
-          <el-button
-            type="danger"
-            size="large"
-            @click="deleteSite_"
-            :disabled="!(deleteCate && siteToDelete)"
-          >
-            删除
-          </el-button>
-        </el-form-item>
-      </el-form>
+      <div class="feature-card">
+        <h3>删除网站</h3>
+        <el-form :model="siteToDelete" label-width="120px">
+          <el-form-item label="选择分类" prop="category" size="large">
+            <el-autocomplete
+              v-model="deleteCate.name"
+              :fetch-suggestions="queryClassSearch"
+              popper-class="my-autocomplete"
+              placeholder="请选择分类"
+              @select="handleDeleteCateSiteSelect"
+              value-key="name"
+              clearable
+            >
+              <template #default="{ item }">
+                <div class="name">{{ item.name }}</div>
+              </template>
+            </el-autocomplete>
+          </el-form-item>
+          <el-form-item label="选择网站" prop="site" size="large">
+            <el-autocomplete
+              v-model="siteToDelete.name"
+              :fetch-suggestions="querySiteForDeletion"
+              popper-class="my-autocomplete"
+              placeholder="请选择网站"
+              @select="handleDeleteCateSiteSelect"
+              value-key="name"
+              clearable
+            >
+              <template #default="{ item }">
+                <div class="name">{{ item.name }}</div>
+                <span class="link">{{ item.url }}</span>
+              </template>
+            </el-autocomplete>
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              type="danger"
+              size="large"
+              @click="deleteSite_"
+              :disabled="!(deleteCate && siteToDelete)"
+            >
+              删除
+            </el-button>
+          </el-form-item>
+        </el-form>
+      </div>
     </el-tab-pane>
 
     <!-- 成员管理 Tab -->
     <el-tab-pane label="成员管理" name="group-management" style="--el-font-size-base: initial">
       <!-- 新增成员区域 -->
-      <h3>添加成员</h3>
-      <el-form :model="newMember" label-width="120px">
-        <el-form-item label="用户名" size="large">
-          <el-autocomplete
-            v-model="newMember.searchKey"
-            :fetch-suggestions="queryUserSearch"
-            popper-class="my-autocomplete"
-            placeholder="请输入用户名"
-            @select="handleUserSelect"
-            clearable
-            value-key="username"
-          >
-            <template #default="{ item }">
-              <span class="name">{{ item.username }}</span>
-              <span style="margin-left: 10px; color: #666">{{ item.name }}</span>
-            </template>
-          </el-autocomplete>
-        </el-form-item>
-        <el-form-item>
-          <el-button
-            type="primary"
-            size="large"
-            @click="addMember"
-            :disabled="!newMember.selectedUser"
-          >
-            添加成员
-          </el-button>
-          <el-button @click="resetMemberForm" size="large">重置</el-button>
-        </el-form-item>
-      </el-form>
+      <div class="feature-card">
+        <h3>添加成员</h3>
+        <el-form :model="newMember" label-width="120px">
+          <el-form-item label="用户名" size="large">
+            <el-autocomplete
+              v-model="newMember.searchKey"
+              :fetch-suggestions="queryUserSearch"
+              popper-class="my-autocomplete"
+              placeholder="请输入用户名"
+              @select="handleUserSelect"
+              clearable
+              value-key="username"
+            >
+              <template #default="{ item }">
+                <span class="name">{{ item.username }}</span>
+                <span style="margin-left: 10px; color: #666">{{ item.name }}</span>
+              </template>
+            </el-autocomplete>
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              type="primary"
+              size="large"
+              @click="addMember"
+              :disabled="!newMember.selectedUser"
+            >
+              添加成员
+            </el-button>
+            <el-button @click="resetMemberForm" size="large">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
 
       <!-- 当前组织成员列表 -->
-      <h3>当前组织成员</h3>
-      <el-table :data="membersList" stripe height="300" style="width: 50%; margin-top: 1em">
-        <el-table-column prop="username" label="用户名" />
-        <el-table-column prop="is_admin" label="状态" :formatter="formatAdminStatus" />
-        <el-table-column label="操作">
-          <template #default="scope">
-            <el-button type="danger" size="small" @click="deleteMember(scope.row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <div class="feature-card">
+        <h3>当前组织成员</h3>
+        <el-table :data="membersList" stripe height="300" style="width: 100%; margin-top: 1em">
+          <el-table-column prop="username" label="用户名" />
+          <el-table-column prop="is_admin" label="状态" :formatter="formatAdminStatus" />
+          <el-table-column label="操作">
+            <template #default="scope">
+              <el-button type="danger" size="small" @click="deleteMember(scope.row)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
     </el-tab-pane>
   </el-tabs>
 </template>
@@ -213,7 +222,7 @@ const siteCategoryMapping = reactive({
 const Sites = ref<SiteItem[]>([])
 const categories = ref<CategoryItem[]>([])
 
-// 自动完成搜索：网站类别（用于“加入分类”部分）
+// 自动完成搜索：网站类别（用于"加入分类"部分）
 const queryClassSearch = (queryString: string, cb: any) => {
   // console.log('query:', queryString)
   // console.log('categories:', categories.value)
@@ -221,7 +230,7 @@ const queryClassSearch = (queryString: string, cb: any) => {
   cb(results)
 }
 
-// 自动完成搜索：网站（用于“加入分类”部分）
+// 自动完成搜索：网站（用于"加入分类"部分）
 const querySearch = (queryString: string, cb: any) => {
   const results = queryString ? Sites.value.filter(createFilter(queryString)) : Sites.value
   cb(results)
@@ -637,5 +646,24 @@ const loadMembersList = async () => {
   margin-bottom: 20px;
   border-radius: 8px;
   overflow: hidden;
+}
+
+/* 新增功能卡片样式 */
+.feature-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  width: 48%;
+}
+
+.feature-card h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 18px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
 }
 </style>

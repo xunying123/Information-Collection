@@ -17,6 +17,9 @@
               show-password
             />
           </el-form-item>
+          <!-- <el-form-item label="手机号" prop="phone">
+            <el-slider v-model="value1" :max="20000000000" :min="13000000000"/>
+          </el-form-item> -->
           <el-form-item label="姓名" prop="name">
             <el-input v-model="registerForm.name" placeholder="请输入姓名" />
           </el-form-item>
@@ -60,6 +63,8 @@ import { useRoute } from 'vue-router'
 import { ElNotification } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import { register, getGroups, type Group, type RegisterForm as BackendRegisterForm } from '@/sdk'
+
+// const value1 = ref(0)
 
 const groupList = ref<Group[]>([])
 

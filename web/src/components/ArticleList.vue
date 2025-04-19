@@ -22,10 +22,8 @@
                     />
                   </NConfigProvider>
                 </div>
-                <router-link :to="`/site/` + page.site_id">
-                  <el-button plain type="info" size="default" style="float: right">{{
-                    page.site
-                  }}</el-button>
+                <router-link :to="`/site/` + page.site_id" class="site-link">
+                    {{ page.site }}
                 </router-link>
               </div>
               <p
@@ -68,6 +66,7 @@ function formatExcerpt(content: string): string {
 
 <style scoped>
 .list-container {
+  margin-top: 2em;
   margin-left: 3em;
   margin-right: 3em;
 }
@@ -79,21 +78,37 @@ function formatExcerpt(content: string): string {
   /* 去掉默认的内边距 */
   margin: 0;
   /* 去掉默认的外边距 */
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 1);
+  max-width: 56em;
+  padding-top: 0.8em;
 }
 
 .list-item {
   margin-bottom: 0em;
   padding: 0px 0;
   width: 100%;
+  max-width: 56em;
+}
+
+.list-item:not(.with-excerpt) .list-item-card {
+  display: flex;
+  align-items: center;
+}
+
+.list-item:not(.with-excerpt) .list-item-content {
+  width: 100%;
 }
 
 .list-item-card {
   padding: 6px;
   /* 进一步减少卡片内边距 */
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  /* 进一步减少圆角半径 */
-  background-color: rgba(255, 255, 255, 0.7);
+  border: 0.2px solid #d9ecff;
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  /* border-radius: 4px; */
+  background-color: rgba(255, 255, 255, 1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   /* 保持阴影 */
   transition:
@@ -103,12 +118,7 @@ function formatExcerpt(content: string): string {
   /* 保持卡片高度 */
 }
 
-.list-item-card:hover {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  /* 保持悬停时的阴影 */
-  transform: translateY(-1px);
-  /* 保持悬停时的位移 */
-}
+
 
 .list-item-content {
   display: grid;
@@ -121,15 +131,33 @@ function formatExcerpt(content: string): string {
   font-weight: bold;
   color: #333;
   transition: color 0.3s ease;
+  margin-left: 1em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  max-width: 56ch; /* 限制为大约32个字符宽度 */
 }
 
 .list-title:hover {
   color: #007bff;
 }
 
+.article-header {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  height: 1.8em;
+}
+
+.site-link {
+  grid-column: 4;
+  padding-right: 1em;
+  color: #337ecc;
+}
+
 .bookmark-icon {
   margin-left: 4px;
-  /* 保持图标左边距 */
   transition: fill 0.3s ease;
 }
 

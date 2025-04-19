@@ -4,73 +4,86 @@
     <p>欢迎来到帮助页面，这里将为您提供有关本站的功能介绍与使用指南。</p>
 
     <section class="help-content section">
+      <h2>Web 前端</h2>
+      <p>Web 前端采用 vue 开发，使用了 vue router，element-ui 和 naive-ui。</p>
+
       <h2>网站功能介绍</h2>
+
+      <h3>侧边栏</h3>
+      <p>侧边栏包含了网站的基本信息，可以通过点击侧边栏的链接切换页面。在对应的页面中能够看到相应的内容。</p>
+      <ul>
+        <li><span style="font-weight: bold">首页（全部）：</span>显示所有文章。</li>
+        <li><span style="font-weight: bold">今日更新：</span>显示今日更新的文章。</li>
+        <li>
+          <span style="font-weight: bold">书签列表：</span>显示用户收藏的文章。
+          <!-- 支持导出为 word 文档，可以选择导出的文章。支持分页显示。 -->
+        </li>
+        <li>
+          <span style="font-weight: bold">管理组织：</span><strong>组织管理员权限页面</strong>，有以下功能：
+          <ul>
+            <li>可以增加或删除<strong>后台爬虫程序需要爬取的</strong>网站。</li>
+          </ul>
+        </li>
+        <li>
+          <span style="font-weight: bold">专属新闻：</span>显示所有订阅的新闻，可以按照<strong>网站分类</strong>或<strong>文章分类</strong>查看文章。
+          <ul>
+            <li>
+              网站分类：根据订阅的网站进行分类。
+              <ul>
+                <li>类别页面：显示某一网站大类的所有文章。<strong>此页面支持网站大卡片视图</strong>。</li>
+                <li>网站页面：显示某一网站的所有文章，可以按照网站查看文章。</li>
+              </ul>
+            </li>
+            <li>
+              文章分类：根据文章主题来进行分类。
+              <ul>
+                <li>类别页面：显示某一主题的所有文章。</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <span style="font-weight: bold">设置：</span>用户设置界面。
+          <ul>
+            <li>所属组织：显示用户所属的组织。可以选择退出组织，但请谨慎操作。</li>
+            <li>
+              定制管理：支持用户<strong>个人定制</strong>订阅源和关键词：
+              <ul>
+                <li>
+                  订阅源：可以订阅某些网站的文章，<strong>订阅的网站必须是后台爬虫程序会爬取的网站</strong>，订阅后可以通过开关切换显示全部网页或<strong>仅显示订阅的网页</strong>。
+                </li>
+                <li>
+                  关键词：可以订阅某些关键词，<strong>支持自定义关键词</strong>，但建议优先选择数据库类已有的（给出提示的）关键词。订阅后可以通过开关切换显示全部文章或<strong>仅显示包含订阅关键词的文章</strong>。
+                </li>
+                <li>
+                  订阅源和关键词都支持<strong>导出为 json 文件及导入，便于新用户快速批量配置</strong>。
+                </li>
+              </ul>
+            </li>
+            <li>侧边栏显示模式：可以选择按照<strong>网站分类</strong>或<strong>文章分类</strong>显示侧边栏。</li>
+            <li>侧边栏颜色：可以选择侧边栏的颜色。</li>
+          </ul>
+        </li>
+      </ul>
 
       <h3>顶栏</h3>
       <p>顶栏中包含了对于显示的文章的一些筛选和显示功能：</p>
       <ul>
         <li>
-          <span style="font-weight: bold">类别复选框</span
-          >：仅在“全部”页面中显示，可以点击选择显示的类别。
-        </li>
-        <li>
-          <span style="font-weight: bold">时间选择</span
-          >：可以选择显示的时间范围。<strong>选择1天内时，显示的会是上一个工作日内的结果</strong>。
+          <span style="font-weight: bold">筛选：</span>对显示的文章进行一些筛选。
+          <ul>
+            <li>关键词类别复选框：可以点击选择显示的类别。</li>
+            <li>网站类别复选框：可以点击选择显示的类别。</li>
+            <li>时间范围：可以选择显示的时间范围。<strong>选择1天内时，显示的会是上一个工作日内的结果</strong>。</li>
+            <li>排序方式：可以选择对文章按<strong>时间</strong>或<strong>重要度</strong>进行排序。</li>
+          </ul>
         </li>
         <li><span style="font-weight: bold">搜索框：</span>可以输入关键词搜索文章标题。</li>
         <li>
           <span style="font-weight: bold">视图切换：</span>可以切换文章的显示方式。
           <ul>
-            <li>在“标题”和“标题摘要”视图中，可以点击标题旁显示的网站名称跳转到对应网站页面。</li>
+            <li>在"标题"视图中，可以点击标题旁显示的网站名称跳转到对应网站页面。</li>
           </ul>
-        </li>
-      </ul>
-
-      <h3>侧边栏</h3>
-      <p>
-        侧边栏包含了网站的基本信息，可以通过点击侧边栏的链接切换页面。在对应的页面中能够看到相应的内容。
-      </p>
-      <ul>
-        <li><span style="font-weight: bold">首页（全部）：</span>显示所有文章。</li>
-        <li><span style="font-weight: bold">今日更新：</span>显示今日更新的文章。</li>
-        <li>
-          <span style="font-weight: bold">书签列表：</span>显示用户收藏的文章，支持导出为 Word
-          文档，支持选择导出的文章，支持分页显示。
-        </li>
-        <li>
-          <span style="font-weight: bold">增删网站：</span
-          >管理员权限页面，可以增加或删除<strong>后台爬虫程序需要爬取的</strong>网站。
-        </li>
-        <li>
-          <span style="font-weight: bold">网站大类：</span
-          >显示某一分类的所有网站，可以按照网站分类查看文章。<strong>此页面支持网站大卡片视图</strong>。
-        </li>
-        <li>
-          <span style="font-weight: bold">网站页面：</span
-          >显示某一网站的所有文章，可以按照网站查看文章。
-        </li>
-        <li>
-          <span style="font-weight: bold">订阅源和关键词管理页面：</span
-          >支持用户<strong>个人定制</strong>订阅源和关键词：
-          <ul>
-            <li>
-              订阅源：可以订阅某些网站的文章，<strong>订阅的网站必须是后台爬虫程序会爬取的网站</strong>，订阅后可以通过开关切换显示全部网页或仅显示订阅的网页。
-            </li>
-            <li>
-              关键词：可以订阅某些关键词，<strong>支持自定义关键词</strong>，但建议优先选择数据库类已有的（给出提示的）关键词。
-            </li>
-            <li>
-              订阅源和关键词都支持<strong>导出为 JSON 文件及导入，便于新用户快速批量配置</strong>。
-            </li>
-          </ul>
-        </li>
-        <li>
-          <img
-            src="/static/subscription.png"
-            alt="订阅源和关键词管理"
-            class="help-image"
-            style="zoom: 50%"
-          />
         </li>
       </ul>
 
@@ -81,7 +94,6 @@
         <li><span style="font-weight: bold">复制链接：</span>可以复制文章的链接。</li>
         <li><span style="font-weight: bold">加入书签：</span>可以将文章加入书签。</li>
         <li><span style="font-weight: bold">查看原文：</span>可以跳转到文章的原始链接。</li>
-        <li><span style="font-weight: bold">拉伸宽度条：</span>可以调整文章显示的宽度。</li>
         <li>
           <span style="font-weight: bold">文章内容：</span>
           <ul>
@@ -92,6 +104,7 @@
             <li>全文</li>
           </ul>
         </li>
+        <li>拖动左侧的边框可以调整文章内容的显示宽度。</li>
       </ul>
 
       <h3>注意事项</h3>
@@ -107,7 +120,7 @@
 /* 整体容器 */
 .help-page {
   padding: 20px;
-  background: rgba(255, 255, 255, 0.6); /* 浅灰色背景 */
+  background: rgba(255, 255, 255, 1); /* 浅灰色背景 */
   border-radius: 12px;
   max-width: 1200px;
   margin: 20px auto;

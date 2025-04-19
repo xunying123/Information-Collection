@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { user_key } from '@/key'
 import { inject } from 'vue'
-import { ElAvatar } from 'element-plus'
+// import { ElAvatar } from 'element-plus'
 
 let user = inject(user_key)!
 </script>
@@ -9,11 +9,12 @@ let user = inject(user_key)!
 <!-- <div v-if="user" class="horizon-grid"> -->
 <template>
   <div class="user-card" v-if="user">
-    <ElAvatar :src="user.avatars!" class="avatar" />
-    <div class="user-info">
-      <h2>{{ user.name }}</h2>
-      <p>{{ user.organization }}</p>
-    </div>
+    <!-- <ElAvatar :src="user.avatars!" class="avatar" /> -->
+    <div class="welcome-container">
+      <h2>欢迎您，{{ user.name }}</h2>
+      <div class="user-status"></div>
+    </div>  
+      <!-- <p>{{ user.organization }}</p> -->
   </div>
 </template>
 <!-- </div> -->
@@ -54,10 +55,11 @@ let user = inject(user_key)!
 }
 
 .user-info {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  /* centering */
+  /* flex-direction: column; */
   justify-content: center;
-  margin-left: 2em;
+  margin-left: 0.5em;
   color: white;
 }
 
@@ -68,5 +70,26 @@ let user = inject(user_key)!
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 0.5em;
   transition: background-color 0.3s;
+}
+
+.welcome-container {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  justify-items: start;
+  grid-column-gap: 0.5em;
+  padding: 0 1em;
+  color: white;
+  font-size: 1.0em;
+  font-weight: bold;
+  margin-left: 1.5em;
+}
+
+.user-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #2ecc71;
+  margin-left: 5px;
 }
 </style>
