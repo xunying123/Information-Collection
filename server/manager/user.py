@@ -1,8 +1,6 @@
-# from flask_login import LoginManager, UserMixin, current_user
 from datetime import timedelta
 from http.client import PRECONDITION_FAILED
-from flask_login import login_required
-from sqlalchemy import exists, select
+from sqlalchemy import select
 from common.models import User, Group
 from fastapi import HTTPException, Response
 from fastapi_decorators import depends
