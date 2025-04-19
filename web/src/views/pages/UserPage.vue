@@ -139,7 +139,9 @@ const changeSidebarColor = (val: string) => {
 }
 
 // 侧边栏显示模式设置
-const sidebarMode = ref(localStorage.getItem('sidebarMode') || user!.value!.group!.sidebar_show_mode || 'category')
+const sidebarMode = ref(
+  localStorage.getItem('sidebarMode') || user!.value!.group!.sidebar_show_mode || 'category'
+)
 const changeSidebarMode = (val: string) => {
   localStorage.setItem('sidebarMode', val)
   window.dispatchEvent(new Event('sidebarModeChanged'))

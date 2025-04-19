@@ -168,7 +168,9 @@
           <el-table-column prop="is_admin" label="状态" :formatter="formatAdminStatus" />
           <el-table-column label="操作">
             <template #default="scope">
-              <el-button type="danger" size="small" @click="deleteMember(scope.row)">删除</el-button>
+              <el-button type="danger" size="small" @click="deleteMember(scope.row)"
+                >删除</el-button
+              >
             </template>
           </el-table-column>
         </el-table>

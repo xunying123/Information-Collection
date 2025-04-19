@@ -84,12 +84,12 @@ const options = computed(() => {
     ? [
         { label: '网站卡片', value: 'site' },
         { label: '卡片', value: 'card' },
-        { label: '标题列表', value: 'list' },
+        { label: '标题列表', value: 'list' }
         // { label: '摘要列表', value: 'excerpt' }
       ]
     : [
         { label: '卡片', value: 'card' },
-        { label: '标题列表', value: 'list' },
+        { label: '标题列表', value: 'list' }
         // { label: '摘要列表', value: 'excerpt' }
       ]
 })
@@ -202,7 +202,7 @@ const openFilter = () => filterSidebarRef.value?.openDrawer?.()
           <el-icon><Filter /></el-icon>
           <span>筛选</span>
         </el-button>
-        <SearchInput @update:searchQuery="searchKeyword = $event" style="width: 16em;" />
+        <SearchInput @update:searchQuery="searchKeyword = $event" style="width: 16em" />
         <el-segmented v-model="view" :options="options" block class="spaced-segmented" />
       </div>
       <el-scrollbar

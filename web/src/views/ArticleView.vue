@@ -79,7 +79,7 @@ function copyLink() {
 
 // 改进的拖拽调整宽度功能
 function handleResizeStart(event: MouseEvent) {
-  event;
+  event
   isResizing.value = true
   document.addEventListener('mousemove', handleResize)
   document.addEventListener('mouseup', handleResizeEnd)
@@ -89,22 +89,22 @@ function handleResizeStart(event: MouseEvent) {
 
 function handleResize(event: MouseEvent) {
   if (!isResizing.value) return
-  
+
   // 获取窗口宽度和鼠标位置
   const windowWidth = window.innerWidth
   const mouseX = event.clientX
-  
+
   // 计算鼠标到窗口右边缘的距离
   const distanceToRight = windowWidth - mouseX + 50
-  
+
   // 将距离转换为em单位的宽度值 (这里需要调整比例系数来匹配理想的敏感度)
   // 假设1em大约等于16px (标准情况下)，使用一个系数来调整
-  const emFactor = 0.06  // 调整此值以改变敏感度
+  const emFactor = 0.06 // 调整此值以改变敏感度
   let emWidth = distanceToRight * emFactor
-  
+
   // 确保宽度在合理范围内
   emWidth = Math.max(50, Math.min(128, emWidth))
-  
+
   // 设置slide_value为新的计算值
   slide_value.value = 178 - emWidth
 }
@@ -132,9 +132,7 @@ onUnmounted(() => {
 
 <template>
   <div class="article-container">
-    <div class="resizer" 
-         @mousedown="handleResizeStart"
-         :class="{ 'active': isResizing }">
+    <div class="resizer" @mousedown="handleResizeStart" :class="{ active: isResizing }">
       <div class="resizer-handle"></div>
     </div>
     <el-aside class="details-area" :style="{ width: content_width + 'em' }">
@@ -215,8 +213,9 @@ onUnmounted(() => {
   .article-content img {
     max-width: 100%;
   }
-  
-  .resizer, .resizer-handle {
+
+  .resizer,
+  .resizer-handle {
     display: none;
   }
 }

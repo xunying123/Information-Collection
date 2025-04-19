@@ -141,7 +141,6 @@ async function updateSite() {
   console.log('site:', data)
   // data.pages = site.value.pages
   site.value = data
-  
 }
 
 async function updateCategory() {

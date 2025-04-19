@@ -23,7 +23,7 @@
                   </NConfigProvider>
                 </div>
                 <router-link :to="`/site/` + page.site_id" class="site-link">
-                    {{ page.site }}
+                  {{ page.site }}
                 </router-link>
               </div>
               <p
@@ -117,8 +117,6 @@ function formatExcerpt(content: string): string {
   height: 100%;
   /* 保持卡片高度 */
 }
-
-
 
 .list-item-content {
   display: grid;

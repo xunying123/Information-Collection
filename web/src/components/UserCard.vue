@@ -13,8 +13,8 @@ let user = inject(user_key)!
     <div class="welcome-container">
       <h2>欢迎您，{{ user.name }}</h2>
       <div class="user-status"></div>
-    </div>  
-      <!-- <p>{{ user.organization }}</p> -->
+    </div>
+    <!-- <p>{{ user.organization }}</p> -->
   </div>
 </template>
 <!-- </div> -->
@@ -80,7 +80,7 @@ let user = inject(user_key)!
   grid-column-gap: 0.5em;
   padding: 0 1em;
   color: white;
-  font-size: 1.0em;
+  font-size: 1em;
   font-weight: bold;
   margin-left: 1.5em;
 }
