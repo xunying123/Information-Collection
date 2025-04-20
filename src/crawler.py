@@ -4,9 +4,8 @@ from newspaper import Article
 import requests
 from bs4 import BeautifulSoup
 from dateutil import parser 
-from utils import read_content, save_content, check_page_content, headers, extract_domain
-
-url = 'https://www.gov.cn/yaowen/liebiao/202501/content_7001817.htm'
+from src.utils import read_content, save_content, check_page_content, headers, extract_domain, logging
+import os
 
 def Newspaper(url):
     try:
@@ -31,20 +30,23 @@ def Newspaper(url):
             article.html = str(soup)
 
             if article.publish_date:
-                publish_date = article.publish_date.strftime('%Y-%m-%d %H:%M')
+                publish_date_dt = article.publish_date
             else:
-                publish_date = None
+                publish_date_dt = datetime.now()
 
             now = datetime.now()
-            if now >= publish_date and (now - publish_date) <= timedelta(days=3):
-                return article, publish_date
+            if now >= publish_date_dt and (now - publish_date_dt) <= timedelta(days=3):
+                formatted_publish_date = publish_date_dt.strftime('%Y-%m-%d %H:%M')
+                return article, formatted_publish_date
             else:
-                publish_date = None
+                publish_date_dt = None
 
-            return article, publish_date
+            return article, publish_date_dt
 
     except Exception as e:
+        print("1Error parsing article:", e)
         return None, None
+    print(1)
     return None, None
 
 def Play_Wright_new(url):
@@ -99,7 +101,9 @@ def Play_Wright_new(url):
                     return article.title, article.text, publish_date
                 
     except Exception as e:
+        print("2Error parsing article:", e)
         return None, None, None
+    print(2)
     return None, None, None
         
 def Beautiful_Soup(url):
@@ -172,13 +176,13 @@ def Beautiful_Soup(url):
             except Exception as e:
                 print("解析发布时间错误：", e)
 
-
-
         if article_text :
             return title, article_text, publish_date_str
         
     except Exception as e:
+        print("3Error parsing article:", e)
         return None, None, None
+    print(3)
     return None, None, None
 
 def Play_Wright_bs(url):
@@ -261,72 +265,83 @@ def Play_Wright_bs(url):
             if article_text :
                 return title, article_text, publish_date_str
     except Exception as e:
+        print("4Error parsing article:", e)
         return None, None, None
+    print(4)
     return None, None, None
 
 def crawl(url, source_url):
-    #print(f"Fetching {url}")
     today_date = datetime.today().strftime('%Y-%m-%d')
     wrong_path = "./src/data/out/" + today_date + '/wrong.json'
 
     path = "./src/data/out/" + today_date + '/crawler/' + extract_domain(source_url) + '.txt'
-
+    dir_path = os.path.dirname(path)
+    
+    os.makedirs(dir_path, exist_ok=True)
+    
     article, time = Newspaper(url)
-    with open(path, 'a') as f:
-        f.write(f"Fetching {url}      ")
-        if article :
-            a = check_page_content(article.title)
-            b = check_page_content(article.text)
-            if a == 0 or b == 0:
-                f.write("Page Not Found")
-            elif a == 1 or b == 1:
-                f.write("The URL you requested has been blocked")
-            elif a == 2 or b == 2:
-                f.write("LLM(Large Languate Model) error")
-            elif article.title and article.text and len(article.text) > 10:
-                f.write("1\n")
-                return article.title, article.text, time
+    logging(path, f"Fetching {url}\n")
+    if article :
+        a = check_page_content(article.title)
+        b = check_page_content(article.text)
+        if a == 0 or b == 0:
+            logging(path, "Page Not Found")
+        elif a == 1 or b == 1:
+            logging(path, "The URL you requested has been blocked")
+        elif a == 2 or b == 2:
+            logging(path, "LLM(Large Languate Model) error")
+        elif article.title and article.text and len(article.text) > 10:
+            logging(path, "1\n")
+            # print(article.title)
+            # print(article.text)
+            # print(time)
+            return article.title, article.text, time
         
-        title, content, time = Beautiful_Soup(url)
+    title, content, time = Beautiful_Soup(url)
+    if title and content:
         a = check_page_content(title)
         b = check_page_content(content)
         if a == 0 or b == 0:
-            f.write("Page Not Found")
+            logging(path, "Page Not Found")
         elif a == 1 or b == 1:
-            f.write("The URL you requested has been blocked")
+            logging(path, "The URL you requested has been blocked")
         elif a == 2 or b == 2:
-            f.write("LLM(Large Languate Model) error")
+            logging(path, "LLM(Large Languate Model) error")
         elif title and content and len(content) > 10:
-            f.write("2\n")
-            return title, content, time
-    
-        title, content, time = Play_Wright_new(url)
-        a = check_page_content(title)
-        b = check_page_content(content)
-        if a == 0 or b == 0:
-            f.write("Page Not Found")
-        elif a == 1 or b == 1:
-            f.write("The URL you requested has been blocked")
-        elif a == 2 or b == 2:
-            f.write("LLM(Large Languate Model) error")
-        elif title and content and len(content) > 10:
-            f.write("3\n")
+            logging(path, "2\n")
+            # print(title)
+            # print(content)
+            # print(time)
             return title, content, time
 
-    
-        title, content, time = Play_Wright_bs(url)
+    title, content, time = Play_Wright_new(url)
+    if title and content:
         a = check_page_content(title)
         b = check_page_content(content)
         if a == 0 or b == 0:
-            f.write("Page Not Found")
+            logging(path, "Page Not Found")
         elif a == 1 or b == 1:
-            f.write("The URL you requested has been blocked")
+            logging(path, "The URL you requested has been blocked")
         elif a == 2 or b == 2:
-            f.write("LLM(Large Languate Model) error")
+            logging(path, "LLM(Large Languate Model) error")
         elif title and content and len(content) > 10:
-            f.write("4\n")
+            logging(path, "3\n")
             return title, content, time
-        f.close()
+
+
+    title, content, time = Play_Wright_bs(url)
+    if title and content:
+        a = check_page_content(title)
+        b = check_page_content(content)
+        if a == 0 or b == 0:
+            logging(path, "Page Not Found")
+        elif a == 1 or b == 1:
+            logging(path, "The URL you requested has been blocked")
+        elif a == 2 or b == 2:
+            logging(path, "LLM(Large Languate Model) error")
+        elif title and content and len(content) > 10:
+            logging(path, "4\n")
+            return title, content, time
     
     wrong = read_content(wrong_path)
     wrong.append({"url": url})
@@ -334,7 +349,7 @@ def crawl(url, source_url):
     return None, None, None
 
 def main():
-    crawl(url)
+    crawl('https://news.upc.edu.cn/info/1432/116321.htm', 'test')
     
 if __name__ == '__main__':
     main()

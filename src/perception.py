@@ -1,12 +1,13 @@
 from datetime import datetime
-from utils import extract_domain, headers, normalize_url, read_content, save_content, title_, summary_, is_ad, check_
+from src.utils import extract_domain, headers, normalize_url, read_content, save_content, title_, summary_, is_ad, check_, what_score, what_word, get_keywords_id, logging
 import asyncio
 from urllib.parse import urljoin
 from playwright.async_api import async_playwright
-from crawler import crawl
+from src.crawler import crawl
 import time
 import random
-from data import push_page_to_db
+from src.data import push_page_to_db, push_keyword_to_db
+import os
 
 proxies = {
     'http': 'http://127.0.0.1:7890',  # 为HTTP设置代理，端口根据实际情况修改
@@ -67,25 +68,27 @@ async def fetch_website_content(url):
 
 def preception(web):
     for url in web['url']:
-    
         current_links = asyncio.run(fetch_website_content(url))
         current_date = datetime.now()
 
         folder_name = current_date.strftime("%Y-%m-%d")
         folder_path = "./src/data/out/" + folder_name + "/perception/" + extract_domain(url) + ".txt"     
         filename = "./src/data/saved_links/" + extract_domain(url) + '.json'
+        dir_path = os.path.dirname(folder_path)
+        
+        os.makedirs(dir_path, exist_ok=True)
 
         previous_links = read_content(filename)    
         new_links = list(set(current_links) - set(previous_links))
         current_links = list(set(current_links) | set(previous_links))  
-        save_content(current_links, filename)  
-    
-        with open(folder_path, 'a') as f:
-            f.write(f"Fetching {url}\n")  
+        save_content(current_links, filename) 
+        
+        logging(folder_path, f"Fetching {url}\n") 
 
-            if new_links:
-                f.write(f"New {len(new_links)} articles found.\n")
-                for link in new_links:
+        if new_links:
+            logging(folder_path, f"New {len(new_links)} articles found.\n")
+            for link in new_links:
+                try:
                     if check_(link):
                         continue
                     title, content, times = crawl(link, url)
@@ -94,6 +97,7 @@ def preception(web):
                     summary = summary_(content)
                     title = title_(title)
                     publish_time = current_date.strftime("%Y-%m-%d %H:%M")
+                    score = what_score(content)
                     if times:
                         publish_time = times
                     data = {
@@ -102,26 +106,41 @@ def preception(web):
                         "full_content":content,
                         "source_url": link,
                         "publish_time": publish_time,
-                        'cate_id': web['cate_id'],
+                        'site_id': web['id'],
+                        'score': score,
                     }
-                    push_page_to_db(data)
+                    page_id = push_page_to_db(data)
+                    keywords = what_word(content)
+                    keywords_id = get_keywords_id(keywords)
+                    if keywords_id:
+                        push_keyword_to_db({
+                            "page_id": page_id,
+                            "keyword_id": keywords_id
+                        })
                     sleep_time = random.uniform(0, 3)
                     time.sleep(sleep_time)
-            else:
-                f.write(f"No new articles found.")
-                f.write('\n')
-
-            f.close()
+                except Exception as e:
+                    logging(folder_path, f"Error: {link} {e}\n")
+        else:
+            logging(folder_path, f"No new articles found.\n")
 
 def add_website(url):
-    print(f"Adding {url}", flush=True)    
+    current_date = datetime.now()
+    folder_name = current_date.strftime("%Y-%m-%d")
+    path = f"./src/data/out/{folder_name}/run.txt" 
+    logging(path, f"Adding {url}")    
     current_links = asyncio.run(fetch_website_content(url))
     filename = "./src/data/saved_links/" + extract_domain(url) + '.json' 
     save_content(current_links, filename)  
 
 def main():
-    url = 'http://www.xinhuanet.com/'
-    preception(url)
+    web = {
+        'id': 1,
+        'url': [
+            'https://news.swu.edu.cn/'
+        ]
+    }
+    preception(web)
 
 if __name__ == '__main__':
     main()

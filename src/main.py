@@ -1,9 +1,8 @@
-from utils import read_content
-from perception import preception
-from data import get_post_websites
+from src.utils import read_content, logging
+from src.perception import preception
+from src.data import get_post_websites, get_keywords
 import os
 from datetime import datetime
-import sys
 
 def do(web):
     preception(web)
@@ -16,23 +15,18 @@ def run():
     os.makedirs(folder_path, exist_ok=True)
 
     path = f"./src/data/out/{folder_name}/run.txt"  
+    logging(path, "Start! ")
+    get_post_websites()
+    get_keywords()
+    post_websites = read_content("./src/data/post_websites.json")
     
-    with open(path, 'a') as f:
-        f.write("Start! ")
-        sys.stdout = f
-        get_post_websites()
-        post_websites = read_content("./src/data/post_websites.json")
-        f.close()
-
     for web in reversed(post_websites):
         try:
             do(web)
-        except:
-            with open(path, 'a') as f:
-                f.write(web)
-                f.write("\n")
-                f.write("byd sb web\n")
-                f.close()
+        except Exception as e:
+            logging(path, "Error! ")
+            logging(path, str(e))
+            logging(path, web['url'][0])
 
 def main():
     start_time = datetime.now()
@@ -42,8 +36,8 @@ def main():
     current_date = datetime.now()
     folder_name = current_date.strftime("%Y-%m-%d")
     path = f"./src/data/out/{folder_name}/run.txt"  
-    with open(path, 'a') as f:
-        f.write(str(execution_time))
+    logging(path, "End! ")
+    logging(path, f"Execution time: {execution_time}")
     
 if __name__ == '__main__':
     main()
