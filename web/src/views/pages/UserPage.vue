@@ -6,7 +6,7 @@
       <div>{{ userDisplayGroup }}</div>
       <el-button
         type="danger"
-        size="mini"
+        size="large"
         @click="quitGroup"
         style="margin-left: 16px; margin-top: 8px"
       >
@@ -49,8 +49,8 @@
     <h2>侧边栏显示模式</h2>
     <div class="sidebar-mode-setting">
       <el-radio-group v-model="sidebarMode" @change="changeSidebarMode">
-        <el-radio label="category" border>按照网站分类</el-radio>
-        <el-radio label="subject" border>按照文章分类</el-radio>
+        <el-radio value="category" border>按照网站分类</el-radio>
+        <el-radio value="subject" border>按照文章分类</el-radio>
       </el-radio-group>
     </div>
     <div v-if="false">
@@ -82,11 +82,11 @@
     <h2>侧边栏颜色</h2>
     <div class="sidebar-setting">
       <el-radio-group v-model="sidebarColor" @change="changeSidebarColor">
-        <el-radio label="blue" border>蓝色</el-radio>
-        <el-radio label="yellow" border>黄色</el-radio>
-        <el-radio label="red" border>红色</el-radio>
-        <el-radio label="green" border>绿色</el-radio>
-        <el-radio label="orange" border>橙色</el-radio>
+        <el-radio value="blue" border>蓝色</el-radio>
+        <el-radio value="yellow" border>黄色</el-radio>
+        <el-radio value="red" border>红色</el-radio>
+        <el-radio value="green" border>绿色</el-radio>
+        <el-radio value="orange" border>橙色</el-radio>
       </el-radio-group>
     </div>
 

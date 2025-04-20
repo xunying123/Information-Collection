@@ -29,10 +29,13 @@ let subjects = inject(all_subjects_key)!
 
 // 侧边栏显示模式
 const sidebarMode = ref(
-  localStorage.getItem('sidebarMode') || user!.value!.group!.sidebar_show_mode || 'category'
+  localStorage.getItem('sidebarMode') || user!.value!.group?.sidebar_show_mode || 'category'
 )
 
 async function loadSites() {
+  if (!user.value?.group) {
+    return
+  }
   const { data, error } = await getCategories()
   if (error) {
     console.error(error)
@@ -56,6 +59,9 @@ async function loadSites() {
 }
 
 async function loadSubjects() {
+  if (!user.value?.group) {
+    return
+  }
   try {
     const { data, error } = await getSubjects()
     if (error) {
@@ -122,7 +128,7 @@ onBeforeUnmount(() => {
   <!-- 绑定基础类 .full 与动态颜色类 -->
   <div :class="['full', sidebarClass]">
     <router-link to="/">
-      <img :src="user!.group!.logo!" class="logo" />
+      <img :src="user!.group?.logo!" class="logo" />
     </router-link>
     <router-link to="/user">
       <UserCard />
@@ -151,8 +157,8 @@ onBeforeUnmount(() => {
           <span class="menu-top">管理组织</span>
         </el-menu-item>
 
-        <el-divider class="divider" />
-        <div class="menu-middle">专属新闻</div>
+        <el-divider class="divider" v-if="user?.group" />
+        <div class="menu-middle" v-if="user?.group">专属新闻</div>
         <!-- 按网站分类显示 -->
         <template v-if="sidebarMode === 'category'">
           <el-sub-menu

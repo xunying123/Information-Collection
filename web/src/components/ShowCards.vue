@@ -7,7 +7,7 @@ import ArticleCard from '@/components/ArticleCard.vue'
 import ArticleList from '@/components/ArticleList.vue'
 import SiteArticleCard from '@/components/SiteArticleCard.vue'
 import FilterSidebar from '@/components/FilterSidebar.vue'
-import { search_keyword_key, all_categories_key, all_subjects_key } from '@/key'
+import { user_key, search_keyword_key, all_categories_key, all_subjects_key } from '@/key'
 import { getCategories } from '@/sdk'
 
 const props = defineProps<{ pages: PageItem[]; title: string; loading: boolean }>()
@@ -15,6 +15,7 @@ const searchKeyword = inject(search_keyword_key)!
 const allCategories = inject(all_categories_key)!
 const route = useRoute()
 
+const user = inject(user_key)!
 let subjects = inject(all_subjects_key)!
 
 // 拆分为独立响应式属性
@@ -167,6 +168,9 @@ onMounted(() => {
   }
 
   const fetchCategories = async () => {
+    if (!user!.value?.group) {
+      return
+    }
     const { data, error } = await getCategories()
     if (error) console.error('获取类别信息失败：', error)
     allCategories.value = data!

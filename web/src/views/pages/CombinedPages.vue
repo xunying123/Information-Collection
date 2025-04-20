@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch, inject, provide } from 'vue'
-import { all_subjects_key } from '@/key'
+import { user_key, all_subjects_key } from '@/key'
 import ShowCards from '@/components/ShowCards.vue'
 import useScrollFetch from '@/useScrollFetch'
 import {
@@ -40,6 +40,8 @@ const props = defineProps<{
 
 const EmptySite: Site = { id: 0, name: '', url: '', icon: '' }
 
+const user = inject(user_key)!
+
 let searchKeyword = ref('')
 provide(search_keyword_key, searchKeyword)
 
@@ -58,6 +60,9 @@ let currentSortOption = ref<SortType>('time')
 let timeStart = ref<string | null>(null)
 
 const fetchPages = (count: number) => {
+  if (!user.value?.group) {
+    return
+  }
   if (isRequesting.value) {
     return
   }

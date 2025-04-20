@@ -180,7 +180,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, inject } from 'vue'
+import { user_key } from '@/key'
 import { ElNotification, ElMessageBox } from 'element-plus'
 import type { SiteItem } from '@/api_interface'
 import {
@@ -198,6 +199,8 @@ import {
   type CategoryItem,
   type Category
 } from '@/sdk'
+
+const user = inject(user_key)!
 
 // 当前激活的 Tab，从 localStorage 中读取或使用默认值
 const activeTab = ref(localStorage.getItem('activeTab') || 'add-site')
@@ -441,6 +444,9 @@ const allGroupPendingUsers = ref<User[]>([])
 
 // 加载待审核成员列表
 const loadGroupPendingList = async () => {
+  if (!user.value?.group) {
+    return
+  }
   const { data, error } = await getPendingMembers()
   if (error) {
     console.error('加载待审核成员失败:', error)
@@ -565,6 +571,9 @@ onMounted(async () => {
 })
 
 const loadAll = async () => {
+  if (!user.value?.group) {
+    return
+  }
   const { data, error } = await getCategories()
   if (error) {
     console.error(error)
@@ -584,6 +593,9 @@ const loadAll = async () => {
 }
 
 const loadMembersList = async () => {
+  if (!user.value?.group) {
+    return
+  }
   const { data, error } = await getGroupUsers()
   if (error) {
     console.error('加载成员列表失败:', error)

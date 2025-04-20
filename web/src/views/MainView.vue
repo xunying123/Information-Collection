@@ -26,7 +26,7 @@ provide(all_subjects_key, subjects)
 const user = inject(user_key)!
 const bgUrl = ref(
   localStorage.getItem('bgUrl') ||
-    user.value!.group!.background ||
+    user.value!.group?.background! ||
     'https://mc.sjtu.cn/wp-content/uploads/2022/10/%E5%A4%9C%E6%99%9A%E4%B8%9C%E5%A4%A7%E9%97%A8.jpg'
 )
 
