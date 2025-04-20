@@ -3,6 +3,7 @@ from src.perception import preception
 from src.data import get_post_websites, get_keywords
 import os
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def do(web):
     preception(web)
@@ -20,13 +21,27 @@ def run():
     get_keywords()
     post_websites = read_content("./src/data/post_websites.json")
     
-    for web in reversed(post_websites):
+    def safe_do(web):
         try:
             do(web)
         except Exception as e:
             logging(path, "Error! ")
             logging(path, str(e))
             logging(path, web['url'][0])
+
+    max_workers = 5
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(safe_do, web) for web in reversed(post_websites)]
+        for _ in as_completed(futures):
+            pass
+    
+    # for web in reversed(post_websites):
+    #     try:
+    #         do(web)
+    #     except Exception as e:
+    #         logging(path, "Error! ")
+    #         logging(path, str(e))
+    #         logging(path, web['url'][0])
 
 def main():
     start_time = datetime.now()

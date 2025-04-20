@@ -46,7 +46,6 @@ def Newspaper(url):
     except Exception as e:
         print("1Error parsing article:", e)
         return None, None
-    print(1)
     return None, None
 
 def Play_Wright_new(url):
@@ -90,20 +89,19 @@ def Play_Wright_new(url):
                     if article.publish_date:
                         publish_date = article.publish_date.strftime('%Y-%m-%d %H:%M')
                     else:
-                        publish_date = None
+                        publish_date = datetime.now()
 
                     now = datetime.now()
                     if now >= publish_date and (now - publish_date) <= timedelta(days=3):
                         return article.title, article.text, publish_date
                     else:
-                        publish_date = None
+                        publish_date = datetime.now()
 
                     return article.title, article.text, publish_date
                 
     except Exception as e:
         print("2Error parsing article:", e)
         return None, None, None
-    print(2)
     return None, None, None
         
 def Beautiful_Soup(url):
@@ -182,7 +180,6 @@ def Beautiful_Soup(url):
     except Exception as e:
         print("3Error parsing article:", e)
         return None, None, None
-    print(3)
     return None, None, None
 
 def Play_Wright_bs(url):
@@ -267,7 +264,6 @@ def Play_Wright_bs(url):
     except Exception as e:
         print("4Error parsing article:", e)
         return None, None, None
-    print(4)
     return None, None, None
 
 def crawl(url, source_url):
