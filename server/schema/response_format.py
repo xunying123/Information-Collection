@@ -73,7 +73,8 @@ class SiteItem(ConfigBaseModel):
 
 
 class Site(SiteItem):
-    pages: list[PageItem]
+    # pages: list[PageItem]
+    pass
 
 
 class Page(PageItem):

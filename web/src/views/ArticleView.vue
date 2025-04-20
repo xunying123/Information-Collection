@@ -181,7 +181,7 @@ onUnmounted(() => {
               <h3 class="section-title">【摘要】</h3>
               <div v-html="content" class="section-content"></div>
             </div>
-            <hr class="divider" style="margin-bottom: 20px; margin-top: 20px" />
+            <hr class="divider" />
             <div class="section">
               <h3 class="section-title">【正文】</h3>
               <div v-html="full_content" class="section-content"></div>
@@ -242,7 +242,7 @@ onUnmounted(() => {
 
 .resizer:hover .resizer-handle,
 .resizer.active .resizer-handle {
-  background-color: #0086d1;
+  background-color: #c0cee0;
 }
 
 .details-area {
@@ -356,10 +356,18 @@ onUnmounted(() => {
   background-size: 200% 200%;
   animation: glowing 3s ease infinite;
   border: none;
-  color: black;
+  color: rgb(255, 255, 255);
   font-weight: bold;
   text-transform: uppercase;
   position: relative;
+}
+
+.divider {
+  margin-bottom: 20px;
+  margin-top: 20px;
+  border: none;
+  height: 0.15em;
+  background-color: #d9ecff;
 }
 
 .bottom-functions {

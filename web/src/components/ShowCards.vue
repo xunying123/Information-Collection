@@ -84,12 +84,12 @@ const options = computed(() => {
     ? [
         { label: '网站卡片', value: 'site' },
         { label: '卡片', value: 'card' },
-        { label: '标题列表', value: 'list' }
+        { label: '列表', value: 'list' }
         // { label: '摘要列表', value: 'excerpt' }
       ]
     : [
         { label: '卡片', value: 'card' },
-        { label: '标题列表', value: 'list' }
+        { label: '列表', value: 'list' }
         // { label: '摘要列表', value: 'excerpt' }
       ]
 })
@@ -197,7 +197,12 @@ const openFilter = () => filterSidebarRef.value?.openDrawer?.()
         <el-button
           type="primary"
           @click="openFilter"
-          style="margin-right: 0.8em; line-height: normal"
+          style="
+            margin-right: 0.8em;
+            line-height: normal;
+            --el-button-bg-color: #79bbff;
+            --el-button-border-color: #79bbff;
+          "
         >
           <el-icon><Filter /></el-icon>
           <span>筛选</span>
@@ -261,6 +266,7 @@ h1 {
   padding-right: 2em;
   flex-wrap: wrap;
   gap: 12px;
+  --el-button-bg-color: #79bbff !important;
 }
 
 .header > :first-child {
