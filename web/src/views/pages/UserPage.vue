@@ -240,7 +240,7 @@ const restoreDefault = () => {
 const quitGroup = async () => {
   try {
     await ElMessageBox.confirm(
-      '当前操作会使您退出您所在的组织，如希望重新加入，需要再次联系对应组织的管理员，请确认。',
+      '当前操作会使您退出您所在的组织，如希望重新加入，需要再次联系对应组织的管理员，请确认，并谨慎操作！！！',
       '提示',
       {
         confirmButtonText: '确认',

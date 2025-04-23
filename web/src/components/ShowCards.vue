@@ -87,11 +87,7 @@ const openFilter = () => filterSidebarRef.value?.openDrawer?.()
 
 <template>
   <el-container class="full-height">
-    <FilterSidebar
-      ref="filterSidebarRef"
-      :allCategories="allCategories"
-      :subjects="subjects"
-    />
+    <FilterSidebar ref="filterSidebarRef" :allCategories="allCategories" :subjects="subjects" />
     <el-main class="full-height top-down">
       <div class="header">
         <h1>{{ props.title }}</h1>

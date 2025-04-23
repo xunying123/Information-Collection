@@ -13,10 +13,7 @@ import { ref, onMounted, watch, inject, provide } from 'vue'
 import { user_key, all_subjects_key } from '@/key'
 import ShowCards from '@/components/ShowCards.vue'
 import useScrollFetch from '@/useScrollFetch'
-import {
-  filter_keyword_key,
-  search_keyword_key
-} from '@/key'
+import { filter_keyword_key, search_keyword_key } from '@/key'
 import {
   getPages,
   getSite,
@@ -48,7 +45,7 @@ let pages = ref<PageItem[]>([])
 let loading = ref(true)
 let title = ref('')
 let site = ref<Site>(EmptySite)
-let count = ref(props.pageType === 'all' || props.pageType === 'site' ? 50 : 10)
+let count = ref(50)
 
 let filter_keyword = inject(filter_keyword_key)!
 
@@ -138,7 +135,7 @@ const fetchPages = (count: number) => {
       loading.value = true
     }
   }, 200)
-  
+
   let body: PageGet = {
     count: count,
     filter_user_keyword: filter_keyword.value,
@@ -154,19 +151,19 @@ const fetchPages = (count: number) => {
     body.search_title = searchKeyword.value
     body.search_content = searchKeyword.value
   }
-  
+
   if (selectedCategories.value && selectedCategories.value.length > 0) {
     body.category = selectedCategories.value
   }
-  
+
   if (selectedSubjects.value && selectedSubjects.value.length > 0) {
     body.subject = selectedSubjects.value
   }
-  
+
   if (props.subject_id) {
     body.subject = Number(props.subject_id)
   }
-  
+
   switch (props.pageType) {
     case 'all':
       title.value = '全部文章'
@@ -191,7 +188,7 @@ const fetchPages = (count: number) => {
       body.count_for_each_site = true
       break
   }
-  
+
   getPages({ body: body })
     .then((res) => res.data)
     .then((data) => {
@@ -249,7 +246,7 @@ onMounted(() => {
   }
 
   fetchPages(count.value)
-  
+
   if (props.pageType === 'site' && props.site_id) {
     updateSite()
   }

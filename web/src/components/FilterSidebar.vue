@@ -45,7 +45,6 @@ defineExpose({
   openDrawer,
   closeDrawer
 })
-
 </script>
 
 <template>
