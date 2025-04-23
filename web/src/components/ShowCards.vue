@@ -7,7 +7,7 @@ import ArticleCard from '@/components/ArticleCard.vue'
 import ArticleList from '@/components/ArticleList.vue'
 import SiteArticleCard from '@/components/SiteArticleCard.vue'
 import FilterSidebar from '@/components/FilterSidebar.vue'
-import { search_keyword_key, all_categories_key, all_subjects_key } from '@/key'
+import { user_key, search_keyword_key, all_categories_key, all_subjects_key } from '@/key'
 import { getCategories } from '@/sdk'
 
 const props = defineProps<{ pages: PageItem[]; title: string; loading: boolean }>()
@@ -15,65 +15,14 @@ const searchKeyword = inject(search_keyword_key)!
 const allCategories = inject(all_categories_key)!
 const route = useRoute()
 
+const user = inject(user_key)!
 let subjects = inject(all_subjects_key)!
 
-// 拆分为独立响应式属性
-const selectedCategories = ref<number[]>([])
-const selectedTimeRange = ref('all')
-const selectedSortOption = ref('time')
-const selectedSubjects = ref<number[]>([])
+// 仅保留滚动事件
+const emit = defineEmits(['scroll', 'wheel'])
+emit
 
-const emit = defineEmits(['sortOptionChanged', 'scroll', 'timeRangeChanged'])
-
-watch(selectedTimeRange, (newTimeRange) => {
-  localStorage.setItem('selectedTimeRange', newTimeRange)
-
-  // 计算时间范围并发送到后端
-  const now = new Date()
-  let timeStart: string | null = null
-
-  if (newTimeRange !== 'all') {
-    const days = parseInt(newTimeRange)
-    if (days === 1) {
-      // 昨天的特殊处理
-      const yesterday = new Date(now)
-      const day = now.getDay()
-      if (day === 1) {
-        yesterday.setDate(now.getDate() - 3)
-      } else if (day === 0) {
-        yesterday.setDate(now.getDate() - 2)
-      } else {
-        yesterday.setDate(now.getDate() - 1)
-      }
-      yesterday.setHours(0, 0, 0, 0)
-      timeStart = yesterday.toISOString()
-    } else {
-      // 其他天数范围
-      const startTime = new Date(now)
-      startTime.setDate(now.getDate() - days)
-      startTime.setHours(0, 0, 0, 0)
-      timeStart = startTime.toISOString()
-    }
-  }
-
-  emit('timeRangeChanged', timeStart)
-})
-
-watch(selectedSortOption, (newSortOption) => {
-  localStorage.setItem('selectedSortOption', newSortOption)
-  emit('sortOptionChanged', newSortOption)
-})
-
-watch(selectedCategories, (newCategories) => {
-  localStorage.setItem('selectedCategories', JSON.stringify(newCategories))
-  window.dispatchEvent(new Event('selectedCategoriesUpdated'))
-})
-
-watch(selectedSubjects, (newSubjects) => {
-  localStorage.setItem('selectedKeywordCategories', JSON.stringify(newSubjects))
-  window.dispatchEvent(new Event('selectedSubjectsUpdated'))
-})
-
+// 视图模式管理 - 保留在ShowCards中，因为这是UI展示相关的
 const view = ref('card')
 const options = computed(() => {
   const showSiteCard =
@@ -85,12 +34,10 @@ const options = computed(() => {
         { label: '网站卡片', value: 'site' },
         { label: '卡片', value: 'card' },
         { label: '列表', value: 'list' }
-        // { label: '摘要列表', value: 'excerpt' }
       ]
     : [
         { label: '卡片', value: 'card' },
         { label: '列表', value: 'list' }
-        // { label: '摘要列表', value: 'excerpt' }
       ]
 })
 
@@ -110,8 +57,6 @@ watch(view, (newView) => {
 onMounted(() => {
   const savedView = localStorage.getItem('viewMode')
   const savedNotCateView = localStorage.getItem('notCateView')
-  const savedSortOption = localStorage.getItem('selectedSortOption')
-  const savedTimeRange = localStorage.getItem('selectedTimeRange')
 
   if (savedView) view.value = savedView
   if (
@@ -124,55 +69,15 @@ onMounted(() => {
   ) {
     view.value = savedNotCateView ? savedNotCateView : 'card'
   }
-  if (savedSortOption) {
-    selectedSortOption.value = savedSortOption
-    emit('sortOptionChanged', savedSortOption)
-  }
-
-  if (savedTimeRange) {
-    selectedTimeRange.value = savedTimeRange
-
-    // 初始化时也触发时间范围变更事件
-    const now = new Date()
-    let timeStart: string | null = null
-
-    if (savedTimeRange !== 'all') {
-      const days = parseInt(savedTimeRange)
-      if (days === 1) {
-        const yesterday = new Date(now)
-        const day = now.getDay()
-        if (day === 1) {
-          yesterday.setDate(now.getDate() - 3)
-        } else if (day === 0) {
-          yesterday.setDate(now.getDate() - 2)
-        } else {
-          yesterday.setDate(now.getDate() - 1)
-        }
-        yesterday.setHours(0, 0, 0, 0)
-        timeStart = yesterday.toISOString()
-      } else {
-        const startTime = new Date(now)
-        startTime.setDate(now.getDate() - days)
-        startTime.setHours(0, 0, 0, 0)
-        timeStart = startTime.toISOString()
-      }
-    }
-
-    emit('timeRangeChanged', timeStart)
-  }
-
-  const storedKeywordCategories = localStorage.getItem('selectedKeywordCategories')
-  if (storedKeywordCategories) {
-    selectedSubjects.value = JSON.parse(storedKeywordCategories)
-  }
 
   const fetchCategories = async () => {
+    if (!user!.value?.group) {
+      return
+    }
     const { data, error } = await getCategories()
     if (error) console.error('获取类别信息失败：', error)
     allCategories.value = data!
   }
-  const storedCategories = localStorage.getItem('selectedCategories')
-  if (storedCategories) selectedCategories.value = JSON.parse(storedCategories)
   fetchCategories()
 })
 
@@ -182,15 +87,7 @@ const openFilter = () => filterSidebarRef.value?.openDrawer?.()
 
 <template>
   <el-container class="full-height">
-    <FilterSidebar
-      ref="filterSidebarRef"
-      v-model:selectedCategories="selectedCategories"
-      v-model:selectedTimeRange="selectedTimeRange"
-      v-model:selectedSortOption="selectedSortOption"
-      v-model:selectedSubjects="selectedSubjects"
-      :allCategories="allCategories"
-      :subjects="subjects"
-    />
+    <FilterSidebar ref="filterSidebarRef" :allCategories="allCategories" :subjects="subjects" />
     <el-main class="full-height top-down">
       <div class="header">
         <h1>{{ props.title }}</h1>
@@ -214,6 +111,7 @@ const openFilter = () => filterSidebarRef.value?.openDrawer?.()
         v-if="props.pages && props.pages.length"
         v-loading="props.loading"
         @scroll="$emit('scroll', $event)"
+        @wheel="$emit('wheel', $event)"
       >
         <div v-if="view === 'card'" class="container-grid">
           <ArticleCard v-for="page in pages" :key="page.id" :page="page" />
@@ -283,10 +181,6 @@ h1 {
 .header > h1 {
   margin: 0.2em;
 }
-
-/* .el-scrollbar {
-  height: calc(100vh - 120px);
-} */
 
 .el-main {
   display: flex;
