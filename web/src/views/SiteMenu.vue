@@ -159,8 +159,24 @@ onBeforeUnmount(() => {
 
         <el-divider class="divider" v-if="user?.group" />
         <div class="menu-middle" v-if="user?.group">专属新闻</div>
+        <!-- 按文章分类显示 -->
+        <template v-if="sidebarMode === 'subject' || sidebarMode === 'both'">
+          <el-menu-item
+            v-for="subject in subjects"
+            :key="subject.id"
+            :index="`/subject/` + subject.id"
+          >
+            <el-icon>
+              <Location />
+            </el-icon>
+            <span>{{ subject.name }}</span>
+          </el-menu-item>
+        </template>
+
+        <el-divider class="divider" v-if="sidebarMode === 'both'" />
+
         <!-- 按网站分类显示 -->
-        <template v-if="sidebarMode === 'category'">
+        <template v-if="sidebarMode === 'category' || sidebarMode === 'both'">
           <el-sub-menu
             v-for="cate in sites"
             :key="cate.cate_id"
@@ -181,20 +197,6 @@ onBeforeUnmount(() => {
               {{ site.name }}
             </el-menu-item>
           </el-sub-menu>
-        </template>
-
-        <!-- 按文章分类显示 -->
-        <template v-else>
-          <el-menu-item
-            v-for="subject in subjects"
-            :key="subject.id"
-            :index="`/subject/` + subject.id"
-          >
-            <el-icon>
-              <Location />
-            </el-icon>
-            <span>{{ subject.name }}</span>
-          </el-menu-item>
         </template>
 
         <el-divider class="divider" />

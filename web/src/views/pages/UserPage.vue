@@ -45,12 +45,12 @@
     </el-drawer>
 
     <!-- <router-view></router-view> -->
-
     <h2>侧边栏显示模式</h2>
     <div class="sidebar-mode-setting">
       <el-radio-group v-model="sidebarMode" @change="changeSidebarMode">
         <el-radio value="category" border>按照网站分类</el-radio>
         <el-radio value="subject" border>按照文章分类</el-radio>
+        <el-radio value="both" border>同时显示两种分类</el-radio>
       </el-radio-group>
     </div>
     <div v-if="false">
@@ -142,12 +142,19 @@ const changeSidebarColor = (val: string) => {
 const sidebarMode = ref(
   localStorage.getItem('sidebarMode') || user!.value!.group!.sidebar_show_mode || 'category'
 )
+
 const changeSidebarMode = (val: string) => {
   localStorage.setItem('sidebarMode', val)
   window.dispatchEvent(new Event('sidebarModeChanged'))
   ElNotification({
     title: '成功',
-    message: '侧边栏显示模式已切换为 ' + (val === 'category' ? '按照网站分类' : '按照文章分类'),
+    message:
+      '侧边栏显示模式已切换为 ' +
+      (val === 'category'
+        ? '按照网站分类'
+        : val === 'subject'
+          ? '按照文章分类'
+          : '同时显示两种分类'),
     type: 'success'
   })
 }
