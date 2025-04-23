@@ -176,6 +176,7 @@ onUnmounted(() => {
               format="yyyy年MM月dd日 hh时mm分"
             />
           </el-divider>
+          <!-- <span>{{ article.publish_time }}</span> -->
           <div class="article-view">
             <div class="section">
               <h3 class="section-title">【摘要】</h3>

@@ -1,21 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, inject, toRef } from 'vue'
 
-defineProps<{
-  selectedCategories: number[]
-  selectedTimeRange: string
-  selectedSortOption: string
-  selectedSubjects: number[]
+const props = defineProps<{
   allCategories: any[]
   subjects: any[]
 }>()
+props
 
-const emit = defineEmits<{
-  (e: 'update:selectedCategories', value: number[]): void
-  (e: 'update:selectedTimeRange', value: string): void
-  (e: 'update:selectedSortOption', value: string): void
-  (e: 'update:selectedSubjects', value: number[]): void
-}>()
+// 使用inject接收筛选状态和更新方法
+const filterState = inject('filterState') as {
+  selectedCategories: number[]
+  selectedSubjects: number[]
+  selectedTimeRange: string
+  currentSortOption: string
+  updateCategories: (categories: number[]) => void
+  updateSubjects: (subjects: number[]) => void
+  updateTimeRange: (timeRange: string) => void
+  updateSortOption: (sortOption: string) => void
+}
+
+const selectedCategories = toRef(filterState, 'selectedCategories')
+const selectedSubjects = toRef(filterState, 'selectedSubjects')
+const selectedTimeRange = toRef(filterState, 'selectedTimeRange')
+const currentSortOption = toRef(filterState, 'currentSortOption')
 
 const timeOptions = [
   { label: '全部', value: 'all' },
@@ -25,6 +32,7 @@ const timeOptions = [
   { label: '一年内', value: '365' }
 ]
 
+// 抽屉控制
 const drawerVisible = ref(false)
 const openDrawer = () => {
   drawerVisible.value = true
@@ -37,6 +45,7 @@ defineExpose({
   openDrawer,
   closeDrawer
 })
+
 </script>
 
 <template>
@@ -46,8 +55,8 @@ defineExpose({
       <div class="filter-group">
         <h3>关键词分类</h3>
         <el-checkbox-group
-          :model-value="selectedSubjects"
-          @update:model-value="emit('update:selectedSubjects', $event)"
+          v-model="selectedSubjects"
+          @change="filterState.updateSubjects(selectedSubjects)"
         >
           <el-checkbox-button v-for="cat in subjects" :key="cat.id" :value="cat.id">
             {{ cat.name }}
@@ -59,8 +68,8 @@ defineExpose({
       <div class="filter-group">
         <h3>网站类别</h3>
         <el-checkbox-group
-          :model-value="selectedCategories"
-          @update:model-value="emit('update:selectedCategories', $event)"
+          v-model="selectedCategories"
+          @change="filterState.updateCategories(selectedCategories)"
         >
           <el-checkbox-button v-for="cate in allCategories" :key="cate.id" :value="cate.id">
             {{ cate.name }}
@@ -72,8 +81,8 @@ defineExpose({
       <div class="filter-group">
         <h3>时间范围</h3>
         <el-segmented
-          :model-value="selectedTimeRange"
-          @update:model-value="emit('update:selectedTimeRange', $event)"
+          v-model="selectedTimeRange"
+          @change="filterState.updateTimeRange(selectedTimeRange)"
           :options="timeOptions"
         />
       </div>
@@ -82,8 +91,8 @@ defineExpose({
       <div class="filter-group">
         <h3>排序方式</h3>
         <el-radio-group
-          :model-value="selectedSortOption"
-          @update:model-value="emit('update:selectedSortOption', $event)"
+          v-model="currentSortOption"
+          @change="filterState.updateSortOption(currentSortOption)"
         >
           <el-radio-button value="time">按时间排序</el-radio-button>
           <el-radio-button value="score">按重要度排序</el-radio-button>
