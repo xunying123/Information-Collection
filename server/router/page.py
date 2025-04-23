@@ -39,7 +39,7 @@ def get_pages(data: schema.PageGet):
                 (UserSiteRelation.site_id == Page.site_id)
                 & (UserSiteRelation.user_id == current_user.id),
             )
-            .outerjoin(Category, Category.belonged_group_id == current_user.group_id)
+            .outerjoin(Category, Category.group_id == current_user.group_id)
             .outerjoin(
                 CategorySiteRelation,
                 (CategorySiteRelation.category_id == Category.id)

@@ -32,13 +32,13 @@ def add_category(category: schema.CategoryItem):
         db.scalar(
             select(Category.id).where(
                 Category.name == category.name
-                and Category.belonged_group_id == current_group.id
+                and Category.group_id == current_group.id
             )
         )
         is not None
     ):
         raise HTTPException(PRECONDITION_FAILED, "category already exists")
-    cate = Category(name=category.name, belonged_group_id=current_group.id)
+    cate = Category(name=category.name, group_id=current_group.id)
     db.add(cate)
     return {}
 
@@ -47,7 +47,7 @@ def add_category(category: schema.CategoryItem):
 @group_admin_required
 def add_site_to_category(cate_id: int = Body(), site_id: int = Body()):
     if (
-        db.scalar(select(Category.belonged_group_id).where(Category.id == cate_id))
+        db.scalar(select(Category.group_id).where(Category.id == cate_id))
         != current_group.id
     ):
         raise HTTPException(PRECONDITION_FAILED, "category not in current group")
@@ -69,7 +69,7 @@ def add_site_to_category(cate_id: int = Body(), site_id: int = Body()):
 @group_admin_required
 def remove_site_from_category(cate_id: int = Body(), site_id: int = Body()):
     if (
-        db.scalar(select(Category.belonged_group_id).where(Category.id == cate_id))
+        db.scalar(select(Category.group_id).where(Category.id == cate_id))
         != current_group.id
     ):
         raise HTTPException(PRECONDITION_FAILED, "category not in current group")

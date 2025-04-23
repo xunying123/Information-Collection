@@ -13,6 +13,7 @@ class Base(DeclarativeBase):
         naming_convention={
             "ix": "ix_%(column_0_label)s",
             "uq": "%(table_name)s_%(column_0_name)s_key",
+            "fk": "%(table_name)s_%(column_0_name)s_fkey",
         }
     )
 
@@ -83,7 +84,7 @@ class Category(Base):
         "Site", secondary="category_site_relation", back_populates="categories"
     )
     # the group who can manage this category
-    belonged_group_id: Mapped[group_foreign_key]
+    group_id: Mapped[group_foreign_key]
     group: Mapped[Group] = relationship(Group, back_populates="categories")
     sort_key: Mapped[int] = mapped_column(server_default="0")
 
