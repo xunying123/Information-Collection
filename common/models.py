@@ -54,9 +54,15 @@ class Group(Base):
     name: Mapped[str] = mapped_column(nullable=False)
     users: Mapped[list["User"]] = relationship("User", back_populates="group")
     categories: Mapped[list["Category"]] = relationship(
-        "Category", back_populates="group"
+        "Category",
+        back_populates="group",
+        order_by=lambda: [Category.sort_key, Category.id],
     )
-    subjects: Mapped[list["Subject"]] = relationship("Subject", back_populates="group")
+    subjects: Mapped[list["Subject"]] = relationship(
+        "Subject",
+        back_populates="group",
+        order_by=lambda: [Subject.sort_key, Subject.id],
+    )
     # style related fields
     logo: Mapped[url_type] = mapped_column(nullable=True)
     background: Mapped[url_type] = mapped_column(nullable=True)
@@ -79,6 +85,7 @@ class Category(Base):
     # the group who can manage this category
     belonged_group_id: Mapped[group_foreign_key]
     group: Mapped[Group] = relationship(Group, back_populates="categories")
+    sort_key: Mapped[int] = mapped_column(server_default="0")
 
 
 cata_fk = Annotated[
@@ -179,6 +186,7 @@ class Subject(Base):
     keywords = relationship(
         "Keyword", secondary="subject_keyword_relation", back_populates="subject"
     )
+    sort_key: Mapped[int] = mapped_column(server_default="0")
 
 
 class Keyword(Base):
