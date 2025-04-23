@@ -2,7 +2,7 @@ from playwright.sync_api import sync_playwright
 from datetime import datetime, timedelta
 from newspaper import Article
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup,  Comment
 from dateutil import parser 
 from src.utils import read_content, save_content, check_page_content, headers, extract_domain, logging
 import os
@@ -12,6 +12,60 @@ def Newspaper(url):
         article = Article(url, language='zh')
         article.download()
         article.parse()
+
+        if not article.html:
+            return None, None
+        
+        soup = BeautifulSoup(article.html, 'html.parser')
+
+        comments = soup.find_all(string=lambda t: isinstance(t, Comment))
+
+        start = next((c for c in comments if '正文开始' in c), None)
+        end   = next((c for c in comments if '正文结束'   in c), None)
+
+        if not (start and end):
+            start = next((c for c in comments if '正文start' in c), None)
+            end   = next((c for c in comments if '正文end'   in c), None)
+
+        if not (start and end):
+            start = next((c for c in comments if c.strip() == 'enpcontent'), None)
+            end   = next((c for c in comments if c.strip() == '/enpcontent'), None)
+            
+        if start and end:
+            nodes = []
+            node = start.next_sibling
+            while node and node is not end:
+                nodes.append(node)
+                node = node.next_sibling
+
+            frag_html = ''.join(str(n) for n in nodes)
+
+            frag_soup = BeautifulSoup(frag_html, 'html.parser')
+            for el in frag_soup.find_all(style=lambda v: v and 'display:none' in v):
+                el.decompose()
+            for hid in frag_soup.find_all('input', type='hidden'):
+                hid.decompose()
+            for el in frag_soup.find_all(['div', 'p', 'span', 'a']):
+                txt = el.get_text()
+                if any(tag in txt for tag in ['ICP备', '版权所有', '公安机关备案']):
+                    el.decompose()
+
+            article.article_html = str(frag_soup)
+
+            article.text = frag_soup.get_text(separator='\n\n', strip=True)
+
+            if article.publish_date:
+                publish_date_dt = article.publish_date
+            else:
+                publish_date_dt = datetime.now()
+
+            now = datetime.now()
+            if now >= publish_date_dt and (now - publish_date_dt) <= timedelta(days=3):
+                return article, publish_date_dt
+            else:
+                publish_date_dt = datetime.now()
+                
+            return article, publish_date_dt
 
         if article.text:
             soup = BeautifulSoup(article.html, 'html.parser')
@@ -36,10 +90,9 @@ def Newspaper(url):
 
             now = datetime.now()
             if now >= publish_date_dt and (now - publish_date_dt) <= timedelta(days=3):
-                formatted_publish_date = publish_date_dt.strftime('%Y-%m-%d %H:%M')
-                return article, formatted_publish_date
+                return article, publish_date_dt
             else:
-                publish_date_dt = None
+                publish_date_dt = datetime.now()
 
             return article, publish_date_dt
 
@@ -68,9 +121,61 @@ def Play_Wright_new(url):
             article.set_html(page_content)
             article.parse()
 
-            if article:
-                soup = BeautifulSoup(article.html, 'html.parser')
+            if not article.html:
+                return None, None
+            
+            soup = BeautifulSoup(article.html, 'html.parser')
 
+            comments = soup.find_all(string=lambda t: isinstance(t, Comment))
+            start = next((c for c in comments if '正文开始' in c), None)
+            end   = next((c for c in comments if '正文结束'   in c), None)
+            
+            if not (start and end):
+                start = next((c for c in comments if '正文start' in c), None)
+                end   = next((c for c in comments if '正文end'   in c), None)
+
+            if not (start and end):
+                start = next((c for c in comments if c.strip() == 'enpcontent'), None)
+                end   = next((c for c in comments if c.strip() == '/enpcontent'), None)
+
+            if start and end:
+                nodes = []
+                node = start.next_sibling
+                while node and node is not end:
+                    nodes.append(node)
+                    node = node.next_sibling
+
+                frag_html = ''.join(str(n) for n in nodes)
+
+                frag_soup = BeautifulSoup(frag_html, 'html.parser')
+                for el in frag_soup.find_all(style=lambda v: v and 'display:none' in v):
+                    el.decompose()
+                for hid in frag_soup.find_all('input', type='hidden'):
+                    hid.decompose()
+                for el in frag_soup.find_all(['div', 'p', 'span', 'a']):
+                    txt = el.get_text()
+                    if any(tag in txt for tag in ['ICP备', '版权所有', '公安机关备案']):
+                        el.decompose()
+
+                article.article_html = str(frag_soup)
+
+                article.text = frag_soup.get_text(separator='\n\n', strip=True)
+
+                if article.publish_date:
+                    publish_date = article.publish_date
+                else:
+                    publish_date = datetime.now()
+
+                now = datetime.now()
+                if now >= publish_date and (now - publish_date) <= timedelta(days=3):
+                    return article.title, article.text, publish_date
+                else:
+                    publish_date = datetime.now()
+                    
+                    
+                return article.title, article.text, publish_date
+
+            if article:
                 for element in soup.find_all(style=lambda value: value and 'display:none' in value):
                     element.decompose()
                 
@@ -87,7 +192,7 @@ def Play_Wright_new(url):
                 if article.title and article.text:
 
                     if article.publish_date:
-                        publish_date = article.publish_date.strftime('%Y-%m-%d %H:%M')
+                        publish_date = article.publish_date
                     else:
                         publish_date = datetime.now()
 
@@ -345,7 +450,7 @@ def crawl(url, source_url):
     return None, None, None
 
 def main():
-    crawl('https://news.upc.edu.cn/info/1432/116321.htm', 'test')
+    crawl('https://share.gmw.cn/edu/2025-04/21/content_37978170.htm', 'test')
     
 if __name__ == '__main__':
     main()
