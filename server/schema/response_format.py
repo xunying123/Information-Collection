@@ -55,7 +55,8 @@ class PageItem(ConfigBaseModel, IncludeSite):
     source_url: str
     title: str
     content: str
-    publish_time: datetime
+    # to make frontend show properly when sort by time
+    publish_time: datetime = Field(validation_alias=AliasPath("created_at"))
     score: int
     keywords: list[Keyword]
 
