@@ -16,10 +16,7 @@
                 <span class="list-title">{{ page.title }}</span>
                 <div class="article-time">
                   <NConfigProvider :locale="zhCN" :date-locale="dateZhCN">
-                    <NTime
-                      :time="new Date(page.publish_time)"
-                      :type="timeType(page.publish_time)"
-                    />
+                    {{ showTime(page.publish_time) }}
                   </NConfigProvider>
                 </div>
                 <router-link :to="`/site/` + page.site_id" class="site-link">
@@ -49,9 +46,9 @@
 <script setup lang="ts">
 import type { PageItem } from '@/api_interface'
 import { is_bookmarked } from '@/bookmark'
-import { timeType } from '@/timeUtils'
+import { showTime } from '@/timeUtils'
 import BookmarkSvg from './svg/BookmarkSvg.vue'
-import { NTime, zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
+import { zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
 
 const props = defineProps<{ pages: PageItem[]; showExcerpt: boolean }>()
 
