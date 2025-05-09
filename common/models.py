@@ -76,6 +76,10 @@ group_foreign_key = Annotated[
     int, mapped_column(ForeignKey(Group.id), index=True, nullable=True)
 ]
 
+subject_foreign_key = Annotated[
+    int, mapped_column(ForeignKey("subject.id"), index=True, nullable=True)
+]
+
 
 class Category(Base):
     id: Mapped[intpk]
@@ -86,6 +90,7 @@ class Category(Base):
     # the group who can manage this category
     group_id: Mapped[group_foreign_key]
     group: Mapped[Group] = relationship(Group, back_populates="categories")
+    subject_id: Mapped[subject_foreign_key]  # just a hint for corresponding subject
     sort_key: Mapped[int] = mapped_column(server_default="0")
 
 

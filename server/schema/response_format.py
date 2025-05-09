@@ -23,6 +23,7 @@ class ConfigBaseModel(BaseModel):
 class CategoryItem(ConfigBaseModel):
     id: int | None = None
     name: str
+    subject_id: int | None = Field(None, description="this is used for hint which subject is corresponding to")
 
 
 class Category(CategoryItem):
