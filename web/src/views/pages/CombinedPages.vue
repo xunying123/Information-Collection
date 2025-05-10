@@ -217,7 +217,9 @@ async function updateSite() {
     console.error(error)
     return
   }
-  title.value = data.name
+  if (props.pageType === 'site') {
+    title.value = data.name
+  }
   site.value = data
 }
 
@@ -227,7 +229,9 @@ async function updateCategory() {
     console.error(error)
     return
   }
-  title.value = data.name
+  if (props.pageType === 'category') {
+    title.value = data.name
+  }
   last_subject_id.value = data.subject_id ?? -1
 }
 
