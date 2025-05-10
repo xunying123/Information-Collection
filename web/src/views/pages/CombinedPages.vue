@@ -47,6 +47,8 @@ let title = ref('')
 let site = ref<Site>(EmptySite)
 let count = ref(50)
 
+let last_subject_id = ref(-1)
+
 let filter_keyword = inject(filter_keyword_key)!
 
 // 筛选状态管理 - 集中在这个组件
@@ -181,11 +183,17 @@ const fetchPages = (count: number) => {
     case 'site':
       if (!props.site_id) return
       body.site = Number(props.site_id)
+      if (last_subject_id.value !== -1) {
+        body.subject = last_subject_id.value
+      }
       break
     case 'category':
       if (!props.category_id) return
       body.category = Number(props.category_id)
       body.count_for_each_site = true
+      if (last_subject_id.value !== -1) {
+        body.subject = last_subject_id.value
+      }
       break
   }
 
@@ -220,6 +228,7 @@ async function updateCategory() {
     return
   }
   title.value = data.name
+  last_subject_id.value = data.subject_id ?? -1
 }
 
 onMounted(() => {

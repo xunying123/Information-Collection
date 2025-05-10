@@ -50,12 +50,20 @@ export type BodySubscribe = {
 export type Category = {
   id?: number | null
   name: string
+  /**
+   * this is used for hint which subject is corresponding to
+   */
+  subject_id?: number | null
   readonly sites: Array<SiteItem>
 }
 
 export type CategoryItem = {
   id?: number | null
   name: string
+  /**
+   * this is used for hint which subject is corresponding to
+   */
+  subject_id?: number | null
 }
 
 export type Group = {

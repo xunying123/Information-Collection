@@ -29,7 +29,7 @@ let subjects = inject(all_subjects_key)!
 
 // 侧边栏显示模式
 const sidebarMode = ref(
-  localStorage.getItem('sidebarMode') || user!.value!.group?.sidebar_show_mode || 'category'
+  localStorage.getItem('sidebarShowMode') || user!.value!.group?.sidebar_show_mode || 'category'
 )
 
 async function loadSites() {
@@ -101,7 +101,7 @@ watch(sidebarMode, () => {
 
 // 侧边栏显示模式变更监听
 const updateSidebarMode = () => {
-  sidebarMode.value = localStorage.getItem('sidebarMode') || 'category'
+  sidebarMode.value = localStorage.getItem('sidebarShowMode') || 'category'
 }
 
 onMounted(() => {

@@ -140,11 +140,11 @@ const changeSidebarColor = (val: string) => {
 
 // 侧边栏显示模式设置
 const sidebarMode = ref(
-  localStorage.getItem('sidebarMode') || user!.value!.group!.sidebar_show_mode || 'category'
+  localStorage.getItem('sidebarShowMode') || user!.value!.group!.sidebar_show_mode || 'category'
 )
 
 const changeSidebarMode = (val: string) => {
-  localStorage.setItem('sidebarMode', val)
+  localStorage.setItem('sidebarShowMode', val)
   window.dispatchEvent(new Event('sidebarModeChanged'))
   ElNotification({
     title: '成功',
@@ -161,8 +161,8 @@ const changeSidebarMode = (val: string) => {
 
 onMounted(() => {
   // 确保初始化时设置默认值
-  if (!localStorage.getItem('sidebarMode')) {
-    localStorage.setItem('sidebarMode', user!.value!.group!.sidebar_show_mode!)
+  if (!localStorage.getItem('sidebarShowMode')) {
+    localStorage.setItem('sidebarShowMode', user!.value!.group!.sidebar_show_mode!)
   }
 })
 
