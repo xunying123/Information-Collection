@@ -49,11 +49,11 @@ const router = createRouter({
           children: [page_rule('subject')]
         },
         {
-          path: 'site/:site_id(\\d+)',
-          name: 'site',
+          path: 'category/:category_id(\\d+)/site/:site_id(\\d+)',
+          name: 'category-site',
           props: true,
           component: () => import('@/views/pages/SitePages.vue'),
-          children: [page_rule('site')]
+          children: [page_rule('category-site')]
         },
         {
           path: 'bookmarks',

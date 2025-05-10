@@ -231,7 +231,7 @@ async function updateCategory() {
   last_subject_id.value = data.subject_id ?? -1
 }
 
-onMounted(() => {
+onMounted(async () => {
   // 从 localStorage 加载筛选条件
   const savedSortOption = localStorage.getItem('selectedSortOption')
   if (savedSortOption) {
@@ -254,14 +254,14 @@ onMounted(() => {
     selectedCategories.value = JSON.parse(storedCategories)
   }
 
-  fetchPages(count.value)
-
   if (props.pageType === 'site' && props.site_id) {
-    updateSite()
+    await updateCategory()
+    await updateSite()
   }
   if (props.pageType === 'category' && props.category_id) {
-    updateCategory()
+    await updateCategory()
   }
+  fetchPages(count.value)
 })
 
 watch(searchKeyword, () => {
@@ -270,15 +270,16 @@ watch(searchKeyword, () => {
 
 watch(
   [() => props.site_id, () => props.category_id, () => props.subject_id],
-  ([newSiteId, newCategoryId, newSubjectId]) => {
+  async ([newSiteId, newCategoryId, newSubjectId]) => {
     if (newSiteId || newCategoryId || newSubjectId) {
-      fetchPages(count.value)
       if (props.pageType === 'site' && newSiteId) {
-        updateSite()
+        await updateCategory()
+        await updateSite()
       }
       if (props.pageType === 'category' && newCategoryId) {
-        updateCategory()
+        await updateCategory()
       }
+      fetchPages(count.value)
     }
   }
 )

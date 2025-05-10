@@ -19,9 +19,9 @@
                     {{ showTime(page.publish_time) }}
                   </NConfigProvider>
                 </div>
-                <router-link :to="`/site/` + page.site_id" class="site-link">
+                <!-- <router-link :to="`/site/` + page.site_id" class="site-link">
                   {{ page.site }}
-                </router-link>
+                </router-link> -->
               </div>
               <p
                 v-if="props.showExcerpt"

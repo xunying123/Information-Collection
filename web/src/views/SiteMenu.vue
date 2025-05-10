@@ -191,7 +191,7 @@ onBeforeUnmount(() => {
             <el-menu-item
               v-for="site in cate.sites"
               :key="site.id"
-              :index="`/site/` + site.id"
+              :index="`/category/` + String(cate.cate_id) + `/site/` + site.id"
               style="margin-left: 2em"
             >
               {{ site.name }}
