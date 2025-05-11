@@ -3,6 +3,7 @@
     :pages="pages"
     :title="title"
     :loading="loading"
+    :category_id="props.category_id"
     @scroll="handleScroll"
     @wheel="handleWheel"
   ></ShowCards>

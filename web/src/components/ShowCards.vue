@@ -10,7 +10,12 @@ import FilterSidebar from '@/components/FilterSidebar.vue'
 import { user_key, search_keyword_key, all_categories_key, all_subjects_key } from '@/key'
 import { getCategories } from '@/sdk'
 
-const props = defineProps<{ pages: PageItem[]; title: string; loading: boolean }>()
+const props = defineProps<{
+  pages: PageItem[]
+  title: string
+  loading: boolean
+  category_id?: String
+}>()
 const searchKeyword = inject(search_keyword_key)!
 const allCategories = inject(all_categories_key)!
 const route = useRoute()
@@ -116,7 +121,12 @@ const openFilter = () => filterSidebarRef.value?.openDrawer?.()
         <div v-if="view === 'card'" class="container-grid">
           <ArticleCard v-for="page in pages" :key="page.id" :page="page" />
         </div>
-        <ArticleList :pages="pages" :showExcerpt="false" v-else-if="view === 'list'" />
+        <ArticleList
+          :pages="pages"
+          :showExcerpt="false"
+          :category_id="props.category_id"
+          v-else-if="view === 'list'"
+        />
         <ArticleList :pages="pages" :showExcerpt="true" v-else-if="view === 'excerpt'" />
         <SiteArticleCard :pages="pages" :showExcerpt="true" v-else-if="view === 'site'" />
       </el-scrollbar>

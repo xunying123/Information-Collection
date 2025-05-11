@@ -29,7 +29,8 @@ let subjects = inject(all_subjects_key)!
 
 // 侧边栏显示模式
 const sidebarMode = ref(
-  localStorage.getItem('sidebarShowMode') || user!.value!.group?.sidebar_show_mode || 'category'
+  // localStorage.getItem('sidebarShowMode') || user!.value!.group?.sidebar_show_mode || 'category'
+  'category'
 )
 
 async function loadSites() {

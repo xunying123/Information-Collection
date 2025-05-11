@@ -19,9 +19,12 @@
                     {{ showTime(page.publish_time) }}
                   </NConfigProvider>
                 </div>
-                <!-- <router-link :to="`/site/` + page.site_id" class="site-link">
+                <router-link
+                  :to="`/category/` + String(props.category_id) + `/site/` + page.site_id"
+                  class="site-link"
+                >
                   {{ page.site }}
-                </router-link> -->
+                </router-link>
               </div>
               <p
                 v-if="props.showExcerpt"
@@ -50,7 +53,7 @@ import { showTime } from '@/timeUtils'
 import BookmarkSvg from './svg/BookmarkSvg.vue'
 import { zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
 
-const props = defineProps<{ pages: PageItem[]; showExcerpt: boolean }>()
+const props = defineProps<{ pages: PageItem[]; showExcerpt: boolean; category_id?: String }>()
 
 function stripMarkdown(content: string): string {
   return content.replace(/[#`*]/g, '')
@@ -179,6 +182,9 @@ function formatExcerpt(content: string): string {
   font-size: 0.9em;
   color: #888;
   margin-left: 1em;
+  justify-self: end;
+  grid-column: 3;
+  padding-right: 1em;
 }
 
 .block {
