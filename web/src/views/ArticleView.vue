@@ -173,7 +173,7 @@ onUnmounted(() => {
             <NTime
               v-if="article.publish_time"
               :time="new Date(article.publish_time)"
-              format="yyyy年MM月dd日 hh时mm分"
+              format="yyyy年MM月dd日 HH时mm分"
             />
           </el-divider>
           <!-- <span>{{ article.publish_time }}</span> -->

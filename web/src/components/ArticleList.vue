@@ -134,7 +134,7 @@ function formatExcerpt(content: string): string {
   overflow: hidden;
   text-overflow: ellipsis;
   display: inline-block;
-  max-width: 56ch; /* 限制为大约32个字符宽度 */
+  max-width: 30ch; /* 限制为大约32个字符宽度 */
 }
 
 .list-title:hover {
