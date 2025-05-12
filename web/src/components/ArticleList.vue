@@ -125,7 +125,7 @@ function formatExcerpt(content: string): string {
 }
 
 .list-title {
-  flex-grow: 1;
+  grid-column: 1;
   font-weight: bold;
   color: #333;
   transition: color 0.3s ease;
@@ -134,7 +134,7 @@ function formatExcerpt(content: string): string {
   overflow: hidden;
   text-overflow: ellipsis;
   display: inline-block;
-  max-width: 30ch; /* 限制为大约32个字符宽度 */
+  max-width: 100%;
 }
 
 .list-title:hover {
@@ -143,13 +143,13 @@ function formatExcerpt(content: string): string {
 
 .article-header {
   display: grid;
-  grid-template-columns: auto auto 1fr auto;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 1fr) auto;
   align-items: center;
   height: 1.8em;
 }
 
 .site-link {
-  grid-column: 4;
+  grid-column: 3;
   padding-right: 1em;
   color: #337ecc;
 }
@@ -181,9 +181,9 @@ function formatExcerpt(content: string): string {
   display: inline-block;
   font-size: 0.9em;
   color: #888;
-  margin-left: 1em;
+  /* margin-left: 1em; */
   justify-self: end;
-  grid-column: 3;
+  grid-column: 2;
   padding-right: 1em;
 }
 
