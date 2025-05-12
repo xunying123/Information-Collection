@@ -1,5 +1,5 @@
 from datetime import datetime
-from src.utils import extract_domain, headers, normalize_url, read_content, save_content, title_, summary_, is_ad, check_, what_score, what_word, get_keywords_id, logging
+from src.utils import extract_domain, headers, normalize_url, read_content, save_content, title_, summary_, is_ad, check_, what_score, what_word, get_keywords_id, logging, wash_url
 import asyncio
 from urllib.parse import urljoin
 from playwright.async_api import async_playwright
@@ -8,11 +8,37 @@ import time
 import random
 from src.data import push_page_to_db, push_keyword_to_db
 import os
+import requests
+from bs4 import BeautifulSoup
 
 proxies = {
     'http': 'http://127.0.0.1:7890',  # 为HTTP设置代理，端口根据实际情况修改
     'https': 'https://127.0.0.1:7890',  # 为HTTPS设置代理，端口根据实际情况修改
 }
+
+def get_article_links(url):
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Error fetching {url}: {e}")
+        return []
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    links = set()
+
+    for item in soup.find_all('div', class_='item'):
+        aid_tag = item.find('textarea', class_='item-aid')
+        type_tag = item.find('textarea', class_='item-addltype')
+        host_tag = item.find('textarea', class_='item-cnf-host')
+        if aid_tag and type_tag and host_tag:
+            aid = aid_tag.text.strip()
+            addltype = type_tag.text.strip()
+            host = host_tag.text.strip()
+            url = f"https://{host}/{addltype}/{aid}"
+            links.add(url)
+
+    return list(set(links))
 
 async def fetch_website_content(url):
     async with async_playwright() as p:
@@ -68,7 +94,10 @@ async def fetch_website_content(url):
 
 def preception(web):
     for url in web['url']:
-        current_links = asyncio.run(fetch_website_content(url))
+        if "huanqiu" in url:
+            current_links = get_article_links(url)
+        else:
+            current_links = asyncio.run(fetch_website_content(url))
         current_date = datetime.now()
 
         folder_name = current_date.strftime("%Y-%m-%d")
@@ -98,13 +127,14 @@ def preception(web):
                     title = title_(title)
                     publish_time = current_date.strftime("%Y-%m-%d %H:%M")
                     score = what_score(content)
+                    source_url = wash_url(link)
                     if times:
                         publish_time = times
                     data = {
                         "title": title,
                         "content": summary,
                         "full_content":content,
-                        "source_url": link,
+                        "source_url": source_url,
                         "publish_time": publish_time,
                         'site_id': web['id'],
                         'score': score,

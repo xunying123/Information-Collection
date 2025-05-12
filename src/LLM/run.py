@@ -1,13 +1,14 @@
 import re, json
 from src.LLM.model import Model
+from src.LLM.prompts import SCORE_EDUCATION_PROMPT, SCORE_HEADLINE_PROMPT, SCORE_TECH_PROMPT, SCORE_TALENT_PROMPT, SCORE_INTERNATIONAL_PROMPT, KEYWORD_PROMPT
 
-def translate(model, text):    
+def translate(model, text):
     system_prompt = f"你是一个专业的文本分析助手。"
     prompt = f"下面会给你一段中文文本，我需要你把它翻译成英文，我只要翻译好的结果，不要加任何前缀\n\n{text}"
     translation = model.generate(prompt, system_prompt)
     return translation
 
-def summary(model, article):    
+def summary(model, article):
     if not re.search(r'[\u4e00-\u9fff]', article):
         article = translate(article)
 
@@ -25,32 +26,12 @@ def get_keywords(model, article) -> list:
     # 2.只需要你返回给你的关键词，不需要你自己总结我提供以外的关键词，如果一个关键词都不匹配，请返回空
     # 3. 仅返回包含的关键词列表，使用JSON格式：
     # {{"keywords": ["关键词1", "关键词2"]}}"""
-    system_prompt = f"""作为专业文本分析专家，严格按以下规则处理：
-## 任务要求
-1. 语义匹配：识别文章是否包含与以下关键词相关的描述（包括同义词、近义词、变体表达）：
-   {', '.join(keywords)}
-
-2. 严格筛选：
-   - 只允许使用我提供的关键词原词
-   - 必须将同义表达映射到对应的原词
-   - 禁止添加新词或修改现有词
-
-3. 结果规范：
-   - 发现匹配时：返回包含所有匹配原词的JSON列表
-   - 无匹配时：返回空列表
-   - 确保JSON语法正确，无注释
-
-## 输出示例
-{{"keywords": ["关键词1", "关键词2"]}}
-无匹配时：{{"keywords": []}}
-"""
+    system_prompt = KEYWORD_PROMPT.format(keywords=', '.join(keywords))
     # print(system_prompt)
     prompt = f"请分析以下文章：\n\n{article}"
-    # print(prompt)
-    # print(system_prompt)
     keywords = model.generate(prompt, system_prompt)
-    # print("keywords: ", keywords, flush=True)
     try:
+        # print(keywords, flush=True)
         keywords = json.loads(keywords)['keywords']
         if isinstance(keywords, list):
             return keywords
@@ -59,10 +40,10 @@ def get_keywords(model, article) -> list:
     return []
 
 def get_score(model, article) -> int:
-    system_prompt = f"你是一个专业的文本分析助手。下面会给你一篇中文文章，我需要你对它的重要程度进行评分，使得最终得到的评分在0-100之间，评分越高说明文章越重要，越应该被读者看到。如果文章和总书记有关，直接给最高分。请将你的评分用 ```score: ``` 格式返回。"
+    system_prompt = SCORE_EDUCATION_PROMPT
     prompt = f"\n\n{article}"    
     score = model.generate(prompt, system_prompt, temperature=0.1)
-    # print(score, flush=True)
+    # print(score)
     try:
         score = re.search(r'score:(.*)```', score).group(1)
         return int(score)
