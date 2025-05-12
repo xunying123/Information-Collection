@@ -41,8 +41,6 @@ def get_article_links(url):
     return list(set(links))
 
 async def fetch_website_content(url):
-    if "huanqiu" in "https://world.huanqiu.com/":
-        return get_article_links(url)
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
@@ -52,11 +50,9 @@ async def fetch_website_content(url):
             await page.goto(base_url, wait_until='domcontentloaded', timeout=60000)     
 
         # await page.goto(base_url, timeout=60000)
-            max_scroll_times = 30  # 最多滚动 30 次
-            scroll_count = 0
             last_height = await page.evaluate("document.body.scrollHeight")
 
-            while scroll_count < max_scroll_times:            
+            while True:            
                 await page.evaluate("window.scrollTo(0, document.body.scrollHeight);")                        
                 await page.wait_for_timeout(2000)  # 等待2秒            
                 new_height = await page.evaluate("document.body.scrollHeight")
@@ -64,17 +60,14 @@ async def fetch_website_content(url):
                     break  # 如果页面高度没有变化，则停止滚动
 
                 last_height = new_height
-                scroll_count += 1
 
         except:
             await page.goto(base_url, wait_until='networkidle', timeout=60000)     
 
         # await page.goto(base_url, timeout=60000)
             last_height = await page.evaluate("document.body.scrollHeight")
-            max_scroll_times = 30 # 最多滚动 30 次
-            scroll_count = 0
 
-            while scroll_count < max_scroll_times:            
+            while True:            
                 await page.evaluate("window.scrollTo(0, document.body.scrollHeight);")                        
                 await page.wait_for_timeout(2000)  # 等待2秒            
                 new_height = await page.evaluate("document.body.scrollHeight")
@@ -82,7 +75,6 @@ async def fetch_website_content(url):
                     break  # 如果页面高度没有变化，则停止滚动
 
                 last_height = new_height
-                scroll_count += 1
         
         links = await page.query_selector_all("a")
 
@@ -102,7 +94,10 @@ async def fetch_website_content(url):
 
 def preception(web):
     for url in web['url']:
-        current_links = asyncio.run(fetch_website_content(url))
+        if "huanqiu" in url:
+            current_links = get_article_links(url)
+        else:
+            current_links = asyncio.run(fetch_website_content(url))
         current_date = datetime.now()
 
         folder_name = current_date.strftime("%Y-%m-%d")
