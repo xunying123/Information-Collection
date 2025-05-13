@@ -146,6 +146,7 @@ function formatExcerpt(content: string): string {
   grid-template-columns: minmax(0, 4fr) minmax(0, 1fr) auto;
   align-items: center;
   height: 1.8em;
+  container-type: inline-size;
 }
 
 .site-link {
@@ -190,5 +191,17 @@ function formatExcerpt(content: string): string {
 .block {
   display: block;
   max-height: 100%;
+}
+
+@container (max-width: 360px) {
+  .article-time {
+    display: none;
+  }
+}
+
+@container (max-width: 160px) {
+  .site-link {
+    display: none;
+  }
 }
 </style>
