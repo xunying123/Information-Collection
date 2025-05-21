@@ -106,11 +106,13 @@ const openFilter = () => filterSidebarRef.value?.openDrawer?.()
             --el-button-border-color: #79bbff;
           "
         >
-          <el-icon><Filter /></el-icon>
+          <el-icon>
+            <Filter />
+          </el-icon>
           <span>筛选</span>
         </el-button>
         <SearchInput @update:searchQuery="searchKeyword = $event" style="width: 16em" />
-        <el-segmented v-model="view" :options="options" block class="spaced-segmented" />
+        <el-segmented v-model="view" :options="options" class="spaced-segmented" />
       </div>
       <el-scrollbar
         v-if="props.pages && props.pages.length"
@@ -163,33 +165,29 @@ h1 {
 }
 
 .header {
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: row;
-  justify-content: flex-start;
+  justify-content: flex-end;
   align-items: center;
+  flex-wrap: wrap;
   padding: 1em;
   padding-right: 2em;
-  flex-wrap: wrap;
   gap: 12px;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
   --el-button-bg-color: #79bbff !important;
 }
 
-.header > :first-child {
+.header > h1:first-child {
+  margin: 0.2em;
   margin-right: auto;
 }
 
 .spaced-segmented {
   margin-left: 0.8em;
-  width: 12em;
   --el-segmented-item-selected-bg-color: #79bbff;
   --el-border-radius-base: 16px;
-}
-
-.header > h1 {
-  margin: 0.2em;
 }
 
 .el-main {
