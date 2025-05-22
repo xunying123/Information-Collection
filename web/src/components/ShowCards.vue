@@ -24,67 +24,44 @@ const user = inject(user_key)!
 let subjects = inject(all_subjects_key)!
 
 // 仅保留滚动事件
-const emit = defineEmits(['scroll', 'wheel'])
-emit
+defineEmits(['scroll', 'wheel'])
 
 // 视图模式管理 - 保留在ShowCards中，因为这是UI展示相关的
-const view = ref('card')
+const view = ref<'card' | 'site' | 'list' | 'excerpt'>('card')
 const options = computed(() => {
-  const showSiteCard =
-    route.path.includes('category') ||
-    route.path.includes('daliyupdate') ||
-    route.path.includes('bookmarks')
-  return showSiteCard
-    ? [
-        { label: '网站卡片', value: 'site' },
-        { label: '卡片', value: 'card' },
-        { label: '列表', value: 'list' }
-      ]
-    : [
-        { label: '卡片', value: 'card' },
-        { label: '列表', value: 'list' }
-      ]
+  const showSiteCard = route.path.match(/category|daliyupdate|bookmarks/) != null
+  const base_options = [
+    { label: '卡片', value: 'card' },
+    { label: '列表', value: 'list' }
+  ]
+  return showSiteCard ? [{ label: '网站卡片', value: 'site' }, ...base_options] : base_options
 })
 
 watch(view, (newView) => {
   localStorage.setItem('viewMode', newView)
-  if (
-    !(
-      route.path.includes('category') ||
-      route.path.includes('daliyupdate') ||
-      route.path.includes('bookmarks')
-    )
-  ) {
+  if (route.path.match(/category|daliyupdate|bookmarks/))
     localStorage.setItem('notCateView', newView)
-  }
 })
 
 onMounted(() => {
-  const savedView = localStorage.getItem('viewMode')
-  const savedNotCateView = localStorage.getItem('notCateView')
-
-  if (savedView) view.value = savedView
-  if (
-    !(
-      route.path.includes('category') ||
-      route.path.includes('daliyupdate') ||
-      route.path.includes('bookmarks')
-    ) &&
-    view.value === 'site'
-  ) {
-    view.value = savedNotCateView ? savedNotCateView : 'card'
-  }
-
-  const fetchCategories = async () => {
-    if (!user!.value?.group) {
-      return
-    }
-    const { data, error } = await getCategories()
-    if (error) console.error('获取类别信息失败：', error)
-    allCategories.value = data!
-  }
-  fetchCategories()
+  const savedView = localStorage.getItem('viewMode') as typeof view.value
+  const savedNotCateView = localStorage.getItem('notCateView') as typeof view.value
+  view.value =
+    savedView ||
+    (route.path.match(/category|daliyupdate|bookmarks/) ? 'site' : null) ||
+    savedNotCateView ||
+    'card'
 })
+
+const fetchCategories = async () => {
+  if (!user!.value?.group) {
+    return
+  }
+  const { data, error } = await getCategories()
+  if (error) console.error('获取类别信息失败：', error)
+  allCategories.value = data!
+}
+onMounted(fetchCategories)
 
 const filterSidebarRef = ref<any>(null)
 const openFilter = () => filterSidebarRef.value?.openDrawer?.()
@@ -96,42 +73,33 @@ const openFilter = () => filterSidebarRef.value?.openDrawer?.()
     <el-main class="full-height top-down">
       <div class="header">
         <h1>{{ props.title }}</h1>
-        <el-button
-          type="primary"
-          @click="openFilter"
-          style="
-            margin-right: 0.8em;
-            line-height: normal;
-            --el-button-bg-color: #79bbff;
-            --el-button-border-color: #79bbff;
-          "
+        <el-button type="primary" @click="openFilter"
+          ><el-icon>
+            <Filter /> </el-icon
+          ><span>筛选</span></el-button
         >
-          <el-icon>
-            <Filter />
-          </el-icon>
-          <span>筛选</span>
-        </el-button>
         <SearchInput @update:searchQuery="searchKeyword = $event" style="width: 16em" />
         <el-segmented v-model="view" :options="options" class="spaced-segmented" />
       </div>
-      <el-scrollbar
-        v-if="props.pages && props.pages.length"
-        v-loading="props.loading"
-        @scroll="$emit('scroll', $event)"
-        @wheel="$emit('wheel', $event)"
-      >
-        <div v-if="view === 'card'" class="container-grid">
-          <ArticleCard v-for="page in pages" :key="page.id" :page="page" />
-        </div>
-        <ArticleList
-          :pages="pages"
-          :showExcerpt="false"
-          :category_id="props.category_id"
-          v-else-if="view === 'list'"
-        />
-        <ArticleList :pages="pages" :showExcerpt="true" v-else-if="view === 'excerpt'" />
-        <SiteArticleCard :pages="pages" :showExcerpt="true" v-else-if="view === 'site'" />
-      </el-scrollbar>
+      <template v-if="props.pages && props.pages.length">
+        <el-scrollbar
+          v-if="view != 'site'"
+          v-loading="props.loading"
+          @scroll="$emit('scroll', $event)"
+          @wheel="$emit('wheel', $event)"
+        >
+          <div v-if="view === 'card'" class="container-grid">
+            <ArticleCard v-for="page in pages" :key="page.id" :page="page" />
+          </div>
+          <ArticleList
+            :pages="pages"
+            :showExcerpt="view == 'excerpt'"
+            :category_id="props.category_id"
+            v-else-if="view == 'list' || view == 'excerpt'"
+          />
+        </el-scrollbar>
+        <SiteArticleCard v-else :pages="pages" :showExcerpt="true" />
+      </template>
       <el-empty v-else :image-size="200" />
     </el-main>
     <RouterView />
