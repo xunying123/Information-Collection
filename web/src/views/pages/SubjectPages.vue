@@ -1,5 +1,5 @@
 <template>
-  <CombinedPages pageType="all" :subject_id="props.subject_id" />
+  <CombinedPages page-type="all" :subject_id="props.subject_id" />
 </template>
 
 <script setup lang="ts">

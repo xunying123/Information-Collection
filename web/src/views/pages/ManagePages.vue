@@ -5,22 +5,23 @@
       <!-- 部分1：添加网站 -->
       <div class="feature-card">
         <h3>添加网站</h3>
-        <el-form :model="newSite" ref="siteForm" label-width="120px">
+        <el-form ref="siteForm" :model="newSite" label-width="120px">
           <el-form-item label="网站名称" prop="name" size="large">
-            <el-input v-model="newSite.name" placeholder="请输入网站名称"></el-input>
+            <el-input v-model="newSite.name" placeholder="请输入网站名称" />
           </el-form-item>
           <el-form-item label="网站链接" prop="url" size="large">
-            <el-input v-model="newSite.url" placeholder="请输入链接"></el-input>
+            <el-input v-model="newSite.url" placeholder="请输入链接" />
           </el-form-item>
           <el-form-item>
             <el-button
               type="primary"
-              @click="addSite_"
               size="large"
               :disabled="!(newSite.name && newSite.url)"
-              >提交</el-button
+              @click="addSite_"
             >
-            <el-button @click="resetForm" size="large">重置</el-button>
+              提交
+            </el-button>
+            <el-button size="large" @click="resetForm"> 重置 </el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -28,19 +29,21 @@
       <!-- 部分2：将网站加入分类 -->
       <div class="feature-card">
         <h3>将网站加入分类</h3>
-        <el-form :model="siteCategoryMapping" ref="mappingForm" label-width="120px">
+        <el-form ref="mappingForm" :model="siteCategoryMapping" label-width="120px">
           <el-form-item label="选择分类" prop="category" size="large">
             <el-autocomplete
               v-model="siteCategoryMapping.category"
               :fetch-suggestions="queryClassSearch"
               popper-class="my-autocomplete"
               placeholder="请选择分类"
-              @select="handleCateSiteSelect"
               value-key="name"
               clearable
+              @select="handleCateSiteSelect"
             >
               <template #default="{ item }">
-                <div class="name">{{ item.name }}</div>
+                <div class="name">
+                  {{ item.name }}
+                </div>
               </template>
             </el-autocomplete>
           </el-form-item>
@@ -50,12 +53,14 @@
               :fetch-suggestions="querySearch"
               popper-class="my-autocomplete"
               placeholder="请选择网站"
-              @select="handleCateSiteSelect"
               value-key="name"
               clearable
+              @select="handleCateSiteSelect"
             >
               <template #default="{ item }">
-                <div class="name">{{ item.name }}</div>
+                <div class="name">
+                  {{ item.name }}
+                </div>
                 <span class="link">{{ item.url }}</span>
               </template>
             </el-autocomplete>
@@ -63,12 +68,13 @@
           <el-form-item>
             <el-button
               type="primary"
-              @click="assignSiteToCategory"
               size="large"
               :disabled="siteCategoryMapping.cate_id == -1 || siteCategoryMapping.site_id == -1"
-              >提交</el-button
+              @click="assignSiteToCategory"
             >
-            <el-button @click="resetMappingForm" size="large">重置</el-button>
+              提交
+            </el-button>
+            <el-button size="large" @click="resetMappingForm"> 重置 </el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -85,12 +91,14 @@
               :fetch-suggestions="queryClassSearch"
               popper-class="my-autocomplete"
               placeholder="请选择分类"
-              @select="handleDeleteCateSiteSelect"
               value-key="name"
               clearable
+              @select="handleDeleteCateSiteSelect"
             >
               <template #default="{ item }">
-                <div class="name">{{ item.name }}</div>
+                <div class="name">
+                  {{ item.name }}
+                </div>
               </template>
             </el-autocomplete>
           </el-form-item>
@@ -100,12 +108,14 @@
               :fetch-suggestions="querySiteForDeletion"
               popper-class="my-autocomplete"
               placeholder="请选择网站"
-              @select="handleDeleteCateSiteSelect"
               value-key="name"
               clearable
+              @select="handleDeleteCateSiteSelect"
             >
               <template #default="{ item }">
-                <div class="name">{{ item.name }}</div>
+                <div class="name">
+                  {{ item.name }}
+                </div>
                 <span class="link">{{ item.url }}</span>
               </template>
             </el-autocomplete>
@@ -114,8 +124,8 @@
             <el-button
               type="danger"
               size="large"
-              @click="deleteSite_"
               :disabled="!(deleteCate && siteToDelete)"
+              @click="deleteSite_"
             >
               删除
             </el-button>
@@ -136,9 +146,9 @@
               :fetch-suggestions="queryUserSearch"
               popper-class="my-autocomplete"
               placeholder="请输入用户名"
-              @select="handleUserSelect"
               clearable
               value-key="username"
+              @select="handleUserSelect"
             >
               <template #default="{ item }">
                 <span class="name">{{ item.username }}</span>
@@ -150,12 +160,12 @@
             <el-button
               type="primary"
               size="large"
-              @click="addMember"
               :disabled="!newMember.selectedUser"
+              @click="addMember"
             >
               添加成员
             </el-button>
-            <el-button @click="resetMemberForm" size="large">重置</el-button>
+            <el-button size="large" @click="resetMemberForm"> 重置 </el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -168,9 +178,9 @@
           <el-table-column prop="is_admin" label="状态" :formatter="formatAdminStatus" />
           <el-table-column label="操作">
             <template #default="scope">
-              <el-button type="danger" size="small" @click="deleteMember(scope.row)"
-                >删除</el-button
-              >
+              <el-button type="danger" size="small" @click="deleteMember(scope.row)">
+                删除
+              </el-button>
             </template>
           </el-table-column>
         </el-table>

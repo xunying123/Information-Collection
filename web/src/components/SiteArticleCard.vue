@@ -5,9 +5,9 @@
         <template #header>
           <div class="site-card-header">
             <ElAvatar
+              v-if="pages[0].site_icon"
               size="small"
               :src="pages[0].site_icon"
-              v-if="pages[0].site_icon"
               class="right-gap"
             />
             <span>{{ site }}</span>

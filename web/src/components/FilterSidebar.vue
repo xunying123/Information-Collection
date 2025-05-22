@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { ref, inject, toRef } from 'vue'
 
-const props = defineProps<{
+const { allCategories, subjects } = defineProps<{
   allCategories: any[]
   subjects: any[]
 }>()
-props
 
 // 使用inject接收筛选状态和更新方法
 const filterState = inject('filterState') as {
@@ -81,8 +80,8 @@ defineExpose({
         <h3>时间范围</h3>
         <el-segmented
           v-model="selectedTimeRange"
-          @change="filterState.updateTimeRange(selectedTimeRange)"
           :options="timeOptions"
+          @change="filterState.updateTimeRange(selectedTimeRange)"
         />
       </div>
 
@@ -93,8 +92,8 @@ defineExpose({
           v-model="currentSortOption"
           @change="filterState.updateSortOption(currentSortOption)"
         >
-          <el-radio-button value="time">按时间排序</el-radio-button>
-          <el-radio-button value="score">按重要度排序</el-radio-button>
+          <el-radio-button value="time"> 按时间排序 </el-radio-button>
+          <el-radio-button value="score"> 按重要度排序 </el-radio-button>
         </el-radio-group>
       </div>
     </div>
@@ -105,9 +104,11 @@ defineExpose({
 .filter-content {
   padding: 1em;
 }
+
 .filter-group {
   margin-bottom: 1.5em;
 }
+
 .filter-group h3 {
   margin-bottom: 0.5em;
   font-size: 1.1em;

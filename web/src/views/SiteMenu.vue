@@ -153,13 +153,13 @@ onBeforeUnmount(() => {
           <BookmarkSvg fill="none" class="menu-icon" />
           <span class="menu-top">书签列表</span>
         </el-menu-item>
-        <el-menu-item index="/manage" v-if="user?.is_admin">
+        <el-menu-item v-if="user?.is_admin" index="/manage">
           <FolderPlusSVG class="menu-icon" />
           <span class="menu-top">管理组织</span>
         </el-menu-item>
 
-        <el-divider class="divider" v-if="user?.group" />
-        <div class="menu-middle" v-if="user?.group">专属新闻</div>
+        <el-divider v-if="user?.group" class="divider" />
+        <div v-if="user?.group" class="menu-middle">专属新闻</div>
         <!-- 按文章分类显示 -->
         <template v-if="sidebarMode === 'subject' || sidebarMode === 'both'">
           <el-menu-item
@@ -174,7 +174,7 @@ onBeforeUnmount(() => {
           </el-menu-item>
         </template>
 
-        <el-divider class="divider" v-if="sidebarMode === 'both'" />
+        <el-divider v-if="sidebarMode === 'both'" class="divider" />
 
         <!-- 按网站分类显示 -->
         <template v-if="sidebarMode === 'category' || sidebarMode === 'both'">

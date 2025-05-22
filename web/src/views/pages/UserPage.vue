@@ -7,8 +7,8 @@
       <el-button
         type="danger"
         size="large"
-        @click="quitGroup"
         style="margin-left: 16px; margin-top: 8px"
+        @click="quitGroup"
       >
         退出组织
       </el-button>
@@ -16,14 +16,14 @@
 
     <h2>定制管理</h2>
     <div class="custom-management">
-      <el-button plain type="primary" @click="openSubDrawer">管理订阅源</el-button>
-      <el-button plain type="primary" @click="openKeyDrawer">管理关键词</el-button>
+      <el-button plain type="primary" @click="openSubDrawer"> 管理订阅源 </el-button>
+      <el-button plain type="primary" @click="openKeyDrawer"> 管理关键词 </el-button>
     </div>
 
     <!-- 管理订阅源 Drawer -->
     <el-drawer
-      title="管理订阅源"
       v-model="showSubDrawer"
+      title="管理订阅源"
       direction="rtl"
       size="40%"
       @close="handleDrawerClose"
@@ -34,8 +34,8 @@
 
     <!-- 管理关键词 Drawer -->
     <el-drawer
-      title="管理关键词"
       v-model="showKeyDrawer"
+      title="管理关键词"
       direction="rtl"
       size="40%"
       @close="handleDrawerClose"
@@ -48,9 +48,9 @@
     <h2>侧边栏显示模式</h2>
     <div class="sidebar-mode-setting">
       <el-radio-group v-model="sidebarMode" @change="changeSidebarMode">
-        <el-radio value="category" border>按照网站分类</el-radio>
-        <el-radio value="subject" border>按照文章分类</el-radio>
-        <el-radio value="both" border>同时显示两种分类</el-radio>
+        <el-radio value="category" border> 按照网站分类 </el-radio>
+        <el-radio value="subject" border> 按照文章分类 </el-radio>
+        <el-radio value="both" border> 同时显示两种分类 </el-radio>
       </el-radio-group>
     </div>
     <div v-if="false">
@@ -67,14 +67,14 @@
           :on-change="handleFileChange"
           list-type="picture"
         >
-          <i class="el-icon-upload"></i>
+          <i class="el-icon-upload" />
           <div class="el-upload__text">拖拽文件到此处，或<em>点击上传</em></div>
         </el-upload>
         <div class="button-group">
-          <el-button type="primary" @click="confirmUpload" :disabled="!tempImage">
+          <el-button type="primary" :disabled="!tempImage" @click="confirmUpload">
             确认上传
           </el-button>
-          <el-button type="warning" @click="restoreDefault">恢复默认</el-button>
+          <el-button type="warning" @click="restoreDefault"> 恢复默认 </el-button>
         </div>
       </div>
     </div>
@@ -82,11 +82,11 @@
     <h2>侧边栏颜色</h2>
     <div class="sidebar-setting">
       <el-radio-group v-model="sidebarColor" @change="changeSidebarColor">
-        <el-radio value="blue" border>蓝色</el-radio>
-        <el-radio value="yellow" border>黄色</el-radio>
-        <el-radio value="red" border>红色</el-radio>
-        <el-radio value="green" border>绿色</el-radio>
-        <el-radio value="orange" border>橙色</el-radio>
+        <el-radio value="blue" border> 蓝色 </el-radio>
+        <el-radio value="yellow" border> 黄色 </el-radio>
+        <el-radio value="red" border> 红色 </el-radio>
+        <el-radio value="green" border> 绿色 </el-radio>
+        <el-radio value="orange" border> 橙色 </el-radio>
       </el-radio-group>
     </div>
 
@@ -204,7 +204,7 @@ const logout_ = async () => {
 
 const fileList = ref([])
 const tempImage = ref<string | null>(null)
-const dummyRequest = ({ onSuccess }: { onSuccess: Function }) => {
+const dummyRequest = ({ onSuccess }: { onSuccess: (x: string) => undefined }) => {
   setTimeout(() => {
     onSuccess('ok')
   }, 0)

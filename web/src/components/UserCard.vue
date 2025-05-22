@@ -8,11 +8,11 @@ let user = inject(user_key)!
 
 <!-- <div v-if="user" class="horizon-grid"> -->
 <template>
-  <div class="user-card" v-if="user">
+  <div v-if="user" class="user-card">
     <!-- <ElAvatar :src="user.avatars!" class="avatar" /> -->
     <div class="welcome-container">
       <h2>欢迎您，{{ user.name }}</h2>
-      <div class="user-status"></div>
+      <div class="user-status" />
     </div>
     <!-- <p>{{ user.organization }}</p> -->
   </div>

@@ -1,12 +1,12 @@
 <template>
   <ShowCards
+    v-model:view="view"
     :pages="pages"
     :title="title"
     :loading="loading"
     :category_id="props.category_id"
     @scroll="handleScroll"
     @wheel="handleWheel"
-    v-model:view="view"
   />
 </template>
 
@@ -22,9 +22,9 @@ import { isRequesting, lockRequest, unlockRequest } from '@/utils/useScrollFetch
 
 const props = defineProps<{
   pageType: 'all' | 'daily' | 'site' | 'category'
-  site_id?: String
-  category_id?: String
-  subject_id?: String
+  site_id?: string
+  category_id?: string
+  subject_id?: string
 }>()
 
 const user = inject(user_key)!

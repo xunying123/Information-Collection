@@ -1,5 +1,5 @@
 <template>
-  <CombinedPages pageType="daily" />
+  <CombinedPages page-type="daily" />
 </template>
 
 <script setup lang="ts">

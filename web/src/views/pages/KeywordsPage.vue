@@ -5,14 +5,14 @@
       <div class="keyword-header">
         <h2 style="display: inline-block; margin-right: 10px">关键词列表</h2>
         <div style="display: inline-block">
-          <el-button type="info" @click="exportKeywords" size="small" round>导出关键词</el-button>
+          <el-button type="info" size="small" round @click="exportKeywords"> 导出关键词 </el-button>
           <el-upload
             action=""
             :before-upload="importKeywords"
             :show-file-list="false"
             style="display: inline-block; margin-left: 10px; margin-right: 10px"
           >
-            <el-button type="success" size="small" round>导入关键词</el-button>
+            <el-button type="success" size="small" round> 导入关键词 </el-button>
           </el-upload>
           <el-popconfirm
             title="此操作将清空所有关键词，是否继续？"
@@ -22,7 +22,7 @@
             @confirm="clearKeywords"
           >
             <template #reference>
-              <el-button type="danger" size="small" round>清空关键词</el-button>
+              <el-button type="danger" size="small" round> 清空关键词 </el-button>
             </template>
           </el-popconfirm>
         </div>
@@ -34,27 +34,29 @@
         inactive-text="显示全部文章"
         @change="saveFilter"
       />
-      <KeywordList :keywords="keywords" closable :handleClose="handleClose"></KeywordList>
+      <KeywordList :keywords="keywords" closable :handle-close="handleClose" />
     </div>
     <div class="section">
       <el-tabs v-model="activeKeywordTab">
         <el-tab-pane label="添加关键词" name="add-keyword">
-          <el-form :model="newKeyword" ref="keywordForm" label-width="120px">
+          <el-form ref="keywordForm" :model="newKeyword" label-width="120px">
             <el-form-item label="关键词" prop="word" size="large">
               <el-autocomplete
                 v-model="newKeyword.word"
                 :fetch-suggestions="queryKeywordSearchAdd"
                 placeholder="请输入新关键词或选择已有关键词"
-                @select="handleAllKeywordleSelect"
                 clearable
+                @select="handleAllKeywordleSelect"
               >
                 <template #default="{ item }">
-                  <div class="name">{{ item.word }}</div>
+                  <div class="name">
+                    {{ item.word }}
+                  </div>
                 </template>
               </el-autocomplete>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="addKeyword_" size="large">添加</el-button>
+              <el-button type="primary" size="large" @click="addKeyword_"> 添加 </el-button>
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -65,23 +67,25 @@
                 v-model="keywordToDelete.word"
                 :fetch-suggestions="queryKeywordSearchDelete"
                 placeholder="输入要删除的关键词"
-                @select="handleKeywordSelect"
                 clearable
+                @select="handleKeywordSelect"
               >
                 <template #default="{ item }">
-                  <div class="name">{{ item.word }}</div>
+                  <div class="name">
+                    {{ item.word }}
+                  </div>
                 </template>
               </el-autocomplete>
             </el-form-item>
             <el-form-item>
-              <el-button type="danger" size="large" @click="handelDeleteKeyword">删除</el-button>
+              <el-button type="danger" size="large" @click="handelDeleteKeyword"> 删除 </el-button>
             </el-form-item>
           </el-form>
         </el-tab-pane>
       </el-tabs>
     </div>
   </div>
-  <el-divider></el-divider>
+  <el-divider />
 </template>
 
 <script setup lang="ts">

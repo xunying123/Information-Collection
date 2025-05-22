@@ -1,5 +1,5 @@
 <template>
-  <CombinedPages pageType="site" :site_id="props.site_id" :category_id="props.category_id" />
+  <CombinedPages page-type="site" :site_id="props.site_id" :category_id="props.category_id" />
 </template>
 
 <script setup lang="ts">

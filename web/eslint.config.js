@@ -8,7 +8,10 @@ export default [
   ...pluginVue.configs['flat/recommended'],
   {
     // extends: [],
-    rules: {},
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
+    },
     files: ['**/*.{ts,vue}'],
     languageOptions: {
       ecmaVersion: 'latest',

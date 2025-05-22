@@ -7,14 +7,20 @@ import ArticleCard from '@/components/ArticleCard.vue'
 import ArticleList from '@/components/ArticleList.vue'
 import SiteArticleCard from '@/components/SiteArticleCard.vue'
 import FilterSidebar from '@/components/FilterSidebar.vue'
-import { user_key, search_keyword_key, all_categories_key, all_subjects_key, type ViewMode } from '@/key'
+import {
+  user_key,
+  search_keyword_key,
+  all_categories_key,
+  all_subjects_key,
+  type ViewMode
+} from '@/key'
 import { getCategories } from '@/sdk'
 
 const props = defineProps<{
   pages: PageItem[]
   title: string
   loading: boolean
-  category_id?: String
+  category_id?: string
 }>()
 const searchKeyword = inject(search_keyword_key)!
 const allCategories = inject(all_categories_key)!
@@ -70,16 +76,14 @@ const openFilter = () => filterSidebarRef.value?.openDrawer?.()
 
 <template>
   <el-container class="full-height">
-    <FilterSidebar ref="filterSidebarRef" :allCategories="allCategories" :subjects="subjects" />
+    <FilterSidebar ref="filterSidebarRef" :all-categories="allCategories" :subjects="subjects" />
     <el-main class="full-height top-down">
       <div class="header">
         <h1>{{ props.title }}</h1>
-        <el-button type="primary" @click="openFilter"
-          ><el-icon>
-            <Filter /> </el-icon
-          ><span>筛选</span></el-button
-        >
-        <SearchInput @update:searchQuery="searchKeyword = $event" style="width: 16em" />
+        <el-button type="primary" @click="openFilter">
+          <el-icon> <Filter /> </el-icon><span>筛选</span>
+        </el-button>
+        <SearchInput style="width: 16em" @update:search-query="searchKeyword = $event" />
         <el-segmented v-model="view" :options="options" class="spaced-segmented" />
       </div>
       <template v-if="props.pages && props.pages.length">
@@ -93,13 +97,13 @@ const openFilter = () => filterSidebarRef.value?.openDrawer?.()
             <ArticleCard v-for="page in pages" :key="page.id" :page="page" />
           </div>
           <ArticleList
-            :pages="pages"
-            :showExcerpt="view == 'excerpt'"
-            :category_id="props.category_id"
             v-else-if="view == 'list' || view == 'excerpt'"
+            :pages="pages"
+            :show-excerpt="view == 'excerpt'"
+            :category_id="props.category_id"
           />
         </el-scrollbar>
-        <SiteArticleCard v-else :pages="pages" :showExcerpt="true" />
+        <SiteArticleCard v-else :pages="pages" :show-excerpt="true" />
       </template>
       <el-empty v-else :image-size="200" />
     </el-main>

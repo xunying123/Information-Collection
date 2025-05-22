@@ -50,7 +50,7 @@
           </el-form-item>
         </el-form>
         <router-link :to="{ path: '/login', query: { next: next } }">
-          <el-button link style="width: 100%; margin-top: 0.5em">返回登录</el-button>
+          <el-button link style="width: 100%; margin-top: 0.5em"> 返回登录 </el-button>
         </router-link>
       </el-card>
     </div>

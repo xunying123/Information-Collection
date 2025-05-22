@@ -5,14 +5,14 @@
       <div class="source-header">
         <h2 style="display: inline-block; margin-right: 10px">网站源列表</h2>
         <div style="display: inline-block">
-          <el-button type="info" @click="exportSources" size="small" round>导出网站源</el-button>
+          <el-button type="info" size="small" round @click="exportSources"> 导出网站源 </el-button>
           <el-upload
             action=""
             :before-upload="importSources"
             :show-file-list="false"
             style="display: inline-block; margin-left: 10px; margin-right: 10px"
           >
-            <el-button type="success" size="small" round>导入网站源</el-button>
+            <el-button type="success" size="small" round> 导入网站源 </el-button>
           </el-upload>
           <el-popconfirm
             title="此操作将清空所有订阅的网站源，是否继续？"
@@ -22,7 +22,7 @@
             @confirm="clearSubscriptions"
           >
             <template #reference>
-              <el-button type="danger" size="small" round>清空网站源</el-button>
+              <el-button type="danger" size="small" round> 清空网站源 </el-button>
             </template>
           </el-popconfirm>
         </div>
@@ -44,14 +44,14 @@
     <div class="section">
       <el-tabs v-model="activeTab">
         <el-tab-pane label="添加网站源" name="add-source">
-          <el-form :model="newSource" ref="sourceForm" label-width="120px">
+          <el-form ref="sourceForm" :model="newSource" label-width="120px">
             <el-form-item label="网站名称" prop="name" size="large">
               <el-autocomplete
                 v-model="newSource.name"
                 :fetch-suggestions="querySearch"
                 placeholder="请输入网站名称"
-                @select="handleSelect"
                 clearable
+                @select="handleSelect"
               >
                 <template #default="{ item }">
                   <div class="name">{{ item.cate_name }} - {{ item.name }}</div>
@@ -59,7 +59,7 @@
               </el-autocomplete>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="addSource" size="large">添加</el-button>
+              <el-button type="primary" size="large" @click="addSource"> 添加 </el-button>
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -70,23 +70,25 @@
                 v-model="sourceToDelete.name"
                 :fetch-suggestions="querySourceSearch"
                 placeholder="输入要删除的网站名称"
-                @select="handleSourceSelect"
                 clearable
+                @select="handleSourceSelect"
               >
                 <template #default="{ item }">
-                  <div class="name">{{ item.name }}</div>
+                  <div class="name">
+                    {{ item.name }}
+                  </div>
                 </template>
               </el-autocomplete>
             </el-form-item>
             <el-form-item>
-              <el-button type="danger" size="large" @click="deleteSource">删除</el-button>
+              <el-button type="danger" size="large" @click="deleteSource"> 删除 </el-button>
             </el-form-item>
           </el-form>
         </el-tab-pane>
       </el-tabs>
     </div>
   </div>
-  <el-divider></el-divider>
+  <el-divider />
 </template>
 
 <script setup lang="ts">

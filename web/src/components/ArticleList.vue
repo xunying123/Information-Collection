@@ -30,13 +30,9 @@
                 v-if="props.showExcerpt"
                 class="list-excerpt"
                 v-html="formatExcerpt(stripMarkdown(page.content))"
-              ></p>
+              />
               <el-tooltip content="已加入书签" effect="light">
-                <BookmarkSvg
-                  v-show="is_bookmarked(page.id)"
-                  fill="#FFD700"
-                  class="bookmark-icon"
-                ></BookmarkSvg>
+                <BookmarkSvg v-show="is_bookmarked(page.id)" fill="#FFD700" class="bookmark-icon" />
               </el-tooltip>
             </div>
           </div>
@@ -53,7 +49,7 @@ import { showTime } from '@/utils/timeUtils'
 import BookmarkSvg from './svg/BookmarkSvg.vue'
 import { zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
 
-const props = defineProps<{ pages: PageItem[]; showExcerpt: boolean; category_id?: String }>()
+const props = defineProps<{ pages: PageItem[]; showExcerpt: boolean; category_id?: string }>()
 
 function stripMarkdown(content: string): string {
   return content.replace(/[#`*]/g, '')

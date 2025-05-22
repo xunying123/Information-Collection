@@ -1,5 +1,5 @@
 <template>
-  <CombinedPages pageType="all" />
+  <CombinedPages page-type="all" />
 </template>
 
 <script setup lang="ts">

@@ -1,7 +1,7 @@
 <template>
   <div class="search-container">
     <!-- 搜索按钮，手动添加图标 -->
-    <el-button @click="toggleSearch" class="search-btn" :icon="Search"> </el-button>
+    <el-button class="search-btn" :icon="Search" @click="toggleSearch" />
 
     <!-- 搜索输入框 -->
     <transition name="slide">
@@ -12,7 +12,7 @@
         class="search-input"
         clearable
         @blur="toggleSearch"
-      ></el-input>
+      />
     </transition>
   </div>
 </template>

@@ -1,46 +1,46 @@
 <template>
   <ShowCards :pages="displayedBookmarks" title="书签" :loading="false">
     <div style="margin-left: 10px">
-      <el-button type="primary" @click="openDialog">导出 Word</el-button>
-      <el-button type="danger" @click="reset_bookmarks">清空书签</el-button>
+      <el-button type="primary" @click="openDialog"> 导出 Word </el-button>
+      <el-button type="danger" @click="reset_bookmarks"> 清空书签 </el-button>
     </div>
     <el-pagination
-      @current-change="handleCurrentChange"
       :current-page="currentDay + 1"
       layout="prev, pager, next"
       style="margin-left: 10px"
       :page-count="groupedBookmarks.length"
+      @current-change="handleCurrentChange"
     />
 
     <el-dialog
-      title="选择要导出的书签"
       v-model="dialogVisible"
+      title="选择要导出的书签"
       :width="dialogWidth"
       class="responsive-dialog"
     >
       <el-form ref="form" label-width="120px" size="large">
         <el-form-item label="当前期数">
-          <el-input v-model="formIssue" class="issue-input"></el-input>
+          <el-input v-model="formIssue" class="issue-input" />
         </el-form-item>
         <el-form-item label="选择日期">
-          <el-date-picker v-model="formDate" type="date" placeholder="选择日期"></el-date-picker>
+          <el-date-picker v-model="formDate" type="date" placeholder="选择日期" />
         </el-form-item>
       </el-form>
       <el-scrollbar style="height: 300px" :width="dialogWidth">
         <el-checkbox-group v-model="selectedBookmarks" style="margin-left: 56px; width: 90%">
           <el-checkbox
-            size="large"
             v-for="bookmark in bookmarks"
+            :key="bookmark.id"
+            size="large"
             :value="bookmark"
             :label="bookmark.title"
-            :key="bookmark.id"
             class="checkbox"
           >
             {{ bookmark.title }} - {{ bookmark.publish_time.slice(0, 10) }}
           </el-checkbox>
         </el-checkbox-group>
       </el-scrollbar>
-      <template v-slot:footer>
+      <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
           <el-button type="primary" @click="confirmExport">确认导出</el-button>

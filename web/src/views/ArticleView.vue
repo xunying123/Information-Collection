@@ -78,8 +78,7 @@ function copyLink() {
 }
 
 // 改进的拖拽调整宽度功能
-function handleResizeStart(event: MouseEvent) {
-  event
+function handleResizeStart(_event: MouseEvent) {
   isResizing.value = true
   document.addEventListener('mousemove', handleResize)
   document.addEventListener('mouseup', handleResizeEnd)
@@ -132,8 +131,8 @@ onUnmounted(() => {
 
 <template>
   <div class="article-container">
-    <div class="resizer" @mousedown="handleResizeStart" :class="{ active: isResizing }">
-      <div class="resizer-handle"></div>
+    <div class="resizer" :class="{ active: isResizing }" @mousedown="handleResizeStart">
+      <div class="resizer-handle" />
     </div>
     <el-aside class="details-area" :style="{ width: content_width + 'em' }">
       <!-- 独立功能区 -->
@@ -146,12 +145,12 @@ onUnmounted(() => {
             <CloseSVG />
           </router-link>
           <el-tooltip content="复制链接" effect="light">
-            <button @click="copyLink" class="copy-button" tag="复制链接">
+            <button class="copy-button" tag="复制链接" @click="copyLink">
               <CopySVG />
             </button>
           </el-tooltip>
           <el-tooltip :content="is_bookmarked(article.id) ? '移除书签' : '加入书签'" effect="light">
-            <button @click="toggle_bookmark(article)" class="bookmark-button" tag="书签">
+            <button class="bookmark-button" tag="书签" @click="toggle_bookmark(article)">
               <BookmarkSvg :fill="is_bookmarked(article.id) ? '#FFD700' : 'none'" />
             </button>
           </el-tooltip>
@@ -162,13 +161,11 @@ onUnmounted(() => {
       </div>
       <!-- 文章内容区域 -->
       <el-scrollbar @wheel.stop>
-        <div class="article-content" v-loading="article.id == 0">
-          <h2 class="article-title">{{ article.title }}</h2>
-          <KeywordList
-            :keywords="article.keywords"
-            :closable="false"
-            :handleClose="() => {}"
-          ></KeywordList>
+        <div v-loading="article.id == 0" class="article-content">
+          <h2 class="article-title">
+            {{ article.title }}
+          </h2>
+          <KeywordList :keywords="article.keywords" :closable="false" :handle-close="() => {}" />
           <el-divider content-position="center">
             <NTime
               v-if="article.publish_time"
@@ -180,12 +177,12 @@ onUnmounted(() => {
           <div class="article-view">
             <div class="section">
               <h3 class="section-title">【摘要】</h3>
-              <div v-html="content" class="section-content"></div>
+              <div class="section-content" v-html="content" />
             </div>
             <hr class="divider" />
             <div class="section">
               <h3 class="section-title">【正文】</h3>
-              <div v-html="full_content" class="section-content"></div>
+              <div class="section-content" v-html="full_content" />
             </div>
           </div>
         </div>

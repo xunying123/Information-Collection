@@ -77,11 +77,11 @@ const loginWithCredentials = async () => {
     <div class="card-wrapper">
       <el-card class="login-card">
         <el-form
+          ref="loginFormRef"
           :model="loginForm"
           :rules="rules"
-          ref="loginFormRef"
-          @submit.prevent="loginWithCredentials"
           label-position="top"
+          @submit.prevent="loginWithCredentials"
         >
           <h2 style="text-align: center; margin-bottom: 20px">登录</h2>
           <el-form-item label="用户名" prop="username">
@@ -98,7 +98,7 @@ const loginWithCredentials = async () => {
         </el-form>
 
         <router-link :to="{ path: '/register', query: { next: next } }">
-          <el-button type="default" style="width: 100%; margin-top: 0.5em">注册</el-button>
+          <el-button type="default" style="width: 100%; margin-top: 0.5em"> 注册 </el-button>
         </router-link>
         <div style="text-align: center; margin: 20px 0">
           <span style="color: #aaa">或者</span>
@@ -106,7 +106,6 @@ const loginWithCredentials = async () => {
         <!-- jAccount 登录按钮 -->
         <el-button
           link
-          @click="() => redirectToAuth('jaccount')"
           style="
             width: 100%;
             background-color: #fff;
@@ -116,6 +115,7 @@ const loginWithCredentials = async () => {
             border: none;
             box-shadow: none;
           "
+          @click="() => redirectToAuth('jaccount')"
         >
           <div style="display: block; width: 100%; text-align: center">
             <img
@@ -131,7 +131,6 @@ const loginWithCredentials = async () => {
         <!-- CNAES 登录按钮 -->
         <el-button
           link
-          @click="() => redirectToAuth('cnaes')"
           style="
             width: 100%;
             background-color: #fff;
@@ -141,6 +140,7 @@ const loginWithCredentials = async () => {
             border: none;
             box-shadow: none;
           "
+          @click="() => redirectToAuth('cnaes')"
         >
           <div style="display: block; width: 100%; text-align: center">
             <img

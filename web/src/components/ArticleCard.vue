@@ -21,14 +21,16 @@ const computedShowTime = computed(() => showTime(props.page.publish_time))
       <el-card class="small-card" shadow="hover">
         <template #header>
           <div class="small-card-header">
-            <el-avatar size="small" :src="page.site_icon" v-if="page.site_icon" class="right-gap" />
+            <el-avatar v-if="page.site_icon" size="small" :src="page.site_icon" class="right-gap" />
             <span>{{ page.site }}</span>
             <el-tooltip content="已加入书签" effect="light">
-              <BookmarkSvg v-show="is_bookmarked(page.id)" fill="#FFD700"></BookmarkSvg>
+              <BookmarkSvg v-show="is_bookmarked(page.id)" fill="#FFD700" />
             </el-tooltip>
           </div>
         </template>
-        <h3 class="small-card-body">{{ page.title }}</h3>
+        <h3 class="small-card-body">
+          {{ page.title }}
+        </h3>
         <template #footer>
           <div class="small-card-footer">
             <NConfigProvider :locale="zhCN" :date-locale="dateZhCN">
