@@ -38,6 +38,7 @@ const options = computed(() => {
 })
 
 watch(view, (newView) => {
+  if (!newView) return
   localStorage.setItem('viewMode', newView)
   if (route.path.match(/category|daliyupdate|bookmarks/))
     localStorage.setItem('notCateView', newView)
