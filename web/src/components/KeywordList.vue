@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Keyword } from '@/api_interface'
+import type { Keyword } from '@/sdk'
 
 defineProps<{
   keywords: Keyword[]

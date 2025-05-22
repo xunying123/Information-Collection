@@ -47,9 +47,9 @@
 </template>
 
 <script setup lang="ts">
-import type { PageItem } from '@/api_interface'
+import type { PageItem } from '@/sdk'
 import { is_bookmarked } from '@/bookmark'
-import { showTime } from '@/timeUtils'
+import { showTime } from '@/utils/timeUtils'
 import BookmarkSvg from './svg/BookmarkSvg.vue'
 import { zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
 

@@ -37,8 +37,8 @@
 import { computed } from 'vue'
 import { NTime, zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
 import { ElAvatar, ElCard, ElScrollbar } from 'element-plus'
-import type { PageItem } from '@/api_interface'
-import { timeType } from '@/timeUtils'
+import type { PageItem } from '@/sdk'
+import { timeType } from '@/utils/timeUtils'
 
 const props = defineProps<{ pages: PageItem[] }>()
 

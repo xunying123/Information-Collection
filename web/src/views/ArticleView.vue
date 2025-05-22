@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
-import type { Page } from '@/api_interface'
+import type { Page } from '@/sdk'
 import { is_bookmarked, toggle_bookmark } from '@/bookmark'
 import { useClipboard } from '@vueuse/core'
 import { ElNotification } from 'element-plus'

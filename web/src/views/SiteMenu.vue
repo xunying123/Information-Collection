@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { inject, onMounted, reactive, watch, ref, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
-import type { SiteItem } from '@/api_interface'
+import type { SiteItem } from '@/sdk'
 import { ElScrollbar } from 'element-plus'
 import { Location } from '@element-plus/icons-vue'
 import UserCard from '@/components/UserCard.vue'

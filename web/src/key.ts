@@ -1,5 +1,5 @@
 import type { InjectionKey, Ref } from 'vue'
-import type { User } from '@/api_interface'
+import type { User } from '@/sdk'
 import type { Category, Subject } from '@/sdk'
 
 export const user_key = Symbol() as InjectionKey<Ref<User | null>>

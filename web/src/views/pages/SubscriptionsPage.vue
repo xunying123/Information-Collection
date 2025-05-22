@@ -93,7 +93,7 @@
 import { ref, reactive, inject, onMounted } from 'vue'
 import { ElNotification } from 'element-plus'
 import { filter_subscribe_key } from '@/key'
-import type { SiteItem } from '@/api_interface'
+import type { SiteItem } from '@/sdk'
 import { getCategories, getSubscribe, subscribe, unsubscribe } from '@/sdk'
 
 const filter_subscribe = inject(filter_subscribe_key)!

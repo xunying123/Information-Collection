@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { PageItem } from '@/api_interface'
+import type { PageItem } from '@/sdk'
 import { is_bookmarked } from '@/bookmark'
-import { showTime } from '@/timeUtils'
+import { showTime } from '@/utils/timeUtils'
 // defineProps<{ page: PageItem }>()
 
 import { zhCN, dateZhCN, NConfigProvider } from 'naive-ui'

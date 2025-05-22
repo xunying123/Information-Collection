@@ -88,7 +88,7 @@
 import { ref, reactive, inject, onMounted, type Ref } from 'vue'
 import { ElNotification } from 'element-plus'
 import { filter_keyword_key } from '@/key'
-import type { Keyword } from '@/api_interface'
+import type { Keyword } from '@/sdk'
 import KeywordList from '@/components/KeywordList.vue'
 import { getKeyword, addKeyword, deleteKeyword } from '@/sdk'
 

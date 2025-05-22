@@ -183,7 +183,7 @@
 import { ref, reactive, onMounted, watch, inject } from 'vue'
 import { user_key } from '@/key'
 import { ElNotification, ElMessageBox } from 'element-plus'
-import type { SiteItem } from '@/api_interface'
+import type { SiteItem } from '@/sdk'
 import {
   getCategories,
   getSites,

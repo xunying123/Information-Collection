@@ -12,7 +12,7 @@ import 'element-plus/dist/index.css'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 import { user_key } from '@/key'
-import type { User } from '@/api_interface'
+import type { User } from '@/sdk'
 
 import { client } from '@/sdk/client.gen'
 

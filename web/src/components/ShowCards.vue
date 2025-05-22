@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed, inject } from 'vue'
 import { useRoute, RouterView } from 'vue-router'
-import type { PageItem } from '@/api_interface'
+import type { PageItem } from '@/sdk'
 import SearchInput from '@/components/SearchInput.vue'
 import ArticleCard from '@/components/ArticleCard.vue'
 import ArticleList from '@/components/ArticleList.vue'
