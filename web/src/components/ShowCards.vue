@@ -7,7 +7,7 @@ import ArticleCard from '@/components/ArticleCard.vue'
 import ArticleList from '@/components/ArticleList.vue'
 import SiteArticleCard from '@/components/SiteArticleCard.vue'
 import FilterSidebar from '@/components/FilterSidebar.vue'
-import { user_key, search_keyword_key, all_categories_key, all_subjects_key } from '@/key'
+import { user_key, search_keyword_key, all_categories_key, all_subjects_key, type ViewMode } from '@/key'
 import { getCategories } from '@/sdk'
 
 const props = defineProps<{
@@ -27,7 +27,7 @@ let subjects = inject(all_subjects_key)!
 defineEmits(['scroll', 'wheel'])
 
 // 视图模式管理 - 保留在ShowCards中，因为这是UI展示相关的
-const view = ref<'card' | 'site' | 'list' | 'excerpt'>('card')
+const view = defineModel<ViewMode>('view', { default: 'card' })
 const options = computed(() => {
   const showSiteCard = route.path.match(/category|daliyupdate|bookmarks/) != null
   const base_options = [

@@ -6,25 +6,19 @@
     :category_id="props.category_id"
     @scroll="handleScroll"
     @wheel="handleWheel"
-  ></ShowCards>
+    v-model:view="view"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch, inject, provide } from 'vue'
-import { user_key, all_subjects_key } from '@/key'
+import { user_key, all_subjects_key, type ViewMode } from '@/key'
 import ShowCards from '@/components/ShowCards.vue'
-import useScrollFetch from '@/useScrollFetch'
+import useScrollFetch from '@/utils/useScrollFetch'
 import { filter_keyword_key, search_keyword_key } from '@/key'
-import {
-  getPages,
-  getSite,
-  getCategory,
-  type PageItem,
-  type Site,
-  type PageGet,
-  type SortType
-} from '@/sdk'
-import { isRequesting, lockRequest, unlockRequest } from '@/useScrollFetch'
+import { getPages, getSite, getCategory } from '@/sdk'
+import type { PageItem, Site, PageGet, SortType } from '@/sdk'
+import { isRequesting, lockRequest, unlockRequest } from '@/utils/useScrollFetch'
 
 const props = defineProps<{
   pageType: 'all' | 'daily' | 'site' | 'category'
@@ -32,8 +26,6 @@ const props = defineProps<{
   category_id?: String
   subject_id?: String
 }>()
-
-const EmptySite: Site = { id: 0, name: '', url: '', icon: '' }
 
 const user = inject(user_key)!
 
@@ -45,7 +37,7 @@ let subjects = inject(all_subjects_key)!
 let pages = ref<PageItem[]>([])
 let loading = ref(true)
 let title = ref('')
-let site = ref<Site>(EmptySite)
+let site = ref<Site>({ id: 0, name: '', url: '', icon: '' })
 let count = ref(50)
 
 let last_subject_id = ref(-1)
@@ -59,6 +51,7 @@ const selectedTimeRange = ref('all')
 const currentSortOption = ref<SortType>('time')
 let timeStart = ref<string | null>(null)
 let today = ref(new Date(new Date().setHours(0, 0, 0, 0)).toISOString())
+const view = ref<ViewMode>('card')
 
 // 提供筛选状态给子组件
 provide('filterState', {
@@ -167,6 +160,8 @@ const fetchPages = (count: number) => {
     body.subject = Number(props.subject_id)
   }
 
+  body.count_for_each_site = view.value == 'site'
+
   switch (props.pageType) {
     case 'all':
       title.value = '全部文章'
@@ -191,7 +186,6 @@ const fetchPages = (count: number) => {
     case 'category':
       if (!props.category_id) return
       body.category = Number(props.category_id)
-      body.count_for_each_site = true
       if (last_subject_id.value !== -1) {
         body.subject = last_subject_id.value
       }
