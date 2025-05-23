@@ -11,7 +11,7 @@ const props = defineProps<{
   pages: PageItem[]
   title: string
   loading: boolean
-  category_id?: string
+  category_id?: number
 }>()
 const route = useRoute()
 

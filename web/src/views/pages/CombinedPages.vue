@@ -38,9 +38,9 @@ const drawerVisible = ref(false)
 
 const props = defineProps<{
   pageType: 'all' | 'daily' | 'site' | 'category'
-  site_id?: string
-  category_id?: string
-  subject_id?: string
+  site_id?: number
+  category_id?: number
+  subject_id?: number
 }>()
 
 const user = inject(user_key)!

@@ -4,7 +4,7 @@
       <li
         v-for="page in pages"
         :key="page.id"
-        :class="['list-item', { 'with-excerpt': props.showExcerpt }]"
+        :class="['list-item', { 'with-excerpt': showExcerpt }]"
       >
         <router-link
           :to="{ name: `${String($route.matched[1].name)}-page`, params: { page_id: page.id } }"
@@ -20,14 +20,14 @@
                   </NConfigProvider>
                 </div>
                 <router-link
-                  :to="`/category/` + String(props.category_id) + `/site/` + page.site_id"
+                  :to="`/category/${category_id}/site/${page.site_id}`"
                   class="site-link"
                 >
                   {{ page.site }}
                 </router-link>
               </div>
               <p
-                v-if="props.showExcerpt"
+                v-if="showExcerpt"
                 class="list-excerpt"
                 v-html="formatExcerpt(stripMarkdown(page.content))"
               />
@@ -49,7 +49,11 @@ import { showTime } from '@/utils/timeUtils'
 import BookmarkSvg from './svg/BookmarkSvg.vue'
 import { zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
 
-const props = defineProps<{ pages: PageItem[]; showExcerpt: boolean; category_id?: string }>()
+const { category_id = 0 } = defineProps<{
+  pages: PageItem[]
+  showExcerpt: boolean
+  category_id?: number
+}>()
 
 function stripMarkdown(content: string): string {
   return content.replace(/[#`*]/g, '')
