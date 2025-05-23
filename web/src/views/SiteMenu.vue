@@ -8,7 +8,13 @@ import BookmarkSvg from '@/components/svg/BookmarkSvg.vue'
 import FolderPlusSVG from '@/components/svg/FolderPlusSVG.vue'
 import LayersSVG from '@/components/svg/LayersSVG.vue'
 import HelpSVG from '@/components/svg/HelpSVG.vue'
-import { user_key, all_subjects_key, all_categories_key, type SideBarMode, type SideBarColor } from '@/key'
+import {
+  user_key,
+  all_subjects_key,
+  all_categories_key,
+  type SideBarMode,
+  type SideBarColor
+} from '@/key'
 import SettingSVG from '@/components/svg/SettingSVG.vue'
 
 const user = inject(user_key)!
@@ -16,14 +22,20 @@ const user = inject(user_key)!
 const categories = inject(all_categories_key)!
 const subjects = inject(all_subjects_key)!
 
-const sidebarMode = ref<SideBarMode>((localStorage.getItem('sidebarShowMode') || user!.value!.group?.sidebar_show_mode || 'category') as SideBarMode)
-const sidebarColor = ref<SideBarColor>((localStorage.getItem('sidebarColor') || 'blue') as SideBarColor)
+const sidebarMode = ref<SideBarMode>(
+  (localStorage.getItem('sidebarShowMode') ||
+    user!.value!.group?.sidebar_show_mode ||
+    'category') as SideBarMode
+)
+const sidebarColor = ref<SideBarColor>(
+  (localStorage.getItem('sidebarColor') || 'blue') as SideBarColor
+)
 </script>
 
 <template>
   <div :class="['full', `full-${sidebarColor}`]">
     <router-link to="/">
-      <img :src="user!.group?.logo!" class="logo">
+      <img :src="user!.group?.logo!" class="logo" />
     </router-link>
     <router-link to="/user">
       <UserCard />
@@ -48,12 +60,14 @@ const sidebarColor = ref<SideBarColor>((localStorage.getItem('sidebarColor') || 
         </el-menu-item>
 
         <el-divider v-if="user?.group" class="divider" />
-        <div v-if="user?.group" class="menu-middle">
-          专属新闻
-        </div>
+        <div v-if="user?.group" class="menu-middle">专属新闻</div>
         <!-- 按文章分类显示 -->
         <template v-if="sidebarMode === 'subject' || sidebarMode === 'both'">
-          <el-menu-item v-for="subject in subjects" :key="subject.id" :index="`/subject/` + subject.id">
+          <el-menu-item
+            v-for="subject in subjects"
+            :key="subject.id"
+            :index="`/subject/` + subject.id"
+          >
             <el-icon>
               <Location />
             </el-icon>
@@ -72,8 +86,12 @@ const sidebarColor = ref<SideBarColor>((localStorage.getItem('sidebarColor') || 
               </el-icon>
               <span>{{ cate.name }}</span>
             </template>
-            <el-menu-item v-for="site in cate.sites" :key="site.id" :index="`/category/${cate.id}/site/${site.id}`"
-              style="margin-left: 2em">
+            <el-menu-item
+              v-for="site in cate.sites"
+              :key="site.id"
+              :index="`/category/${cate.id}/site/${site.id}`"
+              style="margin-left: 2em"
+            >
               {{ site.name }}
             </el-menu-item>
           </el-sub-menu>
@@ -91,7 +109,7 @@ const sidebarColor = ref<SideBarColor>((localStorage.getItem('sidebarColor') || 
       </el-menu>
     </ElScrollbar>
     <div class="overlay">
-      <img src="/static/image_21_1-1.png" class="overlay-image">
+      <img src="/static/image_21_1-1.png" class="overlay-image" />
     </div>
   </div>
 </template>

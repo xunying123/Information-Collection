@@ -1,11 +1,5 @@
 <script lang="ts" setup>
-import {
-  user_key,
-  filter_subscribe_key,
-  filter_keyword_key,
-  all_categories_key,
-  all_subjects_key
-} from '@/key'
+import { user_key, all_categories_key, all_subjects_key } from '@/key'
 import SiteMenu from '@/views/SiteMenu.vue'
 import { NLayout, NLayoutSider, NLayoutContent } from 'naive-ui'
 import { provide, ref, inject } from 'vue'
