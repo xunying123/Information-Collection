@@ -16,7 +16,9 @@ import {
   sidebar_color_key
 } from '@/key'
 import SettingSVG from '@/components/svg/SettingSVG.vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const user = inject(user_key)!
 
 const categories = inject(all_categories_key)!
@@ -35,7 +37,7 @@ const sidebarColor = inject(sidebar_color_key)!
       <UserCard />
     </router-link>
     <ElScrollbar class="scratch-height">
-      <el-menu class="el-menu-vertical-demo" :router="true">
+      <el-menu class="el-menu-vertical-demo" :router="true" @open="(index: string) => router.push(index)">
         <el-menu-item index="/">
           <LayersSVG class="menu-icon" />
           <span class="menu-top">全部</span>
