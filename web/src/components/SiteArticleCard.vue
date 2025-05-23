@@ -1,20 +1,20 @@
 <template>
   <div class="site-article-container">
-    <div v-for="(pages, site) in groupedPages" :key="site" class="site-card">
+    <div v-for="(site_pages, site) in groupedPages" :key="site" class="site-card">
       <ElCard shadow="hover" class="site-el-card">
         <template #header>
           <div class="site-card-header">
             <ElAvatar
-              v-if="pages[0].site_icon"
+              v-if="site_pages[0].site_icon"
               size="small"
-              :src="pages[0].site_icon"
+              :src="site_pages[0].site_icon"
               class="right-gap"
             />
             <span>{{ site }}</span>
           </div>
         </template>
         <ElScrollbar height="300px">
-          <div v-for="page in pages" :key="page.id" class="article-item">
+          <div v-for="page in site_pages" :key="page.id" class="article-item">
             <router-link
               :to="{ name: `${String($route.matched[1].name)}-page`, params: { page_id: page.id } }"
               class="article-title"

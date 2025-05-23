@@ -21,15 +21,13 @@
           <!-- 支持导出为 word 文档，可以选择导出的文章。支持分页显示。 -->
         </li>
         <li>
-          <span style="font-weight: bold">管理组织：</span
-          ><strong>组织管理员权限页面</strong>，有以下功能：
+          <span style="font-weight: bold">管理组织：</span><strong>组织管理员权限页面</strong>，有以下功能：
           <ul>
             <li>可以增加或删除<strong>后台爬虫程序需要爬取的</strong>网站。</li>
           </ul>
         </li>
         <li>
-          <span style="font-weight: bold">专属新闻：</span
-          >显示所有订阅的新闻，可以按照<strong>网站分类</strong>或<strong>文章分类</strong>查看文章。
+          <span style="font-weight: bold">专属新闻：</span>显示所有订阅的新闻，可以按照<strong>网站分类</strong>或<strong>文章分类</strong>查看文章。
           <ul>
             <li>
               网站分类：根据订阅的网站进行分类。
@@ -62,8 +60,7 @@
                   关键词：可以订阅某些关键词，<strong>支持自定义关键词</strong>，但建议优先选择数据库类已有的（给出提示的）关键词。订阅后可以通过开关切换显示全部文章或<strong>仅显示包含订阅关键词的文章</strong>。
                 </li>
                 <li>
-                  订阅源和关键词都支持<strong>导出为 json 文件及导入，便于新用户快速批量配置</strong
-                  >。
+                  订阅源和关键词都支持<strong>导出为 json 文件及导入，便于新用户快速批量配置</strong>。
                 </li>
               </ul>
             </li>
