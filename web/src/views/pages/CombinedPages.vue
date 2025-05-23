@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, inject, computed } from 'vue'
+import { ref, watch, inject, computed, onMounted } from 'vue'
 import { all_categories_key, all_subjects_key, user_key, type ViewMode } from '@/key'
 import ShowCards from '@/components/ShowCards.vue'
 import useScrollFetch from '@/utils/useScrollFetch'
@@ -33,6 +33,7 @@ import type { PageItem, PageGet, SortType } from '@/sdk'
 import { isRequesting, lockRequest, unlockRequest } from '@/utils/useScrollFetch'
 import SearchInput from '@/components/SearchInput.vue'
 import FilterSidebar from '@/components/FilterSidebar.vue'
+import { isEqual } from 'lodash'
 
 const {
   pageType,
@@ -115,32 +116,37 @@ const request_body = computed<PageGet>(() => ({
     : {})
 }))
 
-function fetchPages() {
+const fetched_times = ref(0)
+
+function fetchPages(body: PageGet, oldBody?: PageGet) {
   if (!user.value?.group) return
-  if (isRequesting.value) {
-    return
-  }
+  if (isEqual(body, oldBody)) return
+  if (isRequesting.value) return
   lockRequest()
   let done = false
   setTimeout(() => {
     if (!done) loading.value = true
   }, 200)
-
-  getPages({ body: request_body.value })
+  ++fetched_times.value
+  getPages({ body: body })
     .then((res) => res.data)
     .then((data) => {
       pages.value = data!.data!
-      done = true
-      loading.value = false
-      unlockRequest()
     })
     .catch((err) => {
       console.error('Error fetching data:', err)
+    })
+    .finally(() => {
+      done = true
+      loading.value = false
       unlockRequest()
     })
 }
 
 const { handleScroll, handleWheel } = useScrollFetch((val) => (count.value = val))
 
-watch(request_body, fetchPages)
+watch(request_body, fetchPages, { flush: 'post' })
+onMounted(() => {
+  fetchPages(request_body.value)
+})
 </script>
