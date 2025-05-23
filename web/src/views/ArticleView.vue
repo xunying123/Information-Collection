@@ -11,7 +11,7 @@ import { NTime } from 'naive-ui'
 import KeywordList from '@/components/KeywordList.vue'
 import { getPage } from '@/sdk'
 
-let props = defineProps({ page_id: String })
+let props = defineProps<{ page_id: string }>()
 
 const empty_article: Page = {
   id: 0,
@@ -41,7 +41,6 @@ async function update(prop: typeof props) {
     console.error(error)
     return
   }
-  console.log(data)
   article.value = data
 }
 

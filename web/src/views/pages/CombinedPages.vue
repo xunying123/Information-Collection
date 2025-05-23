@@ -8,6 +8,7 @@
     />
   </el-drawer>
   <ShowCards
+    v-bind="$attrs"
     v-model:view="view"
     :pages="pages"
     :title="title"
