@@ -47,7 +47,7 @@
     <!-- <router-view></router-view> -->
     <h2>侧边栏显示模式</h2>
     <div class="sidebar-mode-setting">
-      <el-radio-group v-model="sidebarMode" @change="changeSidebarMode">
+      <el-radio-group v-model="sidebarMode">
         <el-radio value="category" border> 按照网站分类 </el-radio>
         <el-radio value="subject" border> 按照文章分类 </el-radio>
         <el-radio value="both" border> 同时显示两种分类 </el-radio>
@@ -81,7 +81,7 @@
 
     <h2>侧边栏颜色</h2>
     <div class="sidebar-setting">
-      <el-radio-group v-model="sidebarColor" @change="changeSidebarColor">
+      <el-radio-group v-model="sidebarColor">
         <el-radio value="blue" border> 蓝色 </el-radio>
         <el-radio value="yellow" border> 黄色 </el-radio>
         <el-radio value="red" border> 红色 </el-radio>
@@ -99,9 +99,9 @@
 </template>
 
 <script setup lang="ts">
-import { inject, ref, computed, onMounted } from 'vue'
+import { inject, ref, computed } from 'vue'
 import { ElNotification, ElMessageBox } from 'element-plus'
-import { user_key } from '@/key'
+import { bg_url_key, sidebar_color_key, sidebar_show_mode_key, user_key } from '@/key'
 import { logout, leaveGroup } from '@/sdk'
 
 // 引入原有的管理组件
@@ -117,54 +117,9 @@ const userDisplayGroup = computed(() => {
 })
 
 // 侧边栏颜色设置
-const sidebarColor = ref(localStorage.getItem('sidebarColor') || 'blue')
-const changeSidebarColor = (val: string) => {
-  localStorage.setItem('sidebarColor', val)
-  window.dispatchEvent(new Event('sidebarColorChanged'))
-  ElNotification({
-    title: '成功',
-    message:
-      '侧边栏颜色已切换为 ' +
-      (val === 'blue'
-        ? '蓝色'
-        : val === 'yellow'
-          ? '黄色'
-          : val === 'red'
-            ? '红色'
-            : val === 'green'
-              ? '绿色'
-              : '橙色'),
-    type: 'success'
-  })
-}
-
+const sidebarColor = inject(sidebar_color_key)!
 // 侧边栏显示模式设置
-const sidebarMode = ref(
-  localStorage.getItem('sidebarShowMode') || user!.value!.group!.sidebar_show_mode || 'category'
-)
-
-const changeSidebarMode = (val: string) => {
-  localStorage.setItem('sidebarShowMode', val)
-  window.dispatchEvent(new Event('sidebarModeChanged'))
-  ElNotification({
-    title: '成功',
-    message:
-      '侧边栏显示模式已切换为 ' +
-      (val === 'category'
-        ? '按照网站分类'
-        : val === 'subject'
-          ? '按照文章分类'
-          : '同时显示两种分类'),
-    type: 'success'
-  })
-}
-
-onMounted(() => {
-  // 确保初始化时设置默认值
-  if (!localStorage.getItem('sidebarShowMode')) {
-    localStorage.setItem('sidebarShowMode', user!.value!.group!.sidebar_show_mode!)
-  }
-})
+const sidebarMode = inject(sidebar_show_mode_key)!
 
 const confirmLogout = async () => {
   try {
@@ -219,10 +174,10 @@ const handleFileChange = (file: any) => {
   reader.readAsDataURL(file.raw)
 }
 
+const bgUrl = inject(bg_url_key)!
 const confirmUpload = () => {
   if (tempImage.value) {
-    localStorage.setItem('bgUrl', tempImage.value)
-    window.dispatchEvent(new Event('bgUrlChanged'))
+    bgUrl.value = tempImage.value
     fileList.value = []
     tempImage.value = null
     ElNotification({
@@ -234,8 +189,7 @@ const confirmUpload = () => {
 }
 
 const restoreDefault = () => {
-  localStorage.removeItem('bgUrl')
-  window.dispatchEvent(new Event('bgUrlChanged'))
+  bgUrl.value = undefined
   ElNotification({
     title: '成功',
     message: '背景已恢复为默认',

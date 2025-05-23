@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { inject, ref } from 'vue'
+import { inject } from 'vue'
 import { ElScrollbar } from 'element-plus'
 import { Location } from '@element-plus/icons-vue'
 import UserCard from '@/components/UserCard.vue'
@@ -12,8 +12,8 @@ import {
   user_key,
   all_subjects_key,
   all_categories_key,
-  type SideBarMode,
-  type SideBarColor
+  sidebar_show_mode_key,
+  sidebar_color_key
 } from '@/key'
 import SettingSVG from '@/components/svg/SettingSVG.vue'
 
@@ -22,14 +22,8 @@ const user = inject(user_key)!
 const categories = inject(all_categories_key)!
 const subjects = inject(all_subjects_key)!
 
-const sidebarMode = ref<SideBarMode>(
-  (localStorage.getItem('sidebarShowMode') ||
-    user!.value!.group?.sidebar_show_mode ||
-    'category') as SideBarMode
-)
-const sidebarColor = ref<SideBarColor>(
-  (localStorage.getItem('sidebarColor') || 'blue') as SideBarColor
-)
+const sidebarMode = inject(sidebar_show_mode_key)!
+const sidebarColor = inject(sidebar_color_key)!
 </script>
 
 <template>
