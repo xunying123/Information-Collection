@@ -1,20 +1,11 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, computed, inject } from 'vue'
+import { watch, onMounted, computed } from 'vue'
 import { useRoute, RouterView } from 'vue-router'
 import type { PageItem } from '@/sdk'
-import SearchInput from '@/components/SearchInput.vue'
 import ArticleCard from '@/components/ArticleCard.vue'
 import ArticleList from '@/components/ArticleList.vue'
 import SiteArticleCard from '@/components/SiteArticleCard.vue'
-import FilterSidebar from '@/components/FilterSidebar.vue'
-import {
-  user_key,
-  search_keyword_key,
-  all_categories_key,
-  all_subjects_key,
-  type ViewMode
-} from '@/key'
-import { getCategories } from '@/sdk'
+import type { ViewMode } from '@/key'
 
 const props = defineProps<{
   pages: PageItem[]
@@ -22,12 +13,7 @@ const props = defineProps<{
   loading: boolean
   category_id?: string
 }>()
-const searchKeyword = inject(search_keyword_key)!
-const allCategories = inject(all_categories_key)!
 const route = useRoute()
-
-const user = inject(user_key)!
-let subjects = inject(all_subjects_key)!
 
 // 仅保留滚动事件
 defineEmits(['scroll', 'wheel'])
@@ -59,32 +45,15 @@ onMounted(() => {
     savedNotCateView ||
     'card'
 })
-
-const fetchCategories = async () => {
-  if (!user!.value?.group) {
-    return
-  }
-  const { data, error } = await getCategories()
-  if (error) console.error('获取类别信息失败：', error)
-  allCategories.value = data!
-}
-onMounted(fetchCategories)
-
-const filterSidebarRef = ref<any>(null)
-const openFilter = () => filterSidebarRef.value?.openDrawer?.()
 </script>
 
 <template>
   <el-container class="full-height">
-    <FilterSidebar ref="filterSidebarRef" :all-categories="allCategories" :subjects="subjects" />
     <el-main class="full-height top-down">
       <div class="header">
         <h1>{{ props.title }}</h1>
-        <el-button type="primary" @click="openFilter">
-          <el-icon> <Filter /> </el-icon><span>筛选</span>
-        </el-button>
-        <SearchInput style="width: 16em" @update:search-query="searchKeyword = $event" />
         <el-segmented v-model="view" :options="options" class="spaced-segmented" />
+        <slot />
       </div>
       <template v-if="props.pages && props.pages.length">
         <el-scrollbar

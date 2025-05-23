@@ -6,8 +6,6 @@ export const user_key = Symbol() as InjectionKey<Ref<User | null>>
 export const all_categories_key = Symbol() as InjectionKey<Ref<Category[]>>
 export const all_subjects_key = Symbol() as InjectionKey<Ref<Subject[]>>
 
-export const filter_subscribe_key = Symbol() as InjectionKey<Ref<boolean>>
-export const filter_keyword_key = Symbol() as InjectionKey<Ref<boolean>>
-export const search_keyword_key = Symbol() as InjectionKey<Ref<string>>
-
 export type ViewMode = 'card' | 'site' | 'list' | 'excerpt'
+export type SideBarMode = 'category' | 'subject' | 'both'
+export type SideBarColor = 'blue' | 'yellow' | 'red' | 'green' | 'orange'

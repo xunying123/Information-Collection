@@ -9,18 +9,14 @@ import {
 import SiteMenu from '@/views/SiteMenu.vue'
 import { NLayout, NLayoutSider, NLayoutContent } from 'naive-ui'
 import { provide, ref, inject } from 'vue'
-import type { Category, Subject } from '@/sdk'
-
-let filter_subscribe = ref(localStorage.getItem('filter_subscribe') === 'true')
-provide(filter_subscribe_key, filter_subscribe)
-
-let filter_keyword = ref(localStorage.getItem('filter_keyword') === 'true')
-provide(filter_keyword_key, filter_keyword)
+import { getCategories, getSubjects, type Category, type Subject } from '@/sdk'
 
 let allCategories = ref<Category[]>([])
+getCategories().then((value) => (allCategories.value = value.data!))
 provide(all_categories_key, allCategories)
 
 let subjects = ref<Subject[]>([])
+getSubjects().then((value) => (subjects.value = value.data!))
 provide(all_subjects_key, subjects)
 
 const user = inject(user_key)!
@@ -58,9 +54,11 @@ window.addEventListener('bgUrlChanged', () => {
   .sidebar {
     width: 9em !important;
   }
+
   .site-menu {
     padding-left: 10em;
   }
+
   .content {
     width: 80% !important;
   }

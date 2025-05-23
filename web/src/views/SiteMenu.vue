@@ -1,7 +1,5 @@
 <script lang="ts" setup>
-import { inject, onMounted, reactive, watch, ref, computed, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
-import type { SiteItem } from '@/sdk'
+import { inject, ref } from 'vue'
 import { ElScrollbar } from 'element-plus'
 import { Location } from '@element-plus/icons-vue'
 import UserCard from '@/components/UserCard.vue'
@@ -10,137 +8,28 @@ import BookmarkSvg from '@/components/svg/BookmarkSvg.vue'
 import FolderPlusSVG from '@/components/svg/FolderPlusSVG.vue'
 import LayersSVG from '@/components/svg/LayersSVG.vue'
 import HelpSVG from '@/components/svg/HelpSVG.vue'
-import { filter_subscribe_key, user_key, all_subjects_key } from '@/key'
-import { getCategories, getSubjects } from '@/sdk'
+import { user_key, all_subjects_key, all_categories_key, type SideBarMode, type SideBarColor } from '@/key'
 import SettingSVG from '@/components/svg/SettingSVG.vue'
 
-interface CateSite {
-  cate_id: number
-  cate_name: string
-  sites: SiteItem[]
-}
-
-let filter_subscribe = inject(filter_subscribe_key)!
 const user = inject(user_key)!
-const router = useRouter()
 
-let sites = reactive<CateSite[]>([])
-let subjects = inject(all_subjects_key)!
+const categories = inject(all_categories_key)!
+const subjects = inject(all_subjects_key)!
 
-// 侧边栏显示模式
-const sidebarMode = ref(
-  // localStorage.getItem('sidebarShowMode') || user!.value!.group?.sidebar_show_mode || 'category'
-  'category'
-)
-
-async function loadSites() {
-  if (!user.value?.group) {
-    return
-  }
-  const { data, error } = await getCategories()
-  if (error) {
-    console.error(error)
-    return
-  }
-  // data: list of categories, each category has a list of sites
-  // clear the sites array
-  sites.splice(0, sites.length)
-  for (let cate of data!) {
-    let cateSites: CateSite = { cate_id: cate.id!, cate_name: cate.name, sites: [] }
-    for (let site of cate.sites!) {
-      if (site.name === '上海交通大学') {
-        // 放前面显示
-        cateSites.sites.unshift(site)
-      } else {
-        cateSites.sites.push(site)
-      }
-    }
-    sites.push(cateSites)
-  }
-}
-
-async function loadSubjects() {
-  if (!user.value?.group) {
-    return
-  }
-  try {
-    const { data, error } = await getSubjects()
-    if (error) {
-      console.error(error)
-      return
-    }
-    // 清空主题数组
-    subjects.value.splice(0, subjects.value.length)
-    // 添加新的主题数据
-    if (data) {
-      for (let subject of data) {
-        subjects.value.push(subject)
-      }
-    }
-    // console.log('主题数据:', subjects.value)
-  } catch (error) {
-    console.error('加载主题失败:', error)
-  }
-}
-
-function loadSidebarData() {
-  loadSites()
-  loadSubjects()
-}
-
-function handleSubMenuClick(index: string) {
-  router.push(index)
-}
-
-watch(filter_subscribe, () => {
-  loadSidebarData()
-})
-
-watch(sidebarMode, () => {
-  loadSidebarData()
-})
-
-// 侧边栏显示模式变更监听
-const updateSidebarMode = () => {
-  sidebarMode.value = localStorage.getItem('sidebarShowMode') || 'category'
-}
-
-onMounted(() => {
-  loadSidebarData()
-  window.addEventListener('sidebarColorChanged', updateSidebarColor)
-  window.addEventListener('sidebarModeChanged', updateSidebarMode)
-})
-
-// 侧边栏颜色部分：从 localStorage 读取颜色，默认为 'blue'
-const sidebarColor = ref(localStorage.getItem('sidebarColor') || 'blue')
-const sidebarClass = computed(() => `full-${sidebarColor.value}`)
-
-const updateSidebarColor = () => {
-  sidebarColor.value = localStorage.getItem('sidebarColor') || 'blue'
-}
-
-onBeforeUnmount(() => {
-  window.removeEventListener('sidebarColorChanged', updateSidebarColor)
-  window.removeEventListener('sidebarModeChanged', updateSidebarMode)
-})
+const sidebarMode = ref<SideBarMode>((localStorage.getItem('sidebarShowMode') || user!.value!.group?.sidebar_show_mode || 'category') as SideBarMode)
+const sidebarColor = ref<SideBarColor>((localStorage.getItem('sidebarColor') || 'blue') as SideBarColor)
 </script>
 
 <template>
-  <!-- 绑定基础类 .full 与动态颜色类 -->
-  <div :class="['full', sidebarClass]">
+  <div :class="['full', `full-${sidebarColor}`]">
     <router-link to="/">
-      <img :src="user!.group?.logo!" class="logo" />
+      <img :src="user!.group?.logo!" class="logo">
     </router-link>
     <router-link to="/user">
       <UserCard />
     </router-link>
     <ElScrollbar class="scratch-height">
-      <el-menu
-        class="el-menu-vertical-demo"
-        :router="true"
-        @open="handleSubMenuClick"
-        @close="handleSubMenuClick"
-      >
+      <el-menu class="el-menu-vertical-demo" :router="true">
         <el-menu-item index="/">
           <LayersSVG class="menu-icon" />
           <span class="menu-top">全部</span>
@@ -159,14 +48,12 @@ onBeforeUnmount(() => {
         </el-menu-item>
 
         <el-divider v-if="user?.group" class="divider" />
-        <div v-if="user?.group" class="menu-middle">专属新闻</div>
+        <div v-if="user?.group" class="menu-middle">
+          专属新闻
+        </div>
         <!-- 按文章分类显示 -->
         <template v-if="sidebarMode === 'subject' || sidebarMode === 'both'">
-          <el-menu-item
-            v-for="subject in subjects"
-            :key="subject.id"
-            :index="`/subject/` + subject.id"
-          >
+          <el-menu-item v-for="subject in subjects" :key="subject.id" :index="`/subject/` + subject.id">
             <el-icon>
               <Location />
             </el-icon>
@@ -178,23 +65,15 @@ onBeforeUnmount(() => {
 
         <!-- 按网站分类显示 -->
         <template v-if="sidebarMode === 'category' || sidebarMode === 'both'">
-          <el-sub-menu
-            v-for="cate in sites"
-            :key="cate.cate_id"
-            :index="`/category/` + String(cate.cate_id)"
-          >
+          <el-sub-menu v-for="cate in categories" :key="cate.id" :index="`/category/${cate.id}`">
             <template #title>
               <el-icon>
                 <Location />
               </el-icon>
-              <span>{{ cate.cate_name }}</span>
+              <span>{{ cate.name }}</span>
             </template>
-            <el-menu-item
-              v-for="site in cate.sites"
-              :key="site.id"
-              :index="`/category/` + String(cate.cate_id) + `/site/` + site.id"
-              style="margin-left: 2em"
-            >
+            <el-menu-item v-for="site in cate.sites" :key="site.id" :index="`/category/${cate.id}/site/${site.id}`"
+              style="margin-left: 2em">
               {{ site.name }}
             </el-menu-item>
           </el-sub-menu>
@@ -212,7 +91,7 @@ onBeforeUnmount(() => {
       </el-menu>
     </ElScrollbar>
     <div class="overlay">
-      <img src="/static/image_21_1-1.png" class="overlay-image" />
+      <img src="/static/image_21_1-1.png" class="overlay-image">
     </div>
   </div>
 </template>
