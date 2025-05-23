@@ -1,6 +1,7 @@
 from sqlalchemy import ARRAY, Column, MetaData, Text, String, Boolean, DateTime
 from sqlalchemy import ForeignKey, Text, func
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
+from sqlalchemy.ext.hybrid import hybrid_property
 from typing_extensions import Annotated
 from datetime import datetime
 
@@ -125,9 +126,11 @@ class Page(Base, UseTimestamps):
     id: Mapped[intpk]
     source_url: Mapped[url_type] = mapped_column(unique=True, nullable=False)
 
-    title = mapped_column(String(128), nullable=False)
-    content = mapped_column(Text, nullable=False)
-    full_content = mapped_column(Text, nullable=True)
+    title: Mapped[str] = mapped_column(String(128), nullable=False)
+    title_cn: Mapped[str] = mapped_column(String(128), nullable=True)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    full_content: Mapped[str] = mapped_column(Text, nullable=True)
+    full_content_cn: Mapped[str] = mapped_column(Text, nullable=True)
     publish_time: Mapped[datetime] = mapped_column(server_default=func.now())
 
     score: Mapped[int] = mapped_column(nullable=True, server_default="0")
@@ -135,9 +138,33 @@ class Page(Base, UseTimestamps):
     site_id: Mapped[site_foreign_key]
     site: Mapped[Site] = relationship(Site, back_populates="pages")
 
-    keywords = relationship(
+    keywords: Mapped[list["Keyword"]] = relationship(
         "Keyword", secondary="page_keyword_relation", back_populates="pages"
     )
+
+    @hybrid_property
+    def school_name(self):
+        return self.site.name if self.site else None
+    
+    @hybrid_property
+    def publish_date(self):
+        return self.publish_time
+    
+    @hybrid_property
+    def title_raw(self):
+        return self.title
+
+    @hybrid_property
+    def content_raw(self):
+        return self.full_content
+
+    @hybrid_property
+    def content_cn(self):
+        return self.full_content_cn
+    
+    @hybrid_property
+    def summary_cn(self):
+        return self.content
 
 
 class User(Base):
