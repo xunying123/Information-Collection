@@ -17,6 +17,13 @@ def Newspaper(url):
             return None, None
         
         soup = BeautifulSoup(article.html, 'html.parser')
+        h1 = soup.find('h1', class_='u-title')
+        if h1 and h1.get_text(strip=True):
+            article.title = h1.get_text(strip=True)
+        else:
+            h1 = soup.find('h1')
+            if h1 and h1.get_text(strip=True):
+                article.title = h1.get_text(strip=True)        
 
         comments = soup.find_all(string=lambda t: isinstance(t, Comment))
 
@@ -30,7 +37,7 @@ def Newspaper(url):
         if not (start and end):
             start = next((c for c in comments if c.strip() == 'enpcontent'), None)
             end   = next((c for c in comments if c.strip() == '/enpcontent'), None)
-            
+
         if start and end:
             nodes = []
             node = start.next_sibling
@@ -66,7 +73,6 @@ def Newspaper(url):
                 publish_date_dt = datetime.now()
                 
             return article, publish_date_dt
-
         if article.text:
             soup = BeautifulSoup(article.html, 'html.parser')
 
@@ -125,6 +131,14 @@ def Play_Wright_new(url):
                 return None, None
             
             soup = BeautifulSoup(article.html, 'html.parser')
+            
+            h1 = soup.find('h1', class_='u-title')
+            if h1 and h1.get_text(strip=True):
+                article.title = h1.get_text(strip=True)
+            else:
+                h1 = soup.find('h1')
+                if h1 and h1.get_text(strip=True):
+                    article.title = h1.get_text(strip=True)        
 
             comments = soup.find_all(string=lambda t: isinstance(t, Comment))
             start = next((c for c in comments if '正文开始' in c), None)
@@ -450,7 +464,7 @@ def crawl(url, source_url):
     return None, None, None
 
 def main():
-    crawl('https://share.gmw.cn/edu/2025-04/21/content_37978170.htm', 'test')
+    crawl('http://politics.people.com.cn/n1/2025/0515/c1001-40480329.html', 'test')
     
 if __name__ == '__main__':
     main()

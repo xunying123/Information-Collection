@@ -3,6 +3,7 @@ import json
 import os
 from src.LLM.model import Model
 from src.LLM.run import summary, translate, get_keywords, get_score
+from src.LLM.prompts import SCORE_EDUCATION_PROMPT, SCORE_HEADLINE_PROMPT, SCORE_TECH_PROMPT, SCORE_TALENT_PROMPT, SCORE_INTERNATIONAL_PROMPT, KEYWORD_PROMPT
 from src.data import get_keywords_map_from_db
 import requests
 from urllib.parse import urlparse, urlunparse
@@ -94,7 +95,13 @@ def what_word(content):
     return list(keyword_set)
 
 def what_score(content):
-    return get_score(deepseek, content)
+    score = 0
+    score = max(score, get_score(deepseek, content, SCORE_HEADLINE_PROMPT))
+    score = max(score, get_score(deepseek, content, SCORE_TECH_PROMPT))
+    score = max(score, get_score(deepseek, content, SCORE_TALENT_PROMPT))
+    score = max(score, get_score(deepseek, content, SCORE_INTERNATIONAL_PROMPT))
+    score = max(score, get_score(deepseek, content, SCORE_EDUCATION_PROMPT))
+    return score
 
 def get_keywords_id(content):
     return [keyword_map[k] for k in content if k in keyword_map]
