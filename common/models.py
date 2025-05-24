@@ -42,8 +42,8 @@ url_type = Annotated[str, mapped_column(String(2048))]
 
 
 class UseTimestamps:
-    created_at: Mapped[datetime] = Column(DateTime(True), server_default=func.now())
-    updated_at: Mapped[datetime] = Column(
+    created_at: Mapped[datetime] = mapped_column(DateTime(True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(True),
         server_default=func.now(),
         onupdate=func.now(),
