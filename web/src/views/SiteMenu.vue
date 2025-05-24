@@ -37,7 +37,11 @@ const sidebarColor = inject(sidebar_color_key)!
       <UserCard />
     </router-link>
     <ElScrollbar class="scratch-height">
-      <el-menu class="el-menu-vertical-demo" :router="true" @open="(index: string) => router.push(index)">
+      <el-menu
+        class="el-menu-vertical-demo"
+        :router="true"
+        @open="(index: string) => router.push(index)"
+      >
         <el-menu-item index="/">
           <LayersSVG class="menu-icon" />
           <span class="menu-top">全部</span>

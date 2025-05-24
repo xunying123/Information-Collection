@@ -14,8 +14,6 @@
     :title="title"
     :loading="loading"
     :category_id="category_id"
-    @scroll="handleScroll"
-    @wheel="handleWheel"
   >
     <SearchInput style="width: 16em" @update:search-query="search_keyword = $event" />
     <el-button type="primary" @click="drawerVisible = true">
@@ -28,10 +26,10 @@
 import { ref, watch, inject, computed, onMounted } from 'vue'
 import { all_categories_key, all_subjects_key, user_key, type ViewMode } from '@/key'
 import ShowCards from '@/components/ShowCards.vue'
-import useScrollFetch from '@/utils/useScrollFetch'
 import { getPages } from '@/sdk'
 import type { PageItem, PageGet, SortType } from '@/sdk'
-import { isRequesting, lockRequest, unlockRequest } from '@/utils/useScrollFetch'
+import { isRequesting, lockRequest, unlockRequest } from '@/utils/requestLock'
+import { useInfiniteScroll } from '@/utils/useInfiniteScroll'
 import SearchInput from '@/components/SearchInput.vue'
 import FilterSidebar from '@/components/FilterSidebar.vue'
 import { isEqual } from 'lodash'
@@ -82,7 +80,6 @@ const selected_subjects = ref<number[]>([])
 const selected_time_range = ref<number>(0)
 const current_sort_option = ref<SortType>('time')
 const filter_keyword = ref<boolean>(false)
-const count = ref<number>(50)
 const view = ref<ViewMode>('card')
 const search_keyword = ref<string>('')
 const loading = ref(true)
@@ -90,9 +87,16 @@ const loading = ref(true)
 const Today = new Date()
 Today.setHours(0, 0, 0, 0)
 
-const time_start = computed<Date | null>(
-  () => new Date(Today.getTime() - selected_time_range.value * 24 * 60 * 60 * 1000)
-)
+const time_start = computed<Date | null>(() => {
+  if (selected_time_range.value === 0) return null
+  const dayOfWeek = Today.getDay()
+  if (selected_time_range.value === 1 && (dayOfWeek === 0 || dayOfWeek === 1)) {
+    return new Date(Today.getTime() - (dayOfWeek + 2) * 24 * 60 * 60 * 1000)
+  }
+  return new Date(Today.getTime() - selected_time_range.value * 24 * 60 * 60 * 1000)
+})
+
+const { count } = useInfiniteScroll(10)
 
 const request_body = computed<PageGet>(() => ({
   count: count.value,
@@ -143,8 +147,6 @@ function fetchPages(body: PageGet, oldBody?: PageGet) {
       unlockRequest()
     })
 }
-
-const { handleScroll, handleWheel } = useScrollFetch((val) => (count.value = val))
 
 watch(request_body, fetchPages, { flush: 'post' })
 onMounted(() => {

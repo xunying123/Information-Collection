@@ -238,7 +238,7 @@ const Sites = ref<SiteItem[]>([])
 const categories = ref<CategoryItem[]>([])
 
 // 自动完成搜索：网站类别（用于"加入分类"部分）
-const queryClassSearch = (queryString: string, cb: any) => {
+const queryClassSearch = (queryString: string, cb: (results: CategoryItem[]) => void) => {
   // console.log('query:', queryString)
   // console.log('categories:', categories.value)
   const results = categories.value.filter((category) => category.name.includes(queryString))
@@ -246,7 +246,7 @@ const queryClassSearch = (queryString: string, cb: any) => {
 }
 
 // 自动完成搜索：网站（用于"加入分类"部分）
-const querySearch = (queryString: string, cb: any) => {
+const querySearch = (queryString: string, cb: (results: SiteItem[]) => void) => {
   const results = queryString ? Sites.value.filter(createFilter(queryString)) : Sites.value
   cb(results)
 }
@@ -380,7 +380,7 @@ const handleDeleteCateSiteSelect = (item: Category | SiteItem) => {
 }
 
 // 自动完成搜索：网站（用于删除网站部分），基于当前选择的分类
-const querySiteForDeletion = (queryString: string, cb: any) => {
+const querySiteForDeletion = (queryString: string, cb: (sites: SiteItem[]) => void) => {
   let sites = deleteCate.value?.sites || []
   if (queryString) {
     sites = sites.filter((site) => site.name.toLowerCase().includes(queryString.toLowerCase()))
@@ -439,7 +439,7 @@ const deleteSite_ = async () => {
 // 当前组织成员列表
 const membersList = ref<User[]>([])
 
-const formatAdminStatus = (row: any, column: any, cellValue: any) => {
+const formatAdminStatus = (row: User, column: Record<string, unknown>, cellValue: boolean) => {
   return (cellValue ? '管理员' : '普通用户') + (row.group_accepted ? '' : '（待审核）')
 }
 
@@ -466,7 +466,7 @@ const loadGroupPendingList = async () => {
 }
 
 // 自动补全搜索：支持待审核列表及调用 getUserinfoNotInGroup 查询
-const queryUserSearch = async (queryString: string, cb: any) => {
+const queryUserSearch = async (queryString: string, cb: (results: User[]) => void) => {
   let results = queryString
     ? allGroupPendingUsers.value.filter((user) =>
         user.username.toLowerCase().includes(queryString.toLowerCase())

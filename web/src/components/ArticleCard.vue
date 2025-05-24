@@ -34,9 +34,7 @@ const computedShowTime = computed(() => showTime(props.page.publish_time))
         <template #footer>
           <div class="small-card-footer">
             <NConfigProvider :locale="zhCN" :date-locale="dateZhCN">
-              <!-- <NTime :time="new Date(page.publish_time)" :type="computedTimeType" /> -->
               {{ computedShowTime }}
-              <!-- {{(new Date().getTime() - new Date(page.publish_time).getTime()) / 1000 / 60 / 60}}天前 -->
             </NConfigProvider>
           </div>
         </template>
@@ -103,5 +101,12 @@ const computedShowTime = computed(() => showTime(props.page.publish_time))
 
 .right-gap {
   margin-right: 0.3em;
+}
+
+.infinite-list {
+  height: 400px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 </style>

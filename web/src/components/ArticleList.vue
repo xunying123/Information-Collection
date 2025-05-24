@@ -1,6 +1,6 @@
 <template>
   <div class="list-container">
-    <ul class="list">
+    <ul v-infinite-scroll="load" :infinite-scroll-distance="2" class="infinite-list">
       <li
         v-for="page in pages"
         :key="page.id"
@@ -26,11 +26,11 @@
                   {{ page.site }}
                 </router-link>
               </div>
-              <p
+              <!-- <p
                 v-if="showExcerpt"
                 class="list-excerpt"
                 v-html="formatExcerpt(stripMarkdown(page.content))"
-              />
+              /> -->
               <el-tooltip content="已加入书签" effect="light">
                 <BookmarkSvg v-show="is_bookmarked(page.id)" fill="#FFD700" class="bookmark-icon" />
               </el-tooltip>
@@ -46,22 +46,17 @@
 import type { PageItem } from '@/sdk'
 import { is_bookmarked } from '@/bookmark'
 import { showTime } from '@/utils/timeUtils'
+import { useInfiniteScroll } from '@/utils/useInfiniteScroll'
 import BookmarkSvg from './svg/BookmarkSvg.vue'
 import { zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
+
+const { load } = useInfiniteScroll(10)
 
 const { category_id = 0 } = defineProps<{
   pages: PageItem[]
   showExcerpt: boolean
   category_id?: number
 }>()
-
-function stripMarkdown(content: string): string {
-  return content.replace(/[#`*]/g, '')
-}
-
-function formatExcerpt(content: string): string {
-  return content.substring(0, 100).replace(/\n/g, '<br>') + '...'
-}
 </script>
 
 <style scoped>
@@ -69,19 +64,6 @@ function formatExcerpt(content: string): string {
   margin-top: 2em;
   margin-left: 3em;
   margin-right: 3em;
-}
-
-.list {
-  list-style-type: none;
-  /* 去掉列表项左上角的小黑点 */
-  padding: 0;
-  /* 去掉默认的内边距 */
-  margin: 0;
-  /* 去掉默认的外边距 */
-  border-radius: 6px;
-  background-color: rgba(255, 255, 255, 1);
-  max-width: 56em;
-  padding-top: 0.8em;
 }
 
 .list-item {
@@ -203,5 +185,16 @@ function formatExcerpt(content: string): string {
   .site-link {
     display: none;
   }
+}
+
+.infinite-list {
+  height: 400px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 1);
+  max-width: 56em;
+  padding-top: 0.8em;
 }
 </style>

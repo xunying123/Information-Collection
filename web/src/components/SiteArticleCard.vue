@@ -14,19 +14,24 @@
           </div>
         </template>
         <ElScrollbar height="300px">
-          <div v-for="page in site_pages" :key="page.id" class="article-item">
-            <router-link
-              :to="{ name: `${String($route.matched[1].name)}-page`, params: { page_id: page.id } }"
-              class="article-title"
-            >
-              {{ page.title }}
-            </router-link>
-            <div class="article-time">
-              <NConfigProvider :locale="zhCN" :date-locale="dateZhCN">
-                <NTime :time="new Date(page.publish_time)" :type="timeType(page.publish_time)" />
-              </NConfigProvider>
+          <ul v-infinite-scroll="load" :infinite-scroll-distance="2" class="infinite-list">
+            <div v-for="page in site_pages" :key="page.id" class="article-item">
+              <router-link
+                :to="{
+                  name: `${String($route.matched[1].name)}-page`,
+                  params: { page_id: page.id }
+                }"
+                class="article-title"
+              >
+                {{ page.title }}
+              </router-link>
+              <div class="article-time">
+                <NConfigProvider :locale="zhCN" :date-locale="dateZhCN">
+                  {{ showTime(page.publish_time) }}
+                </NConfigProvider>
+              </div>
             </div>
-          </div>
+          </ul>
         </ElScrollbar>
       </ElCard>
     </div>
@@ -35,12 +40,15 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { NTime, zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
+import { zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
 import { ElAvatar, ElCard, ElScrollbar } from 'element-plus'
 import type { PageItem } from '@/sdk'
-import { timeType } from '@/utils/timeUtils'
+import { showTime } from '@/utils/timeUtils'
+import { useInfiniteScroll } from '@/utils/useInfiniteScroll'
 
 const props = defineProps<{ pages: PageItem[] }>()
+
+const { load } = useInfiniteScroll(10)
 
 const groupedPages = computed(() => {
   const groups: Record<string, PageItem[]> = {}

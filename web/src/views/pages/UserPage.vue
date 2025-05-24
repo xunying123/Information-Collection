@@ -100,7 +100,7 @@
 
 <script setup lang="ts">
 import { inject, ref, computed } from 'vue'
-import { ElNotification, ElMessageBox } from 'element-plus'
+import { ElNotification, ElMessageBox, type UploadFile } from 'element-plus'
 import { bg_url_key, sidebar_color_key, sidebar_show_mode_key, user_key } from '@/key'
 import { logout, leaveGroup } from '@/sdk'
 
@@ -165,7 +165,7 @@ const dummyRequest = ({ onSuccess }: { onSuccess: (x: string) => undefined }) =>
   }, 0)
 }
 
-const handleFileChange = (file: any) => {
+const handleFileChange = (file: UploadFile) => {
   if (!file.raw) return
   const reader = new FileReader()
   reader.onload = () => {

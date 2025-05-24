@@ -202,7 +202,7 @@ async function importSources(file: File) {
       const sites = JSON.parse(content)
       const { data, error } = await subscribe({
         body: {
-          sites_id: sites.map((site: any) => site.id),
+          sites_id: sites.map((site: SiteItem) => site.id),
           keep_user_existed: true
         }
       })
