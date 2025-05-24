@@ -29,7 +29,7 @@ def run():
             logging(path, str(e))
             logging(path, web['url'][0])
 
-    max_workers = 10
+    max_workers = 12
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [executor.submit(safe_do, web) for web in reversed(post_websites)]
         for _ in as_completed(futures):
