@@ -55,16 +55,10 @@ class PageItem(ConfigBaseModel, IncludeSite):
     id: int
     source_url: str
     title: str
-    content: str
     # to make frontend show properly when sort by time
     publish_time: datetime = Field(validation_alias=AliasPath("created_at"))
     score: int
     keywords: list[Keyword]
-
-    @field_validator("content", mode="after")
-    @classmethod
-    def truncate(cls, v: str):
-        return v[:50] if cls is PageItem else v
 
 
 class SiteItem(ConfigBaseModel):
@@ -81,6 +75,12 @@ class Site(SiteItem):
 
 class Page(PageItem):
     full_content: str
+    content: str
+
+    @field_validator("content", mode="after")
+    @classmethod
+    def truncate(cls, v: str):
+        return v[:50] if cls is PageItem else v
 
 
 class OperationMsg(ConfigBaseModel):
