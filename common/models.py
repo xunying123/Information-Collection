@@ -1,6 +1,6 @@
-from sqlalchemy import ARRAY, Column, MetaData, Text, String, Boolean, DateTime
+from sqlalchemy import ARRAY, MetaData, Text, String, Boolean, DateTime
 from sqlalchemy import ForeignKey, Text, func
-from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
+from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship, synonym
 from sqlalchemy.ext.hybrid import hybrid_property
 from typing_extensions import Annotated
 from datetime import datetime
@@ -43,11 +43,12 @@ url_type = Annotated[str, mapped_column(String(2048))]
 
 
 class UseTimestamps:
-    created_at: Mapped[datetime] = mapped_column(DateTime(True), server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(True), server_default=func.now(), nullable=True)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(True),
         server_default=func.now(),
         onupdate=func.now(),
+        nullable=True,
     )
 
 
@@ -128,9 +129,9 @@ class Page(Base, UseTimestamps):
 
     title: Mapped[str] = mapped_column(String(128), nullable=False)
     title_cn: Mapped[str] = mapped_column(String(128), nullable=True)
-    content: Mapped[str] = mapped_column(Text, nullable=False)
-    full_content: Mapped[str] = mapped_column(Text, nullable=True)
-    full_content_cn: Mapped[str] = mapped_column(Text, nullable=True)
+    content: Mapped[str] = mapped_column(Text, nullable=False, deferred=True)
+    full_content: Mapped[str] = mapped_column(Text, nullable=True, deferred=True)
+    full_content_cn: Mapped[str] = mapped_column(Text, nullable=True, deferred=True)
     publish_time: Mapped[datetime] = mapped_column(server_default=func.now())
 
     score: Mapped[int] = mapped_column(nullable=True, server_default="0")
@@ -142,29 +143,16 @@ class Page(Base, UseTimestamps):
         "Keyword", secondary="page_keyword_relation", back_populates="pages"
     )
 
+    # view
+    publish_date: Mapped[datetime] = synonym("publish_time")
+    title_raw: Mapped[str] = synonym("title")
+    content_raw: Mapped[str] = synonym("full_content")
+    content_cn: Mapped[str] = synonym("full_content_cn")
+    summary_cn: Mapped[str] = synonym("content")
+
     @hybrid_property
     def school_name(self):
         return self.site.name if self.site else None
-    
-    @hybrid_property
-    def publish_date(self):
-        return self.publish_time
-    
-    @hybrid_property
-    def title_raw(self):
-        return self.title
-
-    @hybrid_property
-    def content_raw(self):
-        return self.full_content
-
-    @hybrid_property
-    def content_cn(self):
-        return self.full_content_cn
-    
-    @hybrid_property
-    def summary_cn(self):
-        return self.content
 
 
 class User(Base):
