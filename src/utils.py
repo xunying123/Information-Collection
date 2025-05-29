@@ -72,10 +72,13 @@ def summary_(content):
                 return temp
                              
 def title_(title):
-    if bool(re.search(r'[\u4e00-\u9fff]', title)):
-        return title
+    return translate_(title)
+    
+def translate_(content):
+    if bool(re.search(r'[\u4e00-\u9fff]', content)):
+        return content
     else:
-        return translate(deepseek, title)
+        return translate(deepseek, content)
 
     
 def check_(url):

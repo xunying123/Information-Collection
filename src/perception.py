@@ -1,5 +1,5 @@
 from datetime import datetime
-from src.utils import extract_domain, headers, normalize_url, read_content, save_content, title_, summary_, is_ad, check_, what_score, what_word, get_keywords_id, logging, wash_url
+from src.utils import extract_domain, headers, normalize_url, read_content, save_content, title_, summary_, is_ad, check_, what_score, what_word, get_keywords_id, logging, wash_url, translate_
 import asyncio
 from urllib.parse import urljoin
 from playwright.async_api import async_playwright
@@ -93,6 +93,8 @@ async def fetch_website_content(url):
         return extract_links
 
 def preception(web):
+    if web['id'] > 185:
+        return
     for url in web['url']:
         if "huanqiu" in url:
             current_links = get_article_links(url)
@@ -124,7 +126,8 @@ def preception(web):
                     if not title or not content:
                         continue
                     summary = summary_(content)
-                    title = title_(title)
+                    content_cn = translate_(content)
+                    title_cn = translate_(title)
                     publish_time = current_date.strftime("%Y-%m-%d %H:%M")
                     score = what_score(content)
                     source_url = wash_url(link)
@@ -132,8 +135,10 @@ def preception(web):
                         publish_time = times
                     data = {
                         "title": title,
+                        "title_cn": title_cn,
                         "content": summary,
                         "full_content":content,
+                        "full_content_cn": content_cn,
                         "source_url": source_url,
                         "publish_time": publish_time,
                         'site_id': web['id'],
