@@ -43,7 +43,9 @@ url_type = Annotated[str, mapped_column(String(2048))]
 
 
 class UseTimestamps:
-    created_at: Mapped[datetime] = mapped_column(DateTime(True), server_default=func.now(), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(True), server_default=func.now(), nullable=True
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(True),
         server_default=func.now(),
@@ -132,7 +134,9 @@ class Page(Base, UseTimestamps):
     content: Mapped[str] = mapped_column(Text, nullable=False, deferred=True)
     full_content: Mapped[str] = mapped_column(Text, nullable=True, deferred=True)
     full_content_cn: Mapped[str] = mapped_column(Text, nullable=True, deferred=True)
-    publish_time: Mapped[datetime] = mapped_column(server_default=func.now())
+    publish_time: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
     score: Mapped[int] = mapped_column(nullable=True, server_default="0")
 

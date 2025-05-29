@@ -10,3 +10,4 @@ server/config.py
 web/src/const.ts
 # web/src/sdk
 *.sql
+!common/*sql
