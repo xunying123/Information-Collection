@@ -10,7 +10,7 @@ def translate(model, text):
 
 def summary(model, article):
     if not re.search(r'[\u4e00-\u9fff]', article):
-        article = translate(article)
+        article = translate(model, article)
 
     system_prompt = f"你是一个专业的文本分析助手。"
     prompt = f"下面会给你一篇中文文章，我需要你对它进行内容总结，使得最终得到的总结长度在400字左右\n\n{article}"
@@ -24,8 +24,15 @@ def get_keywords(model, article) -> list:
     system_prompt = KEYWORD_PROMPT.format(keywords=', '.join(keywords))
     # print(system_prompt)
     prompt = f"请分析以下文章：\n\n{article}"
-    keywords = model.generate(prompt, system_prompt)
+    keywords = model.generate(prompt, system_prompt).replace("'", '"')
     try:
+        pattern = r'"([^"]+)"'
+        matches = re.findall(pattern, keywords)
+        # 过滤掉 "keywords" 这个词
+        extracted_keywords = [match for match in matches if match.lower() != 'keywords']
+        if extracted_keywords:
+            return extracted_keywords
+        
         # print(keywords, flush=True)
         keywords = json.loads(keywords)['keywords']
         if isinstance(keywords, list):

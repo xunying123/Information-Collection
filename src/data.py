@@ -17,14 +17,16 @@ def get_keywords_map_from_db():
 
 def get_postwebsites_from_db():
     with get_db() as db:
-        sites = db.query(Site).all()
+        sites = db.query(Site).filter(Site.id < 186).all()
         site = [{"id": site.id, "name": site.name, "url": site.url} for site in sites]
         return site
 
 def push_page_to_db(data):
     title = data.get("title")
+    title_cn = data.get("title_cn")
     content = data.get("content")
     full_content = data.get("full_content")
+    full_content_cn = data.get("full_content_cn")
     source_url = data.get("source_url")
     publish_time = data.get("publish_time")
     site_id = data.get("site_id")
@@ -42,6 +44,8 @@ def push_page_to_db(data):
         page = Page(
             site_id=site_id,
             title=title,
+            title_cn=title_cn,
+            full_content_cn=full_content_cn,
             content=content,
             full_content=full_content,
             source_url=source_url,
