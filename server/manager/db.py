@@ -10,8 +10,8 @@ _SqlSession = sessionmaker(bind=_engine)
 
 # the async is needed
 async def use_db():
+    session = _SqlSession()
     try:
-        session = _SqlSession()
         yield session
         session.commit()
     except Exception as e:

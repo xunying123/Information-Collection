@@ -6,8 +6,8 @@ from .. import schema
 router = APIRouter()
 
 
-@router.get("/subjects")
+@router.get("/subjects", response_model=list[schema.Subject])
 @group_required
-def get_subjects() -> list[schema.Subject]:
+def get_subjects():
     return current_group.subjects
 

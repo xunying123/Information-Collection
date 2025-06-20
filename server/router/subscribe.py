@@ -48,7 +48,7 @@ def subscribe(sites_id: list[int] = Body(), keep_user_existed: bool = Body()):
         ):
             continue
         db.add(UserSiteRelation(user_id=current_user.id, site_id=site_id))
-    return {}
+    return schema.OperationMsg()
 
 
 @router.delete("/subscribe", response_model=schema.OperationMsg)
@@ -60,7 +60,7 @@ def unsubscribe(site_id: int = Body()):
             & (UserSiteRelation.site_id == site_id)
         )
     )
-    return {}
+    return schema.OperationMsg()
 
 
 @router.get("/keyword", response_model=list[schema.Keyword])
@@ -106,7 +106,9 @@ def add_keyword(
             if len(kw_ids):
                 stmt = (
                     insert(UserKeywordRelation)
-                    .values([{"keyword_id": kw_id, "user_id": user_id} for kw_id in kw_ids])
+                    .values(
+                        [{"keyword_id": kw_id, "user_id": user_id} for kw_id in kw_ids]
+                    )
                     .on_conflict_do_nothing()
                 )
                 db.execute(stmt)
@@ -114,15 +116,15 @@ def add_keyword(
         msg = "Keywords has been added successfully"
     except Exception as e:
         print(e)
-    return {"status": status, "message": msg}
+    return schema.OperationMsg(status=status, message=msg)
 
 
-@router.delete("/keyword", response_model=schema.OperationMsg)
+@router.delete("/keyword")
 @login_required
-def delete_keyword(keyword_id: int = Body(embed=True)):
+def delete_keyword(keyword_id: int = Body(embed=True)) -> schema.OperationMsg:
     stmt = delete(UserKeywordRelation).where(
         (UserKeywordRelation.user_id == current_user.id)
         & (UserKeywordRelation.keyword_id == keyword_id)
     )
     db.execute(stmt)
-    return {}
+    return schema.OperationMsg()

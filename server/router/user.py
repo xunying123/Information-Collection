@@ -7,7 +7,7 @@ from http.client import (
     UNAUTHORIZED,
     PRECONDITION_FAILED,
 )
-from typing import Annotated
+from typing import Annotated, Any
 from urllib.parse import urlencode
 from fastapi import (
     APIRouter,
@@ -22,12 +22,11 @@ from fastapi import (
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter
-from httpx import AsyncClient
+from httpx import AsyncClient, BasicAuth
 from sqlalchemy import select
 from common.models import *
 from server import config
 from server.config import OAUTH_MAP, AuthCNAES, JAccountAuth
-from requests.auth import HTTPBasicAuth
 
 from server.manager.oauth import cnaes_from_token, jaccount_from_token
 
@@ -46,7 +45,7 @@ async def login(
     username = form.username
     password = form.password
     user = UserManager.get_user_by_username(username)
-    if not UserManager.authorize(user, password):
+    if not user or not UserManager.authorize(user, password):
         raise HTTPException(
             status_code=UNAUTHORIZED, detail="Incorrect username or password"
         )
@@ -57,11 +56,11 @@ async def login(
 @login_required
 def logout(response: Response) -> schema.OperationMsg:
     response.delete_cookie(login_manager.cookie_name)
-    return {"message": f"user {current_user.username} logged out"}
+    return schema.OperationMsg(message=f"user {current_user.username} logged out")
 
 
-@router.get("/user/status")
-def get_user_status() -> schema.LoginStatus:
+@router.get("/user/status", response_model=schema.LoginStatus)
+def get_user_status():
     if current_user:
         return {"is_login": True, "user": current_user}
     else:
@@ -71,15 +70,19 @@ def get_user_status() -> schema.LoginStatus:
 @router.post("/register", response_model=schema.OperationMsg)
 def register(data: schema.RegisterForm = Form()):
     user = UserManager.create_user(data)
-    return {"message": f"User {user.name}({user.username}) created"}
+    return schema.OperationMsg(message=f"User {user.name}({user.username}) created")
 
 
 def oauth_callback_url(request: Request, provider: str) -> str:
-    return str(request.url_for("do_auth_callback", provider=provider)).replace(":80/", "/")
+    return str(request.url_for("do_auth_callback", provider=provider)).replace(
+        ":80/", "/"
+    )
 
 
 @router.get("/login/oauth/{provider}")
-async def redirect2oauth(provider: str, state: str, cb_url=Depends(oauth_callback_url)):
+async def redirect2oauth(
+    provider: str, state: str, cb_url: str = Depends(oauth_callback_url)
+):
     auth_config = OAUTH_MAP[provider]
     if not auth_config:
         raise HTTPException(400, "Auth failed: unknown provider")
@@ -94,7 +97,10 @@ async def redirect2oauth(provider: str, state: str, cb_url=Depends(oauth_callbac
     redirect_uri = f"{auth_config.auth_url}?{query}"
     return RedirectResponse(redirect_uri, TEMPORARY_REDIRECT)
 
-async def get_access_token(code: str, redirect_uri: str, auth_config: config.OauthConfig) -> dict:
+
+async def get_access_token(
+    code: str, redirect_uri: str, auth_config: config.OauthConfig
+) -> Any:
     data = {
         "grant_type": "authorization_code",
         "code": code,
@@ -107,7 +113,7 @@ async def get_access_token(code: str, redirect_uri: str, auth_config: config.Oau
             auth_config.token_url,
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             data=data,
-            auth=HTTPBasicAuth("czZCaGRSa3F0MzpnWDFmQmF0M2JW", ""),
+            auth=BasicAuth("czZCaGRSa3F0MzpnWDFmQmF0M2JW", ""),
         )
         print(res.json())
         if res.status_code != 200:
@@ -117,13 +123,14 @@ async def get_access_token(code: str, redirect_uri: str, auth_config: config.Oau
         res = res.json()
     return res
 
+
 @router.get("/auth/{provider}")
 async def do_auth_callback(
     request: Request,
     provider: str,
     code: str,
     state: str,
-    cb_url=Depends(oauth_callback_url),
+    cb_url: str = Depends(oauth_callback_url),
 ):
     auth_config = OAUTH_MAP[provider]
     if not auth_config:
@@ -135,6 +142,8 @@ async def do_auth_callback(
                 user = await jaccount_from_token(res)
             case AuthCNAES.name:
                 user = cnaes_from_token(res)
+            case _:
+                raise HTTPException(400, "Auth failed: unknown provider")
         res = RedirectResponse(state, FOUND)
         UserManager.make_login_response(user, res)
         return res
@@ -144,8 +153,8 @@ async def do_auth_callback(
         raise HTTPException(INTERNAL_SERVER_ERROR, "Auth failed")
 
 
-@router.get("/group")
-def get_groups() -> list[schema.Group]:
+@router.get("/group", response_model=list[schema.Group])
+def get_groups():
     return db.scalars(select(Group).order_by(Group.id)).all()
 
 
@@ -185,11 +194,11 @@ def use_user_id(
     return user
 
 
-@router.get("/group/members/pending")
+@router.get("/group/members/pending", response_model=list[schema.User])
 @login_required
 def get_pending_members(
     group_id: int | None = Depends(use_group_id_strict),
-) -> list[schema.User]:
+):
     stmt = (
         select(User)
         .where(User.group_accepted == False)
@@ -198,11 +207,11 @@ def get_pending_members(
     return db.scalars(stmt).all()
 
 
-@router.get("/group/members")
+@router.get("/group/members", response_model=list[schema.User])
 @login_required
 def get_group_users(
     group_id: int | None = Query(None, description="only effects when user is admin.")
-) -> list[schema.User]:
+):
     if current_user.is_admin and group_id:
         group = GroupManager.get_group_from_id(group_id)
         return group.users
@@ -224,7 +233,7 @@ def add_user_to_group(
         return schema.OperationMsg(status=-1, message="user has been in another group")
     user.group_id = group_id
     user.group_accepted = True
-    return {}
+    return schema.OperationMsg()
 
 
 @router.delete("/group/members")
@@ -232,7 +241,7 @@ def add_user_to_group(
 def remove_user_from_group(user: User = Depends(use_user_id)) -> schema.OperationMsg:
     if current_user.is_admin:
         UserManager.leave_group(user)
-        return {}
+        return schema.OperationMsg()
     if not current_user.group_admin:
         raise HTTPException(
             FORBIDDEN, "you do not have the permission to manage this group."
@@ -242,7 +251,7 @@ def remove_user_from_group(user: User = Depends(use_user_id)) -> schema.Operatio
             status=-1, message="the user does not in your group."
         )
     UserManager.leave_group(user)
-    return {}
+    return schema.OperationMsg()
 
 
 @router.post("/group/leave")
@@ -251,12 +260,12 @@ def leave_group() -> schema.OperationMsg:
     current_user.group_id = None
     current_user.group_accepted = False
     current_user.group_admin = False
-    return {}
+    return schema.OperationMsg()
 
 
-@router.get("/user/free")
+@router.get("/user/free", response_model=schema.User | None)
 @login_required
-def get_userinfo_not_in_group(username: str) -> schema.User | None:
+def get_userinfo_not_in_group(username: str):
     if not (current_user.is_admin or current_user.group_admin):
         raise HTTPException(FORBIDDEN, "your are not an admin.")
     user = UserManager.get_user_by_username(username)

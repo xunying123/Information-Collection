@@ -1,10 +1,9 @@
-from calendar import c
 from functools import partial
 from typing import Annotated, Literal
-from fastapi import HTTPException, background
+from fastapi import HTTPException
 from httpx import AsyncClient
 import jwt
-from pydantic import BaseModel, BeforeValidator, field_validator, validate_call, Field
+from pydantic import BaseModel, BeforeValidator, validate_call
 from sqlalchemy import select
 from common.models import User, Group
 from .user import UserManager

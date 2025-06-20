@@ -77,7 +77,7 @@ class Group(Base):
 
 
 group_foreign_key = Annotated[
-    int, mapped_column(ForeignKey(Group.id), index=True, nullable=True)
+    int | None, mapped_column(ForeignKey(Group.id), index=True, nullable=True)
 ]
 
 subject_foreign_key = Annotated[

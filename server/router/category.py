@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from http.client import PRECONDITION_FAILED
 from fastapi import APIRouter, HTTPException, Body
 from sqlalchemy import select, delete
@@ -11,9 +12,9 @@ from ..manager.group import current_group, group_admin_required, group_required
 router = APIRouter()
 
 
-@router.get("/category")
+@router.get("/category", response_model=Sequence[schema.Category])
 @group_required
-def get_categories() -> list[schema.Category]:
+def get_categories():
     res = list(current_group.categories)
     res.append(CategoryManager.get_subscribe_category())
     return res
@@ -25,14 +26,13 @@ def get_category(cate_id: int):
     return CategoryManager.get_category_by_id(cate_id)
 
 
-@router.post("/category", response_model=schema.OperationMsg)
+@router.post("/category")
 @group_admin_required
-def add_category(category: schema.CategoryItem):
+def add_category(category: schema.CategoryItem) -> schema.OperationMsg:
     if (
         db.scalar(
             select(Category.id).where(
-                Category.name == category.name
-                and Category.group_id == current_group.id
+                Category.name == category.name and Category.group_id == current_group.id
             )
         )
         is not None
@@ -40,12 +40,14 @@ def add_category(category: schema.CategoryItem):
         raise HTTPException(PRECONDITION_FAILED, "category already exists")
     cate = Category(name=category.name, group_id=current_group.id)
     db.add(cate)
-    return {}
+    return schema.OperationMsg()
 
 
-@router.post("/category/site", response_model=schema.OperationMsg)
+@router.post("/category/site")
 @group_admin_required
-def add_site_to_category(cate_id: int = Body(), site_id: int = Body()):
+def add_site_to_category(
+    cate_id: int = Body(), site_id: int = Body()
+) -> schema.OperationMsg:
     if (
         db.scalar(select(Category.group_id).where(Category.id == cate_id))
         != current_group.id
@@ -62,12 +64,14 @@ def add_site_to_category(cate_id: int = Body(), site_id: int = Body()):
         return schema.OperationMsg(message="site already added into this category")
     rel = CategorySiteRelation(site_id=site_id, category_id=cate_id)
     db.add(rel)
-    return {}
+    return schema.OperationMsg()
 
 
-@router.delete("/category/site", response_model=schema.OperationMsg)
+@router.delete("/category/site")
 @group_admin_required
-def remove_site_from_category(cate_id: int = Body(), site_id: int = Body()):
+def remove_site_from_category(
+    cate_id: int = Body(), site_id: int = Body()
+) -> schema.OperationMsg:
     if (
         db.scalar(select(Category.group_id).where(Category.id == cate_id))
         != current_group.id
@@ -79,4 +83,4 @@ def remove_site_from_category(cate_id: int = Body(), site_id: int = Body()):
         .where(CategorySiteRelation.site_id == site_id)
     )
     db.execute(stmt)
-    return {}
+    return schema.OperationMsg()

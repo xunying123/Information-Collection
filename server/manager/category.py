@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from sqlalchemy import select
 from common.models import *
 from .db import db
@@ -5,7 +6,7 @@ from .db import db
 
 class CategoryManager:
     @staticmethod
-    def get_category_sites(category_id: int | None) -> list[Site]:
+    def get_category_sites(category_id: int | None) -> Sequence[Site]:
         from .user import current_user
 
         if category_id == 0:
@@ -39,10 +40,12 @@ class CategoryManager:
         )
         return db.scalars(stmt).all()
 
+    @staticmethod
     def get_subscribe_category() -> Category:
         return Category(id=0, name="个人订阅")
 
-    def get_category_by_id(id: int) -> Category:
+    @staticmethod
+    def get_category_by_id(id: int) -> Category | None:
         if id == 0:
             return CategoryManager.get_subscribe_category()
         res = db.scalar(select(Category).where(Category.id == id))

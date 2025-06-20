@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import Generic, Literal, TypeVar
 
 # from common.models import *
@@ -5,6 +6,7 @@ from pydantic import (
     AliasPath,
     BaseModel,
     Field,
+    TypeAdapter,
     computed_field,
     field_validator,
 )
@@ -23,14 +25,18 @@ class ConfigBaseModel(BaseModel):
 class CategoryItem(ConfigBaseModel):
     id: int | None = None
     name: str
-    subject_id: int | None = Field(None, description="this is used for hint which subject is corresponding to")
+    subject_id: int | None = Field(
+        None, description="this is used for hint which subject is corresponding to"
+    )
 
 
 class Category(CategoryItem):
     @computed_field
     @property
-    def sites(self) -> list["SiteItem"]:
-        return CategoryManager.get_category_sites(self.id)
+    def sites(self) -> Sequence["SiteItem"]:
+        return TypeAdapter(Sequence[SiteItem]).validate_python(
+            CategoryManager.get_category_sites(self.id)
+        )
 
 
 class IncludedCategory:
@@ -116,8 +122,8 @@ class LoginStatus(ConfigBaseModel):
 
 class PagedQuery(ConfigBaseModel, Generic[_T]):
     cursor_id: int | None = None
-    has_next: bool = None
-    data: list[_T] = Field(default_factory=list)
+    has_next: bool | None = None
+    data: Sequence[_T] = Field(default_factory=Sequence[_T])
 
 
 class Subject(ConfigBaseModel):

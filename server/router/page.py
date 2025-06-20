@@ -1,7 +1,7 @@
 import pytz
 from http.client import NOT_FOUND
 from fastapi import APIRouter, HTTPException
-from sqlalchemy import exists, or_, select, func
+from sqlalchemy import Select, exists, or_, select, func
 from common.models import *
 from server import schema
 from ..manager.user import current_user, login_required
@@ -135,8 +135,8 @@ def get_pages(data: schema.PageGet):
 
     result: list[Page] = []
 
-    def get_once(stmt):
-        result.extend(db.scalars(stmt).all())
+    def get_once(stmt1: Select[tuple[Page]]):
+        result.extend(db.scalars(stmt1).all())
 
     if sites_id is not None:
         if data.count_for_each_site:

@@ -59,7 +59,7 @@ class UserManager:
             samesite="lax",
             max_age=expiration,
         )
-        return {"access_token": token, "token_type": "Bearer"}
+        return schema.SessionToken(access_token=token, token_type="Bearer")
 
     @staticmethod
     def create_user(data: schema.RegisterForm) -> User:
@@ -89,7 +89,7 @@ class UserManager:
     def get_user_by_jaccount_code(code: str) -> User | None:
         stmt = select(User).where(User.jaccount_code == code)
         return db.scalar(stmt)
-    
+
     @staticmethod
     def get_user_by_cnaes_code(code: str) -> User | None:
         stmt = select(User).where((User.cnaes_code == code) | (User.username == code))

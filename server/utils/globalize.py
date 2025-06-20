@@ -4,18 +4,18 @@ from contextvars import ContextVar
 from fastapi import Depends
 from werkzeug.local import LocalProxy
 
-_T = TypeVar("T")
+_T = TypeVar("_T")
 
 
 class Globalize(LocalProxy[_T]):
-    def __init__(self, name: str, dependency: Callable):
-        cvar = ContextVar[_T | None](name)
+    def __init__(self, name: str, dependency: Callable[[], _T]):
+        cvar = ContextVar[_T](name)
         super().__init__(cvar)
 
         async def setter(_val: _T = Depends(dependency)):
-            cvar.set(_val)
+            token = cvar.set(_val)
             yield _val
-            cvar.set(None)
+            cvar.reset(token)
 
         object.__setattr__(self, "app_dependency_", setter)
 
