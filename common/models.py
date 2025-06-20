@@ -2,6 +2,7 @@ from sqlalchemy import ARRAY, MetaData, Text, String, Boolean, DateTime
 from sqlalchemy import ForeignKey, Text, func
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship, synonym
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.mutable import MutableList
 from typing_extensions import Annotated
 from datetime import datetime
 
@@ -107,7 +108,7 @@ class Site(Base):
     id: Mapped[intpk]
     name: Mapped[str]
     url: Mapped[list[url_type]] = mapped_column(
-        ARRAY(String(256)), unique=True, nullable=True
+        MutableList.as_mutable(ARRAY(String(256))), unique=True, nullable=True
     )
     categories: Mapped[list[Category]] = relationship(
         "Category", secondary="category_site_relation", back_populates="sites"
