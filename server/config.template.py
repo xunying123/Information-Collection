@@ -13,7 +13,6 @@ class OauthConfig:
     secret_key: str
     auth_url: str
     token_url: str
-    profile_url: str
 
 
 JAccountAuth = OauthConfig(

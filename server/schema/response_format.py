@@ -70,7 +70,7 @@ class PageItem(ConfigBaseModel, IncludeSite):
 class SiteItem(ConfigBaseModel):
     id: int | None = None
     name: str
-    url: str | list[str] | None
+    url: list[str] | None
     icon: str | None = None
 
 
