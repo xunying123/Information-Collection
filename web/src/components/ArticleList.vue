@@ -198,4 +198,11 @@ const { pages, showExcerpt, category_id = 0 } = defineProps<{
   max-width: 56em;
   padding-top: 0.8em;
 }
+
+@media screen and (max-width: 768px) {
+  .infinite-list {
+    width: 25em;
+    margin-left: -1.5em;
+  }
+}
 </style>

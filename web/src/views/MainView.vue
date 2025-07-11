@@ -88,7 +88,7 @@ onMounted(() => {
 <style scoped>
 @media (max-width: 768px) {
   .sidebar {
-    width: 9em !important;
+    width: 10em !important;
   }
 
   .site-menu {
