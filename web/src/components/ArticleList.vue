@@ -1,6 +1,10 @@
 <template>
   <div class="list-container">
-    <ul v-infinite-scroll="load" :infinite-scroll-distance="2" class="infinite-list">
+    <ul
+      v-infinite-scroll="load"
+      :infinite-scroll-distance="2"
+      class="infinite-list"
+    >
       <li
         v-for="page in pages"
         :key="page.id"
@@ -14,25 +18,24 @@
             <div class="list-item-content">
               <div class="article-header">
                 <span class="list-title">{{ page.title }}</span>
-                <div class="article-time">
-                  <NConfigProvider :locale="zhCN" :date-locale="dateZhCN">
-                    {{ showTime(page.publish_time) }}
-                  </NConfigProvider>
-                </div>
                 <router-link
                   :to="`/category/${category_id}/site/${page.site_id}`"
                   class="site-link"
                 >
                   {{ page.site }}
                 </router-link>
+                <div class="article-time">
+                  <NConfigProvider :locale="zhCN" :date-locale="dateZhCN">
+                    {{ showTime(page.publish_time) }}
+                  </NConfigProvider>
+                </div>
               </div>
-              <!-- <p
-                v-if="showExcerpt"
-                class="list-excerpt"
-                v-html="formatExcerpt(stripMarkdown(page.content))"
-              /> -->
               <el-tooltip content="已加入书签" effect="light">
-                <BookmarkSvg v-show="is_bookmarked(page.id)" fill="#FFD700" class="bookmark-icon" />
+                <BookmarkSvg
+                  v-show="is_bookmarked(page.id)"
+                  fill="#FFD700"
+                  class="bookmark-icon"
+                />
               </el-tooltip>
             </div>
           </div>
@@ -52,7 +55,7 @@ import { zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
 
 const { load } = useInfiniteScroll(10)
 
-const { category_id = 0 } = defineProps<{
+const { pages, showExcerpt, category_id = 0 } = defineProps<{
   pages: PageItem[]
   showExcerpt: boolean
   category_id?: number
@@ -67,8 +70,8 @@ const { category_id = 0 } = defineProps<{
 }
 
 .list-item {
-  margin-bottom: 0em;
-  padding: 0px 0;
+  margin-bottom: 0;
+  padding: 0;
   width: 100%;
   max-width: 56em;
 }
@@ -84,20 +87,14 @@ const { category_id = 0 } = defineProps<{
 
 .list-item-card {
   padding: 6px;
-  /* 进一步减少卡片内边距 */
   border: 0.2px solid #d9ecff;
   border-top: 0;
   border-left: 0;
   border-right: 0;
-  /* border-radius: 4px; */
-  background-color: rgba(255, 255, 255, 1);
+  background-color: #fff;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  /* 保持阴影 */
-  transition:
-    box-shadow 0.3s ease,
-    transform 0.3s ease;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
   height: 100%;
-  /* 保持卡片高度 */
 }
 
 .list-item-content {
@@ -107,7 +104,6 @@ const { category_id = 0 } = defineProps<{
 }
 
 .list-title {
-  grid-column: 1;
   font-weight: bold;
   color: #333;
   transition: color 0.3s ease;
@@ -123,18 +119,33 @@ const { category_id = 0 } = defineProps<{
   color: #007bff;
 }
 
+/* 主要修改：article-header 使用 grid, 三列：标题 站点 时间 */
 .article-header {
   display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(0, 1fr) auto;
+  grid-template-columns: 1fr auto 64px;
   align-items: center;
   height: 1.8em;
-  container-type: inline-size;
+  gap: 0.5em;
 }
 
+/* 站点在第二列，右对齐 */
 .site-link {
-  grid-column: 3;
-  padding-right: 1em;
+  grid-column: 2;
+  justify-self: end;
+  white-space: nowrap;
   color: #337ecc;
+  text-decoration: none;
+}
+
+/* 时间在第三列，固定宽度并右对齐 */
+.article-time {
+  grid-column: 3;
+  justify-self: end;
+  width: 64px;
+  text-align: right;
+  font-size: 0.9em;
+  color: #888;
+  margin-right: 0.2em;
 }
 
 .bookmark-icon {
@@ -160,16 +171,6 @@ const { category_id = 0 } = defineProps<{
   white-space: pre-wrap;
 }
 
-.article-time {
-  display: inline-block;
-  font-size: 0.9em;
-  color: #888;
-  /* margin-left: 1em; */
-  justify-self: end;
-  grid-column: 2;
-  padding-right: 1em;
-}
-
 .block {
   display: block;
   max-height: 100%;
@@ -193,7 +194,7 @@ const { category_id = 0 } = defineProps<{
   margin: 0;
   list-style: none;
   border-radius: 6px;
-  background-color: rgba(255, 255, 255, 1);
+  background-color: #fff;
   max-width: 56em;
   padding-top: 0.8em;
 }
