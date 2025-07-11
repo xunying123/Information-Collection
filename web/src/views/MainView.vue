@@ -11,7 +11,7 @@ import {
 } from '@/key'
 import SiteMenu from '@/views/SiteMenu.vue'
 import { NLayout, NLayoutSider, NLayoutContent } from 'naive-ui'
-import { provide, ref, inject } from 'vue'
+import { provide, ref, inject, onMounted } from 'vue'
 import { getCategories, getSubjects, type Category, type Subject } from '@/sdk'
 import { ref_localStorage } from '@/utils'
 
@@ -42,6 +42,19 @@ const sidebarColor = ref_localStorage<SideBarColor>(
 )
 provide(sidebar_show_mode_key, sidebarShowMode)
 provide(sidebar_color_key, sidebarColor)
+
+const sidebarCollapsed = ref(false)
+
+// 检测窗口大小并设置初始折叠状态
+const checkScreenSize = () => {
+  sidebarCollapsed.value = window.innerWidth <= 768
+}
+
+// 组件挂载时设置初始状态并添加窗口大小变化监听器
+onMounted(() => {
+  checkScreenSize()
+  window.addEventListener('resize', checkScreenSize)
+})
 </script>
 
 <template>
@@ -50,9 +63,11 @@ provide(sidebar_color_key, sidebarColor)
       class="sidebar"
       collapse-mode="transform"
       :collapsed-width="0"
+      :collapsed="sidebarCollapsed"
       width="20em"
       show-trigger="bar"
       bordered
+      @update:collapsed="sidebarCollapsed = $event"
     >
       <SiteMenu class="site-menu" />
     </NLayoutSider>
