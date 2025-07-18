@@ -1,6 +1,6 @@
 import type { InjectionKey, Ref } from 'vue'
 import type { User } from '@/sdk'
-import type { Category, Subject } from '@/sdk'
+import type { CategoryReadable as Category, Subject } from '@/sdk'
 
 export type ViewMode = 'card' | 'site' | 'list' | 'excerpt'
 export type SideBarMode = 'category' | 'subject' | 'both'

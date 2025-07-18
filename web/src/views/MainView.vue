@@ -12,7 +12,7 @@ import {
 import SiteMenu from '@/views/SiteMenu.vue'
 import { NLayout, NLayoutSider, NLayoutContent } from 'naive-ui'
 import { provide, ref, inject, onMounted } from 'vue'
-import { getCategories, getSubjects, type Category, type Subject } from '@/sdk'
+import { getCategories, getSubjects, type CategoryReadable as Category, type Subject } from '@/sdk'
 import { ref_localStorage } from '@/utils'
 
 let allCategories = ref<Category[]>([])

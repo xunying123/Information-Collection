@@ -100,7 +100,7 @@ import { getCategories, getSubscribe, subscribe, unsubscribe } from '@/sdk'
 
 const filter_subscribe = inject(filter_subscribe_key)!
 const activeTab = ref('add-source')
-const newSource = ref<SiteItem>({ id: 0, name: '', url: '', icon: '' })
+const newSource = ref<SiteItem>({ id: 0, name: '', url: [''], icon: '' })
 const sourceToDelete = reactive({ name: '' })
 const sources = ref<SiteItem[]>([])
 const allSources = ref<SiteItem[]>([])
@@ -164,7 +164,7 @@ async function addSource() {
     return
   }
   loadSubscribedSources()
-  newSource.value = { id: 0, name: '', url: '', icon: '' }
+  newSource.value = { id: 0, name: '', url: [''], icon: '' }
   ElNotification({
     title: '成功',
     message: '网站源添加成功',

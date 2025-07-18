@@ -27,7 +27,7 @@ import { ref, watch, inject, computed, onMounted } from 'vue'
 import { all_categories_key, all_subjects_key, user_key, type ViewMode } from '@/key'
 import ShowCards from '@/components/ShowCards.vue'
 import { getPages } from '@/sdk'
-import type { PageItem, PageGet, SortType } from '@/sdk'
+import type { PageItem, PageGet, SortType, SiteItem } from '@/sdk'
 import { isRequesting, lockRequest, unlockRequest } from '@/utils/requestLock'
 import { useInfiniteScroll } from '@/utils/useInfiniteScroll'
 import SearchInput from '@/components/SearchInput.vue'
@@ -51,7 +51,7 @@ const all_categories = inject(all_categories_key)!
 const all_subjects = inject(all_subjects_key)!
 const category = computed(() => all_categories.value.find((item) => item.id == category_id))
 const subject = computed(() => all_subjects.value.find((item) => item.id == subject_id))
-const site = computed(() => category.value?.sites.find((item) => item.id == site_id))
+const site = computed(() => category.value?.sites.find((item: SiteItem) => item.id == site_id))
 
 // 渲染数据
 const user = inject(user_key)!

@@ -47,7 +47,7 @@ export type BodySubscribe = {
   keep_user_existed: boolean
 }
 
-export type Category = {
+export type CategoryReadable = {
   id?: number | null
   name: string
   /**
@@ -55,6 +55,15 @@ export type Category = {
    */
   subject_id?: number | null
   readonly sites: Array<SiteItem>
+}
+
+export type CategoryWritable = {
+  id?: number | null
+  name: string
+  /**
+   * this is used for hint which subject is corresponding to
+   */
+  subject_id?: number | null
 }
 
 export type CategoryItem = {
@@ -100,11 +109,11 @@ export type Page = {
   id: number
   source_url: string
   title: string
-  content: string
   publish_time: string
   score: number
   keywords: Array<Keyword>
   full_content: string
+  content: string
 }
 
 export type PageGet = {
@@ -135,7 +144,6 @@ export type PageItem = {
   id: number
   source_url: string
   title: string
-  content: string
   publish_time: string
   score: number
   keywords: Array<Keyword>
@@ -143,7 +151,7 @@ export type PageItem = {
 
 export type PagedQueryPageItem = {
   cursor_id?: number | null
-  has_next?: boolean
+  has_next?: boolean | null
   data?: Array<PageItem>
 }
 
@@ -162,14 +170,14 @@ export type SessionToken = {
 export type Site = {
   id?: number | null
   name: string
-  url: string | Array<string> | null
+  url: Array<string> | null
   icon?: string | null
 }
 
 export type SiteItem = {
   id?: number | null
   name: string
-  url: string | Array<string> | null
+  url: Array<string> | null
   icon?: string | null
 }
 
@@ -778,7 +786,7 @@ export type GetCategoriesResponses = {
   /**
    * Successful Response
    */
-  200: Array<Category>
+  200: Array<CategoryReadable>
 }
 
 export type GetCategoriesResponse = GetCategoriesResponses[keyof GetCategoriesResponses]
@@ -830,7 +838,7 @@ export type GetCategoryResponses = {
   /**
    * Successful Response
    */
-  200: Category
+  200: CategoryReadable
 }
 
 export type GetCategoryResponse = GetCategoryResponses[keyof GetCategoryResponses]

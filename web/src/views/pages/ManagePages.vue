@@ -207,7 +207,7 @@ import {
   getUserinfoNotInGroup,
   type User,
   type CategoryItem,
-  type Category
+  type CategoryReadable as Category
 } from '@/sdk'
 
 const user = inject(user_key)!
@@ -281,7 +281,7 @@ const addSite_ = async () => {
   const { data, error } = await addSite({
     body: {
       name: newSite.name,
-      url: newSite.url,
+      url: [newSite.url],
       icon: ''
     }
   })
@@ -368,7 +368,7 @@ const resetMappingForm = () => {
 }
 
 // 修改后的删除网站表单模型：包含分类和网站两个字段
-const siteToDelete = ref<SiteItem>({ id: 0, name: '', url: '' })
+const siteToDelete = ref<SiteItem>({ id: 0, name: '', url: [''] })
 const deleteCate = ref<Category>({ id: 0, name: '', sites: [] })
 
 const handleDeleteCateSiteSelect = (item: Category | SiteItem) => {
@@ -383,7 +383,9 @@ const handleDeleteCateSiteSelect = (item: Category | SiteItem) => {
 const querySiteForDeletion = (queryString: string, cb: (sites: SiteItem[]) => void) => {
   let sites = deleteCate.value?.sites || []
   if (queryString) {
-    sites = sites.filter((site) => site.name.toLowerCase().includes(queryString.toLowerCase()))
+    sites = sites.filter((site: SiteItem) =>
+      site.name.toLowerCase().includes(queryString.toLowerCase())
+    )
   }
   cb(sites)
 }
@@ -426,7 +428,7 @@ const deleteSite_ = async () => {
     type: 'success'
   })
   // 重置删除表单
-  siteToDelete.value = { id: 0, name: '', url: '' }
+  siteToDelete.value = { id: 0, name: '', url: [''] }
   deleteCate.value = { id: 0, name: '', sites: [] }
   // 刷新网站列表
   setTimeout(() => {

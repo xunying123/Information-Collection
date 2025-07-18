@@ -1,10 +1,6 @@
 <template>
   <div class="list-container">
-    <ul
-      v-infinite-scroll="load"
-      :infinite-scroll-distance="2"
-      class="infinite-list"
-    >
+    <ul v-infinite-scroll="load" :infinite-scroll-distance="2" class="infinite-list">
       <li
         v-for="page in pages"
         :key="page.id"
@@ -31,11 +27,7 @@
                 </div>
               </div>
               <el-tooltip content="已加入书签" effect="light">
-                <BookmarkSvg
-                  v-show="is_bookmarked(page.id)"
-                  fill="#FFD700"
-                  class="bookmark-icon"
-                />
+                <BookmarkSvg v-show="is_bookmarked(page.id)" fill="#FFD700" class="bookmark-icon" />
               </el-tooltip>
             </div>
           </div>
@@ -55,7 +47,11 @@ import { zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
 
 const { load } = useInfiniteScroll(10)
 
-const { pages, showExcerpt, category_id = 0 } = defineProps<{
+const {
+  pages,
+  showExcerpt,
+  category_id = 0
+} = defineProps<{
   pages: PageItem[]
   showExcerpt: boolean
   category_id?: number
@@ -93,7 +89,9 @@ const { pages, showExcerpt, category_id = 0 } = defineProps<{
   border-right: 0;
   background-color: #fff;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
   height: 100%;
 }
 

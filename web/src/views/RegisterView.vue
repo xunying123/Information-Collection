@@ -98,7 +98,7 @@ const route = useRoute()
 
 console.log('route', route.query)
 
-const next = computed(() => {
+const next = computed<string>(() => {
   return typeof route.query.next === 'string' ? route.query.next : '/'
 })
 
