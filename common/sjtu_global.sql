@@ -19,7 +19,8 @@ SELECT
     page.publish_time AS publish_date,
     page.score AS score,
     site.name AS school_name,
-    page.source_url AS source_url
+    page.source_url AS source_url,
+    category.name AS category_name
 FROM
     page
     JOIN site ON page.site_id = site.id
