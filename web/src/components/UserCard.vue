@@ -11,7 +11,11 @@ let user = inject(user_key)!
   <div v-if="user" class="user-card">
     <!-- <ElAvatar :src="user.avatars!" class="avatar" /> -->
     <div class="welcome-container">
-      <h2>欢迎您，{{ user.name }}</h2>
+      <!-- <h2>欢迎您，{{ user.name }}</h2> -->
+      <h2>
+        <span class="welcome-text">欢迎您，</span>
+        <span class="username">{{ user.name }}</span>
+      </h2>
       <div class="user-status" />
     </div>
     <!-- <p>{{ user.organization }}</p> -->
@@ -25,6 +29,11 @@ let user = inject(user_key)!
     width: 30px !important;
     height: 30px !important;
   }
+  .welcome-container h2 {
+    display: flex;
+    flex-direction: column;
+  }
+  
 }
 
 .avatar {
@@ -46,12 +55,12 @@ let user = inject(user_key)!
 
 .user-card {
   display: grid;
-  grid-template-columns: auto 1fr;
+  /* grid-template-columns: auto 1fr; */
   /* 调整为你需要的比例 */
-  align-items: center;
-  cursor: pointer;
-  margin: 0.5em 1em;
-  padding: 0.2em;
+  /* align-items: center; */
+  /* cursor: pointer; */
+  /* margin: 0.5em 1em; */
+  /* padding: 0.2em; */
 }
 
 .user-info {

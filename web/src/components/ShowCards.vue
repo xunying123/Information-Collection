@@ -17,7 +17,7 @@ const props = defineProps<{
 const route = useRoute()
 
 // 视图模式管理 - 保留在ShowCards中，因为这是UI展示相关的
-const view = defineModel<ViewMode>('view', { default: 'card' })
+const view = defineModel<ViewMode>('view', { default: 'list' })
 const options = computed(() => {
   const showSiteCard =
     route.path.match(/category|daliyupdate|bookmarks/) != null && !route.path.includes('site')
@@ -44,7 +44,7 @@ onMounted(() => {
     savedView ||
     (route.path.match(/category|daliyupdate|bookmarks/) ? 'site' : null) ||
     savedNotCateView ||
-    'card'
+    'list'
 })
 </script>
 
@@ -138,5 +138,11 @@ h1 {
   display: flex;
   flex-direction: column;
   padding: 0;
+}
+
+@media (max-width: 768px) {
+  .el-container:has(.router-view-content) .main-content {
+    display: none;
+  }
 }
 </style>

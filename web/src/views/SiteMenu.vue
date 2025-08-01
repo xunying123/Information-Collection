@@ -90,7 +90,7 @@ const sidebarColor = inject(sidebar_color_key)!
               v-for="site in cate.sites"
               :key="site.id"
               :index="`/category/${cate.id}/site/${site.id}`"
-              style="margin-left: 2em"
+              style="margin-left: 1em"
             >
               {{ site.name }}
             </el-menu-item>

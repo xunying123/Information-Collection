@@ -129,7 +129,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="article-container">
+  <div class="article-container router-view-content">
     <div class="resizer" :class="{ active: isResizing }" @mousedown="handleResizeStart">
       <div class="resizer-handle" />
     </div>
@@ -198,9 +198,22 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
+
+  .article-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+    background: white;
+  }
+  
   .details-area {
     width: 100% !important;
-    margin-left: 0 !important;
+    margin: 0 !important;
+    border-radius: 0;
+    height: 100vh;
   }
 
   .article-content {

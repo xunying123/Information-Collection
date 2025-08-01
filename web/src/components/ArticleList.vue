@@ -198,9 +198,12 @@ const {
 }
 
 @media screen and (max-width: 768px) {
+  .list-container {
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+  }
   .infinite-list {
-    width: 25em;
-    margin-left: -1.5em;
+    width: calc(100vw - 1em);
   }
 }
 </style>
