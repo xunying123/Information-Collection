@@ -33,7 +33,6 @@ let user = inject(user_key)!
     display: flex;
     flex-direction: column;
   }
-  
 }
 
 .avatar {

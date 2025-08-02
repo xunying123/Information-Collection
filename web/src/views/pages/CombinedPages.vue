@@ -80,7 +80,7 @@ const selected_subjects = ref<number[]>([])
 const selected_time_range = ref<number>(0)
 const current_sort_option = ref<SortType>('time')
 const filter_keyword = ref<boolean>(false)
-const view = ref<ViewMode>('card')
+const view = ref<ViewMode>('list')
 const search_keyword = ref<string>('')
 const loading = ref(true)
 
@@ -150,6 +150,8 @@ function fetchPages(body: PageGet, oldBody?: PageGet) {
 
 watch(request_body, fetchPages, { flush: 'post' })
 onMounted(() => {
+  console.log('Mounted ShowCards with request_body:', view.value)
   fetchPages(request_body.value)
+  console.log('Initial request_body:', view.value)
 })
 </script>

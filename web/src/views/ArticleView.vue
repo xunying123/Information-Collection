@@ -198,7 +198,6 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
-
   .article-container {
     position: fixed;
     top: 0;
@@ -208,7 +207,7 @@ onUnmounted(() => {
     z-index: 1000;
     background: white;
   }
-  
+
   .details-area {
     width: 100% !important;
     margin: 0 !important;

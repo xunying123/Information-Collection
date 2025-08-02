@@ -14,7 +14,7 @@
           </div>
         </template>
         <ElScrollbar height="300px">
-          <ul v-infinite-scroll="load" :infinite-scroll-distance="2" class="infinite-list">
+          <ul v-infinite-scroll="load" :infinite-scroll-distance="2" infinite-scroll-disabled="loading" class="infinite-list">
             <div v-for="page in site_pages" :key="page.id" class="article-item">
               <router-link
                 :to="{
