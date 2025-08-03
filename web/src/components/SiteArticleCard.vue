@@ -14,7 +14,12 @@
           </div>
         </template>
         <ElScrollbar height="300px">
-          <ul v-infinite-scroll="load" :infinite-scroll-distance="2" infinite-scroll-disabled="loading" class="infinite-list">
+          <ul
+            v-infinite-scroll="load"
+            :infinite-scroll-distance="2"
+            :infinite-scroll-disabled="loading"
+            class="infinite-list"
+          >
             <div v-for="page in site_pages" :key="page.id" class="article-item">
               <router-link
                 :to="{
@@ -48,7 +53,7 @@ import { useInfiniteScroll } from '@/utils/useInfiniteScroll'
 
 const props = defineProps<{ pages: PageItem[] }>()
 
-const { load } = useInfiniteScroll(10)
+const { load, loading } = useInfiniteScroll(10)
 
 const groupedPages = computed(() => {
   const groups: Record<string, PageItem[]> = {}

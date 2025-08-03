@@ -18,7 +18,8 @@ const route = useRoute()
 
 // 视图模式管理 - 保留在ShowCards中，因为这是UI展示相关的
 const view = defineModel<ViewMode>('view', { default: 'list' })
-const showSiteCard = route.path.match(/category|daliyupdate|bookmarks/) != null && !route.path.includes('site')
+const showSiteCard =
+  route.path.match(/category|daliyupdate|bookmarks/) != null && !route.path.includes('site')
 const options = computed(() => {
   const base_options = [
     { label: '卡片', value: 'card' },
@@ -32,13 +33,12 @@ const { load, count } = useInfiniteScroll(10)
 // 监听路由变化，检查当前视图模式是否合法
 // 监听路由变化和选项变化，检查当前视图模式是否合法
 watch([() => route.path, options], ([_newPath, newOptions]) => {
-  const currentOptions = newOptions.map(opt => opt.value)
+  const currentOptions = newOptions.map((opt) => opt.value)
   if (!currentOptions.includes(view.value)) {
     // 如果当前视图模式不在可选项中，切换到默认模式
     const savedNotCateView = localStorage.getItem('notCateView') as ViewMode
-    view.value = savedNotCateView && currentOptions.includes(savedNotCateView) 
-      ? savedNotCateView 
-      : 'list'
+    view.value =
+      savedNotCateView && currentOptions.includes(savedNotCateView) ? savedNotCateView : 'list'
   }
 })
 
@@ -53,19 +53,14 @@ watch(view, (newView) => {
 onMounted(() => {
   const savedView = localStorage.getItem('viewMode') as typeof view.value
   const savedNotCateView = localStorage.getItem('notCateView') as typeof view.value
-  let finalView =
-    savedView ||
-    (showSiteCard? 'site' : null) ||
-    savedNotCateView ||
-    'list'
+  let finalView = savedView || (showSiteCard ? 'site' : null) || savedNotCateView || 'list'
 
   // 手动触发一次 watch 逻辑
-  const currentOptions = options.value.map(opt => opt.value)
+  const currentOptions = options.value.map((opt) => opt.value)
   if (!currentOptions.includes(finalView)) {
     const savedNotCateView = localStorage.getItem('notCateView') as ViewMode
-    finalView = savedNotCateView && currentOptions.includes(savedNotCateView) 
-      ? savedNotCateView 
-      : 'list'
+    finalView =
+      savedNotCateView && currentOptions.includes(savedNotCateView) ? savedNotCateView : 'list'
   }
   if (view.value !== finalView) {
     view.value = finalView

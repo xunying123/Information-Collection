@@ -150,8 +150,6 @@ function fetchPages(body: PageGet, oldBody?: PageGet) {
 
 watch(request_body, fetchPages, { flush: 'post' })
 onMounted(() => {
-  console.log('Mounted ShowCards with request_body:', view.value)
   fetchPages(request_body.value)
-  console.log('Initial request_body:', view.value)
 })
 </script>
