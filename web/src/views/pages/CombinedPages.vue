@@ -1,5 +1,5 @@
 <template>
-  <el-drawer v-model="drawerVisible" title="筛选" size="40em">
+  <el-drawer v-model="drawerVisible" title="筛选" :size="drawerSize">
     <FilterSidebar
       v-model:selected-categories="selected_categories"
       v-model:selected-subjects="selected_subjects"
@@ -73,6 +73,11 @@ const title = computed(() => {
   }
 })
 const drawerVisible = ref(false)
+
+const windowWidth = ref(window.innerWidth)
+const drawerSize = computed(() => {
+  return windowWidth.value < 768 ? '90vw' : '40em'
+})
 
 // 筛选状态管理 - 集中在这个组件
 const selected_categories = ref<number[]>([])

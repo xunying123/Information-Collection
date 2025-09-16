@@ -26,18 +26,14 @@ const computedShowTime = computed(() => showTime(props.page.publish_time))
             <el-tooltip content="已加入书签" effect="light">
               <BookmarkSvg v-show="is_bookmarked(page.id)" fill="#FFD700" />
             </el-tooltip>
-          </div>
-        </template>
-        <h3 class="small-card-body">
-          {{ page.title }}
-        </h3>
-        <template #footer>
-          <div class="small-card-footer">
             <NConfigProvider :locale="zhCN" :date-locale="dateZhCN">
               {{ computedShowTime }}
             </NConfigProvider>
           </div>
         </template>
+        <h3 class="small-card-body">
+          {{ page.title }}
+        </h3>
       </el-card>
     </router-link>
   </div>
@@ -46,14 +42,16 @@ const computedShowTime = computed(() => showTime(props.page.publish_time))
 <style scoped>
 .card-container {
   display: grid;
+  /* 定义网格布局 */
   grid-template-columns: repeat(auto-fill, minmax(20em, 1fr));
-  /* 固定卡片宽度为30em */
-  grid-auto-rows: 15em;
-  /* 固定卡片高度为15em */
-  gap: 2em;
-  /* 控制卡片之间的间距 */
-  padding: 1em;
-  /* 增加容器内边距 */
+  /* 自动填充列，最小宽度为20em，最大宽度为1fr */
+  grid-auto-rows: 12em;
+}
+
+@media (max-width: 768px) {
+  .card-container {
+    grid-auto-rows: 12em;
+  }
 }
 
 .small-card {

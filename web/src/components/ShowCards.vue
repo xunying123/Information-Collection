@@ -110,9 +110,19 @@ onMounted(() => {
 .container-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, 20em);
-  gap: 2em;
+  gap: 3em;
   padding: 2em;
   justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .container-grid {
+    grid-template-columns: 0.9fr;
+    gap: 0.8em;
+    padding: 0.8em;
+    /* width: 100vw; */
+    box-sizing: border-box;
+  }
 }
 
 h1 {
