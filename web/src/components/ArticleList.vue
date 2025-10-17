@@ -1,6 +1,12 @@
 <template>
   <div class="list-container">
-    <ul v-infinite-scroll="load" :infinite-scroll-distance="2" class="infinite-list">
+    <!-- <ul v-infinite-scroll="load" :infinite-scroll-distance="2" class="infinite-list"> -->
+    <ul
+      v-infinite-scroll="load"
+      :infinite-scroll-disabled="loading || noMore"
+      :infinite-scroll-distance="2"
+      class="infinite-list"
+    >
       <li
         v-for="page in pages"
         :key="page.id"
@@ -45,7 +51,7 @@ import { useInfiniteScroll } from '@/utils/useInfiniteScroll'
 import BookmarkSvg from './svg/BookmarkSvg.vue'
 import { zhCN, dateZhCN, NConfigProvider } from 'naive-ui'
 
-const { load } = useInfiniteScroll(10)
+const { load, loading, noMore } = useInfiniteScroll(10)
 
 const {
   pages,
@@ -187,7 +193,7 @@ const {
 }
 
 .infinite-list {
-  height: 400px;
+  height: auto;
   padding: 0;
   margin: 0;
   list-style: none;

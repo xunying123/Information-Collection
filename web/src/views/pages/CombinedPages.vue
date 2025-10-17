@@ -101,7 +101,7 @@ const time_start = computed<Date | null>(() => {
   return new Date(Today.getTime() - selected_time_range.value * 24 * 60 * 60 * 1000)
 })
 
-const { count } = useInfiniteScroll(10)
+const { count, setNoMore } = useInfiniteScroll(10)
 
 const request_body = computed<PageGet>(() => ({
   count: count.value,
@@ -142,8 +142,14 @@ function fetchPages(body: PageGet, oldBody?: PageGet) {
     .then((res) => res.data)
     .then((data) => {
       pages.value = data!.data!
+      if (data!.data!.length < body.count!) {
+        setNoMore(true)
+      } else {
+        setNoMore(false)
+      }
     })
     .catch((err) => {
+      setNoMore(true)
       console.error('Error fetching data:', err)
     })
     .finally(() => {
