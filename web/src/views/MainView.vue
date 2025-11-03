@@ -7,7 +7,9 @@ import {
   sidebar_show_mode_key,
   type SideBarMode,
   type SideBarColor,
-  sidebar_color_key
+  sidebar_color_key,
+  all_categories_promise_key,
+  all_subjects_promise_key
 } from '@/key'
 import SiteMenu from '@/views/SiteMenu.vue'
 import { NLayout, NLayoutSider, NLayoutContent } from 'naive-ui'
@@ -16,12 +18,16 @@ import { getCategories, getSubjects, type CategoryReadable as Category, type Sub
 import { ref_localStorage } from '@/utils'
 
 let allCategories = ref<Category[]>([])
-getCategories().then((value) => (allCategories.value = value.data!))
+let all_categories_promise = getCategories().then(v => v.data!)
+all_categories_promise.then((d) => (allCategories.value = d))
 provide(all_categories_key, allCategories)
+provide(all_categories_promise_key, all_categories_promise)
 
 let subjects = ref<Subject[]>([])
-getSubjects().then((value) => (subjects.value = value.data!))
+let subjects_promise = getSubjects().then(v => v.data!)
+subjects_promise.then((d) => (subjects.value = d))
 provide(all_subjects_key, subjects)
+provide(all_subjects_promise_key, subjects_promise)
 
 const user = inject(user_key)!
 

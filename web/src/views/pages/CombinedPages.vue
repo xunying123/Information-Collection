@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { ref, watch, inject, computed, onMounted } from 'vue'
-import { all_categories_key, all_subjects_key, user_key, type ViewMode } from '@/key'
+import { all_categories_key, all_categories_promise_key, all_subjects_key, all_subjects_promise_key, user_key, type ViewMode } from '@/key'
 import ShowCards from '@/components/ShowCards.vue'
 import { getPages } from '@/sdk'
 import type { PageItem, PageGet, SortType, SiteItem } from '@/sdk'
@@ -49,6 +49,9 @@ const {
 // 相关对象
 const all_categories = inject(all_categories_key)!
 const all_subjects = inject(all_subjects_key)!
+const promises = [inject(all_categories_promise_key)!, inject(all_subjects_promise_key)!]
+await Promise.all(promises)
+
 const category = computed(() => all_categories.value.find((item) => item.id == category_id))
 const subject = computed(() => all_subjects.value.find((item) => item.id == subject_id))
 const site = computed(() => category.value?.sites.find((item: SiteItem) => item.id == site_id))
