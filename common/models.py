@@ -1,4 +1,4 @@
-from sqlalchemy import ARRAY, MetaData, Text, String, Boolean, DateTime
+from sqlalchemy import ARRAY, MetaData, Text, String, Boolean, DateTime, UniqueConstraint
 from sqlalchemy import ForeignKey, Text, func
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship, synonym
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -128,7 +128,7 @@ site_foreign_key = Annotated[
 
 class Page(Base, UseTimestamps):
     id: Mapped[intpk]
-    source_url: Mapped[url_type] = mapped_column(unique=True, nullable=False)
+    source_url: Mapped[url_type] = mapped_column(nullable=False)
 
     title: Mapped[str] = mapped_column(String(128), nullable=False)
     title_cn: Mapped[str] = mapped_column(String(128), nullable=True)
@@ -158,6 +158,10 @@ class Page(Base, UseTimestamps):
     @hybrid_property
     def school_name(self):
         return self.site.name if self.site else None
+
+    __table_args__ = (
+        UniqueConstraint('source_url', 'site_id', name='uix_source_url_site_id'),
+    )
 
 
 class User(Base):
